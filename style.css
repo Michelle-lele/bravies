@@ -1,0 +1,576 @@
+/* =====================================================================
+   СМЕЛЧОВЦИ В БЕДА — Landing Page Styles
+   PHASE 1 of 5: Hero + Bravies Intro only.
+   Section 1 of this file establishes the full design-token system that
+   Phases 2–4 will reuse — do not redefine tokens in later phases, extend
+   this block instead.
+
+   Breakpoint strategy (per spec §3 "Responsiveness" + explicit tablet
+   orientation callouts):
+     - Base styles: mobile, < 768px
+     - 768px + portrait orientation  → "portrait tablet" layout
+     - 1024px, OR 768px + landscape  → "landscape tablet / desktop" layout
+     - 1440px  → desktop refinements
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. DESIGN TOKENS
+--------------------------------------------------------------------- */
+:root {
+  /* --- Brand / Bravies colors (from spec, corrected hex values) --- */
+  --color-zaki: #725598;
+  --color-vihren: #F68044;
+  --color-neda: #FDD43B;
+  --color-vesta: #278C5D;
+  --color-misho: #E5E1D6;
+
+  /* --- Hero --- */
+  --color-hero-bg: #5080BF;
+  --color-hero-text: #F8FAFC;
+
+  /* --- Base surfaces --- */
+  --color-surface-white: #F8FAFC;
+  --color-text-dark: #1E2433; /* dark text for use on light/bright surfaces */
+  --color-text-muted: #5B6478;
+
+  /* --- Feedback colors --- */
+  --color-error: #D9402A;
+  --color-success: #278C5D; /* reuses Веста's brand green — already reads as "success" */
+
+  /*
+    TODO (Phase 2): the spec calls for the Problem / "What it teaches" /
+    How it works / Testimonials / Desired state / FAQ / Wait-list Signup
+    sections to alternate colorful/white backgrounds, with colorful ones
+    "complementary to the Bravies brand colors" — but no explicit hex
+    values are given for these. Tokens below are placeholders to be
+    filled in when those sections are actually built, so every later
+    phase pulls from one shared source instead of picking colors ad hoc.
+    --color-section-colorful-1: TBD;
+    --color-section-colorful-2: TBD;
+    --color-section-colorful-3: TBD;
+  */
+
+  /* --- Type --- */
+  --font-display: 'Baloo 2', system-ui, sans-serif;  /* rounded, playful — headlines */
+  --font-body: 'Nunito Sans', system-ui, sans-serif; /* warm, friendly — body/UI text */
+
+  /* --- Type scale (fluid, mobile-first) --- */
+  --font-size-h1: clamp(2rem, 6vw, 3.75rem);
+  --font-size-h2: clamp(1.5rem, 4.5vw, 2.5rem);
+  --font-size-body: clamp(1rem, 2vw, 1.15rem);
+  --font-size-small: 0.875rem;
+
+  /* --- Spacing scale --- */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --space-5: 4rem;
+  --space-6: 6rem;
+
+  /* --- Radii --- */
+  --radius-input: 14px;
+  --radius-card: 15px; /* spec-mandated literal value, not a percentage/angle */
+
+  /* --- Card geometry ---
+     Spec: 3:5 (width:height) aspect ratio — physical cards are 6cm x 10cm.
+     This is intentionally NOT the same ratio explored in earlier drafts;
+     6:10 simplifies to 3:5, a much more screen-practical ratio than 1:6. */
+  --card-aspect: 3 / 5;
+  --card-border-side: 6px; /* uniform frame thickness; the "thicker bottom
+    border" from the spec is implemented as the caption panel's own
+    background (see .brave-card__caption) rather than a literal CSS
+    border, since a border can only ever be a thin stripe — not a
+    readable block containing name + bio text. */
+
+  /* Desktop-only: how much of the Bravies section (heading + top of the
+     cards) peeks above the fold under the hero (see §3 "top half of
+     cards visible on desktop"). Kept as a fixed value (not fluid) so the
+     peek amount is predictable regardless of how wide individual cards
+     render. Deliberately generous — per project decision, the character
+     preview matters more than keeping the hero comfortable on short
+     laptop viewports. */
+  --card-peek-desktop: 300px;
+  --card-peek-desktop-xl: 340px; /* slightly more room available at ≥1440px */
+}
+
+/* ---------------------------------------------------------------------
+   2. RESET & BASE
+--------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-surface-white);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* clouds intentionally travel toward/past the viewport edge */
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; }
+p { margin: 0; }
+ul { list-style: none; margin: 0; padding: 0; }
+button { font-family: inherit; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--color-zaki);
+  outline-offset: 3px;
+}
+
+/* =====================================================================
+   3. HERO SECTION
+   ===================================================================== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-hero-bg);
+  color: var(--color-hero-text);
+}
+
+/* --- Clouds ---
+   Each cloud's outward travel distance/direction is a CSS variable so
+   script.js only ever needs to update one shared --scroll-progress value
+   (0 at top of hero, 1 at bottom) on the container; direction/reversal on
+   scroll-up falls out naturally since transform is a direct function of
+   scroll position, not an incremental animation. */
+.hero__clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  --scroll-progress: 0; /* updated by script.js */
+}
+
+.cloud {
+  position: absolute;
+  background: var(--color-surface-white);
+  border-radius: 45% 55% 60% 40% / 55% 45% 55% 45%;
+  opacity: 0.9;
+  transform: translateX(calc(var(--scroll-progress) * var(--cloud-distance) * var(--cloud-dir)));
+}
+
+.cloud--1 { width: 140px; height: 60px; top: 12%; left: 8%;  --cloud-dir: -1; --cloud-distance: 220px; }
+.cloud--2 { width: 100px; height: 46px; top: 24%; right: 12%; --cloud-dir: 1;  --cloud-distance: 260px; }
+.cloud--3 { width: 90px;  height: 40px; bottom: 22%; left: 15%; --cloud-dir: -1; --cloud-distance: 180px; }
+.cloud--4 { width: 120px; height: 52px; bottom: 14%; right: 8%; --cloud-dir: 1;  --cloud-distance: 200px; }
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hero__title {
+  font-size: var(--font-size-h1);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--color-hero-text);
+}
+
+.hero__subtitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-hero-text);
+  opacity: 0.92;
+  max-width: 34ch;
+}
+
+/* --- Waitlist form (shared pattern; reused verbatim by the bottom
+   Wait-list Signup section in Phase 4) --- */
+.waitlist-form { width: 100%; margin-top: var(--space-2); }
+
+.waitlist-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.waitlist-form__input {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  border-radius: var(--radius-input);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-hero-text);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.waitlist-form__input::placeholder { color: rgba(248, 250, 252, 0.75); }
+.waitlist-form__input:focus { border-color: var(--color-neda); background: rgba(255, 255, 255, 0.22); }
+.waitlist-form__input.is-invalid { border-color: var(--color-error); }
+
+/* Light-background variant, for use once the bottom signup section
+   (Phase 4) sits on a white or pastel background instead of the hero's
+   deep blue. Not applied yet — reserved here so Phase 4 doesn't have to
+   touch this rule block again. */
+.waitlist-form--on-light .waitlist-form__input {
+  border-color: rgba(30, 36, 51, 0.2);
+  background: rgba(30, 36, 51, 0.04);
+  color: var(--color-text-dark);
+}
+.waitlist-form--on-light .waitlist-form__input::placeholder { color: var(--color-text-muted); }
+
+.waitlist-form__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  background: var(--color-neda);
+  border: none;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.waitlist-form__button:hover { background: #ffe27a; }
+.waitlist-form__button:active { transform: scale(0.98); }
+.waitlist-form__button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.waitlist-form__spinner {
+  display: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(30, 36, 51, 0.35);
+  border-top-color: var(--color-text-dark);
+  animation: spin 0.7s linear infinite;
+}
+.waitlist-form__button.is-loading .waitlist-form__spinner { display: inline-block; }
+.waitlist-form__button.is-loading .waitlist-form__button-label { opacity: 0.85; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.waitlist-form__error {
+  min-height: 1.25rem;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: #FFD9D2; /* light tint of --color-error, readable on the hero's blue */
+  text-align: left;
+}
+
+/* --- Success message: fades in once script.js removes [hidden] and adds .is-visible --- */
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: var(--space-2);
+  padding: 1rem 1.25rem;
+  width: 100%;
+  border-radius: var(--radius-input);
+  background: rgba(39, 140, 93, 0.25); /* --color-success tint */
+  border: 1px solid rgba(39, 140, 93, 0.6);
+  color: var(--color-hero-text);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.success-message.is-visible { opacity: 1; transform: translateY(0); }
+.success-message__icon { width: 22px; height: 22px; flex-shrink: 0; color: #6EE7B7; }
+.success-message__text { font-weight: 700; text-align: left; }
+
+/* =====================================================================
+   4. BRAVIES INTRO SECTION
+   ===================================================================== */
+.bravies {
+  position: relative;
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-surface-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.bravies__intro {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  text-align: center;
+  max-width: 32ch;
+  color: var(--color-text-dark);
+}
+
+/* --- Card row: mobile default = single column, one card per row --- */
+.card-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* --- Individual card ---
+   Root <li> stays position:relative + overflow:visible so the enlarged
+   portrait can escape the card's frame on activation. The colored,
+   rounded, thick border is painted on a ::before pseudo-element so the
+   real border-radius clips cleanly regardless of inner content. */
+.brave-card {
+  position: relative;
+  width: min(320px, 78vw);
+  aspect-ratio: var(--card-aspect);
+  overflow: visible;
+  transition: transform 0.35s ease;
+}
+
+.brave-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-white);
+  border: var(--card-border-side) solid var(--card-color, var(--color-zaki));
+  pointer-events: none;
+}
+
+/* Per-character accent color, plus a matching text color chosen for
+   contrast against that specific accent (some brand colors are light
+   enough to need dark text, others need white — see each value below). */
+.brave-card--zaki   { --card-color: var(--color-zaki);   --card-text-on-accent: var(--color-surface-white); }
+.brave-card--vihren { --card-color: var(--color-vihren); --card-text-on-accent: var(--color-text-dark); }
+.brave-card--neda    { --card-color: var(--color-neda);   --card-text-on-accent: var(--color-text-dark); }
+.brave-card--vesta   { --card-color: var(--color-vesta);  --card-text-on-accent: var(--color-surface-white); }
+.brave-card--misho   { --card-color: var(--color-misho);  --card-text-on-accent: var(--color-text-dark); }
+
+.brave-card__trigger {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+}
+
+/* Rectangular character-image placeholder (per spec, not circular) */
+.brave-card__portrait {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-2) var(--space-2) 0.5rem;
+  overflow: visible; /* allows the placeholder to pop outside the frame on activation */
+}
+
+.brave-card__portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(30, 36, 51, 0.06),
+    rgba(30, 36, 51, 0.06) 10px,
+    rgba(30, 36, 51, 0.02) 10px,
+    rgba(30, 36, 51, 0.02) 20px
+  );
+  border: 2px dashed rgba(30, 36, 51, 0.25);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateY(0) scale(1);
+}
+
+/* Caption bar: THIS is the spec's "thicker bottom border" — rather than
+   an actual CSS border (which can only ever be a thin stripe, not a
+   readable text panel), it's a solid-colored block using the card's
+   accent color, sized to sit flush against the card's rounded bottom
+   corners and side borders. Collapsed by default (name + a peek of the
+   bio's first line); expands upward on activation to reveal the full
+   bio. */
+.brave-card__caption {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  height: 20%;
+  min-height: 3.2em;
+  margin: 0 calc(var(--card-border-side) * -1) calc(var(--card-border-side) * -1);
+  padding: 0.5rem 0.75rem 0.6rem;
+  overflow: hidden;
+  background: var(--card-color, var(--color-zaki));
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  transition: height 0.35s ease;
+}
+
+.brave-card__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--card-text-on-accent, var(--color-text-dark));
+}
+
+.brave-card__bio {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--card-text-on-accent, var(--color-text-dark));
+  opacity: 0.85;
+}
+
+/* --- Activated state: hover (pointer devices), tap-toggle (via JS), and
+   default-applied to Неда per spec. Card grows slightly, caption expands
+   upward, portrait enlarges and overflows above the card's top edge. --- */
+.brave-card.is-active,
+.brave-card__trigger:hover {
+  z-index: 5;
+}
+
+.brave-card.is-active,
+.brave-card:has(.brave-card__trigger:hover) {
+  transform: scale(1.06);
+}
+
+.brave-card.is-active .brave-card__caption,
+.brave-card__trigger:hover .brave-card__caption {
+  height: 58%;
+}
+
+.brave-card.is-active .brave-card__portrait-placeholder,
+.brave-card__trigger:hover .brave-card__portrait-placeholder {
+  transform: translateY(-18%) scale(1.22);
+}
+
+/* =====================================================================
+   5. BREAKPOINT — PORTRAIT TABLET (≥768px, portrait orientation)
+   Card grid: 3 rows in a 1 / 2 / 2 pattern — Неда alone, then
+   Вихрен+Веста, then Заки+Мишо. This matches DOM order exactly, so no
+   visual reordering is needed at this breakpoint.
+   ===================================================================== */
+@media (min-width: 768px) and (orientation: portrait) {
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    justify-items: center;
+    align-items: start;
+    gap: var(--space-4) var(--space-3);
+    max-width: 680px;
+  }
+
+  /* Неда (first in DOM) spans both columns to form the lone top row */
+  .card-row > li:first-child { grid-column: 1 / -1; }
+
+  .brave-card { width: min(300px, 34vw); }
+}
+
+/* =====================================================================
+   6. BREAKPOINT — LANDSCAPE TABLET / DESKTOP (≥1024px, or ≥768px landscape)
+   Cards move to a single row; visual order is remapped to the spec's
+   desktop reading order (Заки, Вихрен, Неда, Веста, Мишо) via the CSS
+   `order` property — DOM order stays as the mobile/portrait order.
+   Hero also gains the "peek" behavior so the top half of the cards is
+   visible above the fold.
+   ===================================================================== */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .hero {
+    min-height: calc(100vh - var(--card-peek-desktop));
+    padding-bottom: var(--space-3);
+  }
+
+  /* Tighten the gap between the hero's bottom edge and the Bravies
+     heading/cards, so the peek amount above is spent showing actual
+     card content rather than being eaten by section padding. */
+  .bravies {
+    padding-top: var(--space-2);
+    gap: var(--space-3);
+  }
+
+  .waitlist-form__row { flex-direction: row; align-items: stretch; }
+  .waitlist-form__input { flex: 1; }
+  .waitlist-form__button { flex-shrink: 0; }
+
+  .card-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: nowrap;
+    max-width: none;
+    gap: var(--space-3);
+  }
+
+  .card-row > li:first-child { grid-column: auto; }
+
+  .brave-card { width: clamp(160px, 13vw, 210px); }
+
+  /* Desktop/landscape-tablet visual order (see comment above and in
+     index.html near the card-row markup) */
+  .brave-card--zaki   { order: 1; }
+  .brave-card--vihren { order: 2; }
+  .brave-card--neda    { order: 3; }
+  .brave-card--vesta   { order: 4; }
+  .brave-card--misho   { order: 5; }
+}
+
+/* =====================================================================
+   7. BREAKPOINT — DESKTOP (≥1440px)
+   ===================================================================== */
+@media (min-width: 1440px) {
+  .hero {
+    min-height: calc(100vh - var(--card-peek-desktop-xl));
+  }
+
+  .hero__content { max-width: 720px; }
+
+  /* Keep the tightened top padding from the previous breakpoint — only
+     widen the side/bottom padding here, don't reset padding-top back up. */
+  .bravies {
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
+    padding-bottom: var(--space-6);
+  }
+
+  .card-row { gap: var(--space-4); }
+  .brave-card { width: clamp(180px, 11vw, 220px); }
+}

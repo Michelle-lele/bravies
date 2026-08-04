@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Смелчовци в беда — Записване в списъка на чакащите</title>
+  <meta name="description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта на Смелчовци в беда." />
+
+  <!-- Google Fonts: playful rounded display face for headlines + a clean
+       grotesk for body/UI text, matching the "bright, colorful, kids-friendly"
+       design system brief. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================= HERO SECTION ============================= -->
+  <header class="hero" id="hero">
+    <!-- Decorative clouds: purely visual, driven by scroll position in script.js -->
+    <div class="hero__clouds" aria-hidden="true">
+      <span class="cloud cloud--1"></span>
+      <span class="cloud cloud--2"></span>
+      <span class="cloud cloud--3"></span>
+      <span class="cloud cloud--4"></span>
+    </div>
+
+    <div class="hero__content">
+      <h1 class="hero__title">Смелчовци в беда</h1>
+
+      <p class="hero__subtitle">
+        Игра за умни действия в ситуации с (не)познати.
+      </p>
+
+      <!-- Waitlist form (hero instance). The bottom Wait-list Signup
+           section (Phase 4) will reuse this exact markup pattern and the
+           same validation/submit logic from script.js. -->
+      <form class="waitlist-form" id="hero-form" data-waitlist-form novalidate>
+        <div class="waitlist-form__row">
+          <label for="hero-email" class="sr-only">Твоят имейл адрес</label>
+          <input
+            type="email"
+            id="hero-email"
+            name="email"
+            class="waitlist-form__input"
+            placeholder="твоя@имейл.бг"
+            autocomplete="email"
+            inputmode="email"
+            required
+          />
+          <button type="submit" class="waitlist-form__button">
+            <span class="waitlist-form__button-label">Запиши се за първите 100</span>
+            <span class="waitlist-form__spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <!-- Live region so screen readers announce validation updates -->
+        <p class="waitlist-form__error" role="alert" aria-live="assertive"></p>
+      </form>
+
+      <!-- Success state: hidden by default, revealed by script.js after a
+           valid submission. Exact copy per spec §4. -->
+      <div class="success-message" role="status" aria-live="polite" hidden>
+        <svg class="success-message__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="success-message__text">Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= BRAVIES INTRO SECTION ============================= -->
+  <main>
+    <section class="bravies" id="bravies" aria-labelledby="bravies-heading">
+      <h2 class="bravies__intro" id="bravies-heading">
+        Твоето дете играе и учи със Смелчовците как да:
+      </h2>
+
+      <!--
+        DOM order matches the spec's tablet-portrait/mobile reading order
+        (Неда, Вихрен, Веста, Заки, Мишо), since that's the order sighted
+        and keyboard/screen-reader users encounter on the narrowest,
+        most common viewports. The desktop/landscape-tablet order
+        (Заки, Вихрен, Неда, Веста, Мишо) is applied purely visually via
+        the CSS `order` property at the relevant breakpoint — see the
+        ".bravies__order--desktop" comment in style.css for the mapping.
+        NOTE: this means desktop tab order won't visually match reading
+        order left-to-right; flagging this as a known accessibility
+        trade-off rather than silently deciding it's fine.
+      -->
+      <ul class="card-row" id="card-row">
+
+        <!-- Неда is the default-active card per spec: expanded state applied on load -->
+        <li class="brave-card brave-card--neda is-active" data-name="Неда">
+          <button type="button" class="brave-card__trigger" aria-expanded="true">
+            <span class="brave-card__portrait" aria-hidden="true">
+              <span class="brave-card__portrait-placeholder"><image src="media/neda.png" alt="Изображение: Неда" width="150px"></span>
+            </span>
+            <span class="brave-card__caption">
+              <span class="brave-card__name">Неда</span>
+              <span class="brave-card__bio">слуша вътрешния си глас и казва „Не!“.</span>
+            </span>
+          </button>
+        </li>
+
+        <li class="brave-card brave-card--vihren" data-name="Вихрен">
+          <button type="button" class="brave-card__trigger" aria-expanded="false">
+            <span class="brave-card__portrait" aria-hidden="true">
+              <span class="brave-card__portrait-placeholder">Изображение: Вихрен</span>
+            </span>
+            <span class="brave-card__caption">
+              <span class="brave-card__name">Вихрен</span>
+              <span class="brave-card__bio">бяга от опасностите като вихър.</span>
+            </span>
+          </button>
+        </li>
+
+        <li class="brave-card brave-card--vesta" data-name="Веста">
+          <button type="button" class="brave-card__trigger" aria-expanded="false">
+            <span class="brave-card__portrait" aria-hidden="true">
+              <span class="brave-card__portrait-placeholder">Изображение: Веста</span>
+            </span>
+            <span class="brave-card__caption">
+              <span class="brave-card__name">Веста</span>
+              <span class="brave-card__bio">споделя всичко на близките си.</span>
+            </span>
+          </button>
+        </li>
+
+        <li class="brave-card brave-card--zaki" data-name="Заки">
+          <button type="button" class="brave-card__trigger" aria-expanded="false">
+            <span class="brave-card__portrait" aria-hidden="true">
+              <span class="brave-card__portrait-placeholder">Изображение: Заки</span>
+            </span>
+            <span class="brave-card__caption">
+              <span class="brave-card__name">Заки</span>
+              <span class="brave-card__bio">знае всички хитрини на хората с лоши намерения.</span>
+            </span>
+          </button>
+        </li>
+
+        <li class="brave-card brave-card--misho" data-name="Мишо">
+          <button type="button" class="brave-card__trigger" aria-expanded="false">
+            <span class="brave-card__portrait" aria-hidden="true">
+              <span class="brave-card__portrait-placeholder">Изображение: Мишо</span>
+            </span>
+            <span class="brave-card__caption">
+              <span class="brave-card__name">Мишо</span>
+              <span class="brave-card__bio">се сеща винаги точно навреме какво трябва да направи.</span>
+            </span>
+          </button>
+        </li>
+
+      </ul>
+    </section>
+
+    <!--
+      PHASE BOUNDARY — sections below this point are built in later phases:
+      Phase 2: The Problem section, "What the game teaches?" section, How It
+               Works section
+      Phase 3: Testimonials section, Desired State section
+      Phase 4: FAQs section, Wait-list Signup section (bottom)
+      Phase 5: Integration pass (cross-section parallax/animation checks)
+    -->
+    <!-- NEXT-PHASE-INSERT-POINT -->
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
