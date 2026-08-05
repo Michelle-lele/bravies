@@ -349,7 +349,6 @@ input:focus-visible {
   width: min(320px, 78vw);
   aspect-ratio: var(--card-aspect);
   overflow: visible;
-  transition: transform 0.35s ease;
 }
 
 .brave-card::before {
@@ -437,7 +436,10 @@ input:focus-visible {
   gap: 0.2rem;
   height: 20%;
   min-height: 3.2em;
-  margin: 0 calc(var(--card-border-side) * -1) calc(var(--card-border-side) * -1);
+  margin: 0; /* trigger's box already matches the card's outer edge —
+    the border lives on a separate absolutely-positioned ::before, so no
+    offset is needed here (a previous negative-margin attempt caused the
+    caption to overshoot past the border on both sides + bottom) */
   padding: 0.5rem 0.75rem 0.6rem;
   overflow: hidden;
   background: var(--card-color, var(--color-zaki));
@@ -449,6 +451,8 @@ input:focus-visible {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--card-text-on-accent, var(--color-text-dark));
 }
 
@@ -460,21 +464,19 @@ input:focus-visible {
 }
 
 /* --- Activated state: hover (pointer devices), tap-toggle (via JS), and
-   default-applied to Неда per spec. Card grows slightly, caption expands
-   upward, portrait enlarges and overflows above the card's top edge. --- */
+   default-applied to Неда per spec. Caption expands upward and the
+   portrait enlarges/overflows above the card's top edge — the card
+   itself no longer scales up (removed per feedback: those two effects
+   alone read as plenty of "activation," a third (card growth) felt like
+   overkill). --- */
 .brave-card.is-active,
 .brave-card__trigger:hover {
   z-index: 5;
 }
 
-.brave-card.is-active,
-.brave-card:has(.brave-card__trigger:hover) {
-  transform: scale(1.06);
-}
-
 .brave-card.is-active .brave-card__caption,
 .brave-card__trigger:hover .brave-card__caption {
-  height: 58%;
+  height: 30%;
 }
 
 .brave-card.is-active .brave-card__portrait-placeholder,
