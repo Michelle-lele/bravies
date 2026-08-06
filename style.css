@@ -157,31 +157,84 @@ input:focus-visible {
 }
 
 /* --- Clouds ---
-   Each cloud's outward travel distance/direction is a CSS variable so
-   script.js only ever needs to update one shared --scroll-progress value
-   (0 at top of hero, 1 at bottom) on the container; direction/reversal on
-   scroll-up falls out naturally since transform is a direct function of
-   scroll position, not an incremental animation. */
+   Real artwork (4 supplied PNGs), swapped in for the earlier CSS-blob
+   placeholders. Each cloud's outward travel distance/direction is a CSS
+   variable so script.js only ever needs to update one shared
+   --scroll-progress value (0 at top of hero, 1 at bottom) on the
+   container; direction/reversal on scroll-up falls out naturally since
+   transform is a direct function of scroll position, not an incremental
+   animation.
+
+   Placement: clouds are pinned to the four corners of the hero and
+   allowed to bleed slightly past its edges (hero has overflow:hidden),
+   rather than floating near the center — this keeps them clear of the
+   headline/subhead/form column at every viewport width without needing
+   to fade or dim the artwork. z-index sits below .hero__content (1), so
+   even if a viewport is narrow enough for some overlap, text always
+   renders on top. */
 .hero__clouds {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
   --scroll-progress: 0; /* updated by script.js */
 }
 
 .cloud {
   position: absolute;
-  background: var(--color-surface-white);
-  border-radius: 45% 55% 60% 40% / 55% 45% 55% 45%;
-  opacity: 0.9;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   transform: translateX(calc(var(--scroll-progress) * var(--cloud-distance) * var(--cloud-dir)));
 }
 
-.cloud--1 { width: 140px; height: 60px; top: 12%; left: 8%;  --cloud-dir: -1; --cloud-distance: 220px; }
-.cloud--2 { width: 100px; height: 46px; top: 24%; right: 12%; --cloud-dir: 1;  --cloud-distance: 260px; }
-.cloud--3 { width: 90px;  height: 40px; bottom: 22%; left: 15%; --cloud-dir: -1; --cloud-distance: 180px; }
-.cloud--4 { width: 120px; height: 52px; bottom: 14%; right: 8%; --cloud-dir: 1;  --cloud-distance: 200px; }
+.cloud--1 {
+  background-image: url('assets/clouds/cloud-1.png');
+  width: clamp(190px, 42vw, 320px);
+  aspect-ratio: 2.84 / 1;
+  top: 2%;
+  left: 2%;
+  --cloud-dir: -1;
+  --cloud-distance: 160px;
+}
+.cloud--2 {
+  background-image: url('assets/clouds/cloud-2.png');
+  width: clamp(130px, 26vw, 210px);
+  aspect-ratio: 2.31 / 1;
+  top: 16%;
+  right: 4%;
+  transform: scaleX(-1) translateX(calc(var(--scroll-progress) * var(--cloud-distance) * var(--cloud-dir)));
+  --cloud-dir: 1;
+  --cloud-distance: 190px;
+}
+.cloud--3 {
+  background-image: url('assets/clouds/cloud-3.png');
+  width: clamp(100px, 18vw, 160px);
+  aspect-ratio: 2.25 / 1;
+  bottom: 20%;
+  left: 9%;
+  --cloud-dir: -1;
+  --cloud-distance: 140px;
+}
+.cloud--4 {
+  background-image: url('assets/clouds/cloud-4.png');
+  width: clamp(240px, 46vw, 400px);
+  aspect-ratio: 3.01 / 1;
+  bottom: -2%;
+  right: -3%;
+  --cloud-dir: 1;
+  --cloud-distance: 170px;
+}
+
+/* Larger still with more room to spread out once the viewport has real
+   side space to spare. */
+@media (min-width: 900px) {
+  .cloud--1 { top: 4%;  left: 3%;  width: clamp(260px, 20vw, 380px); }
+  .cloud--2 { top: 10%; right: 6%; width: clamp(170px, 13vw, 250px); }
+  .cloud--3 { bottom: 24%; left: 12%; width: clamp(120px, 9vw, 190px); }
+  .cloud--4 { bottom: -4%; right: -2%; width: clamp(320px, 26vw, 480px); }
+}
 
 .hero__content {
   position: relative;
