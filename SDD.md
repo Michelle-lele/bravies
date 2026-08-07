@@ -290,6 +290,47 @@ source of truth where it's more specific than the sections above.
   enlarged/active portrait (including Неда's default-active state)
   reach up into the heading text above the card row.
 
+### Bug fix: caption/portrait sizing coupling caused hover to shrink instead of enlarge
+- After the previous grid-based fix, a new issue surfaced: portrait and
+  caption shared a grid track, so growing the caption on hover
+  (70px→128px) shrank the portrait's own track — and since the image's
+  rendered size was computed from that shrinking box (max-height:100%
+  of it), the underlying shrink sometimes outweighed the `scale()`
+  transform meant to enlarge it. Net visible effect: characters looked
+  like they were shrinking on hover instead of growing.
+- Fix: restructured so the portrait fills the entire card at all times
+  (`position: absolute; inset: 0`) and the caption is a bottom overlay
+  on top of it (`position: absolute; left/right/bottom: 0`), rather than
+  the two sharing a row/track. The portrait's box is now constant
+  regardless of caption state, so `scale()`/`translateY()` are the only
+  thing changing on hover — reliable by construction, not just by
+  tuned values. Verified numerically (not just visually) that Заки's
+  rendered image height increases on hover (276px → 320px).
+- Same fix incidentally gives characters more visible room by default
+  (portrait no longer gives up a fixed share of the card to the caption
+  whether the caption needs it or not), which also addressed a separate
+  "too much blank space at the bottom" complaint once the expanded
+  caption height was reduced (128px → 100px) at the same time.
+- Applied the identical `min-height: 0` fix one level up, to
+  `.brave-card` itself — it's a flex item of `.card-row`, so without
+  this override its default content-based minimum height could make
+  cards render at different heights depending on content, overriding
+  the `aspect-ratio`. Verified all 5 cards report identical heights at
+  both mobile (506.97px) and desktop (300px) widths.
+- Hover/active enlarge amount tuned to `scale(1.16) / translateY(-14%)`
+  — smaller than an earlier `1.22/-18%` attempt (which reached into the
+  heading above) but restored to a genuinely-enlarging effect (an
+  intermediate `1.1/-10%` attempt was the one that exposed the
+  shrink bug above).
+
+### Hero section — mobile/desktop spacing
+- Mobile: increased top padding so the H1 isn't flush against the
+  viewport edge.
+- Desktop/landscape-tablet: the email input was stretching to fill the
+  full hero-content width (~700px) via `flex: 1` with no cap — capped
+  at `max-width: 320px` and the form row centered, rather than
+  letting it fill all available space.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

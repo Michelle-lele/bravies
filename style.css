@@ -155,7 +155,8 @@ input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-4) var(--space-2) var(--space-3);
+  padding: var(--space-5) var(--space-2) var(--space-3); /* extra top
+    room on mobile — was feeling squeezed against the viewport edge */
   background: var(--color-hero-bg);
   color: var(--color-hero-text);
 }
@@ -436,6 +437,12 @@ input:focus-visible {
   position: relative;
   width: min(320px, 78vw);
   aspect-ratio: var(--card-aspect);
+  min-height: 0; /* .brave-card is itself a flex item of .card-row; without
+    this, its default content-based minimum height could override the
+    aspect-ratio and make cards different heights depending on how their
+    contents happened to render — the same class of bug fixed earlier
+    for .brave-card__portrait, one level up */
+  flex-shrink: 0;
   overflow: visible;
 }
 
@@ -462,17 +469,7 @@ input:focus-visible {
 .brave-card__trigger {
   position: relative;
   z-index: 1;
-  display: grid;
-  /* minmax(0, 1fr) is the critical part: without the explicit 0 minimum,
-     a grid/flex track defaults to sizing around its content's natural
-     size, which let the portrait image ignore max-height entirely and
-     overflow past the card (this was the actual bug behind "Заки's
-     photo is bigger than the card" — his art's aspect ratio just made
-     the pre-existing overflow visible; every card had the same latent
-     issue). The caption row is a fixed height instead of a percentage,
-     which is what let it silently miscompute to a sliver with no bio
-     text showing and no visible hover expansion. */
-  grid-template-rows: minmax(0, 1fr) auto;
+  display: block;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -483,16 +480,29 @@ input:focus-visible {
   color: inherit;
 }
 
-/* Rectangular character-image placeholder (per spec, not circular) */
+/* Rectangular character-image placeholder (per spec, not circular).
+   Fills the ENTIRE card (not just the space above the caption) and the
+   caption sits on top of it as an absolutely-positioned overlay — see
+   .brave-card__caption below. This is what makes the hover/active
+   enlarge effect actually work: previously the portrait's own box
+   shrank whenever the caption grew (they shared a grid track), so the
+   image's rendered size shrank at the same moment the enlarge scale()
+   was applied, and the shrink sometimes outweighed the scale — net
+   result looked like the image getting SMALLER on hover. With the
+   portrait's box now constant, scale()/translateY() are the only thing
+   changing, so the enlarge is reliable. It also means more of the card
+   is available for the character art by default (the caption only
+   covers what it needs, rather than the portrait giving up a fixed
+   share of the card whether the caption needs it or not). */
 .brave-card__portrait {
-  min-height: 0; /* see comment on .brave-card__trigger above */
-  min-width: 0;
-  position: relative;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding: var(--space-2) var(--space-2) 0.5rem;
-  overflow: visible; /* allows the placeholder to pop outside the frame on activation */
+  overflow: visible; /* allows the character art to pop outside the frame on activation */
 }
 
 .brave-card__portrait-img {
@@ -515,15 +525,16 @@ input:focus-visible {
    bio's first line); expands upward on activation to reveal the full
    bio. */
 .brave-card__caption {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  height: 70px; /* fixed px, not a %, so it can't silently miscompute
-    inside the grid — this was the actual cause of "text not visible /
-    hover does nothing": a percentage here was resolving against an
-    unstable value once the portrait track above it was overflowing */
+  height: 70px; /* fixed px, not a %, so it can't silently miscompute —
+    see the note on .brave-card__portrait above */
   padding: 0.5rem 0.75rem 0.6rem;
   overflow: hidden;
   background: var(--card-color, var(--color-zaki));
@@ -560,12 +571,12 @@ input:focus-visible {
 
 .brave-card.is-active .brave-card__caption,
 .brave-card__trigger:hover .brave-card__caption {
-  height: 128px;
+  height: 100px;
 }
 
 .brave-card.is-active .brave-card__portrait-img,
 .brave-card__trigger:hover .brave-card__portrait-img {
-  transform: translateY(-10%) scale(1.1);
+  transform: translateY(-14%) scale(1.16);
 }
 
 /* Mobile: no tap-to-expand. Every card already renders full-width and
@@ -577,7 +588,7 @@ input:focus-visible {
    visually at this width). */
 @media (max-width: 767px) {
   .brave-card__caption {
-    height: 128px; /* same value as the desktop "expanded" state */
+    height: 100px; /* same value as the desktop "expanded" state */
   }
 
   .brave-card.is-active .brave-card__portrait-img,
@@ -634,7 +645,10 @@ input:focus-visible {
     gap: var(--space-3);
   }
 
-  .waitlist-form__row { flex-direction: row; align-items: stretch; }
+  .waitlist-form__row { flex-direction: row; align-items: stretch; justify-content: center; }
+  .waitlist-form__input { max-width: 320px; } /* was stretching to fill the
+    full hero-content width (~700px) — far wider than any real email
+    address needs */
   .waitlist-form__input { flex: 1; }
   .waitlist-form__button { flex-shrink: 0; }
 
