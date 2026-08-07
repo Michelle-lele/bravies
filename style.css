@@ -92,6 +92,8 @@
      laptop viewports. */
   --card-peek-desktop: 300px;
   --card-peek-desktop-xl: 340px; /* slightly more room available at ≥1440px */
+  --card-peek-mobile: 230px;           /* new: same "peek" treatment, tuned smaller for mobile viewports */
+  --card-peek-tablet-portrait: 260px;  /* new: portrait tablet cards render larger than mobile */
 }
 
 /* ---------------------------------------------------------------------
@@ -147,11 +149,13 @@ input:focus-visible {
 .hero {
   position: relative;
   overflow: hidden;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--card-peek-mobile)); /* peek: top of the first
+    Bravies card is visible above the fold on every breakpoint, not just
+    desktop — tuned per breakpoint below */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5) var(--space-2);
+  padding: var(--space-4) var(--space-2) var(--space-3);
   background: var(--color-hero-bg);
   color: var(--color-hero-text);
 }
@@ -210,10 +214,10 @@ input:focus-visible {
 }
 .cloud--3 {
   background-image: url('assets/clouds/cloud-3.png');
-  width: clamp(100px, 18vw, 160px);
+  width: clamp(180px, 38vw, 300px);
   aspect-ratio: 2.25 / 1;
-  bottom: 20%;
-  left: 9%;
+  bottom: 16%;
+  left: 6%;
   --cloud-dir: -1;
   --cloud-distance: 140px;
 }
@@ -232,8 +236,26 @@ input:focus-visible {
 @media (min-width: 900px) {
   .cloud--1 { top: 4%;  left: 3%;  width: clamp(260px, 20vw, 380px); }
   .cloud--2 { top: 10%; right: 6%; width: clamp(170px, 13vw, 250px); }
-  .cloud--3 { bottom: 24%; left: 12%; width: clamp(120px, 9vw, 190px); }
+  .cloud--3 { bottom: 20%; left: 8%; width: clamp(220px, 22vw, 340px); }
   .cloud--4 { bottom: -4%; right: -2%; width: clamp(320px, 26vw, 480px); }
+}
+
+/* Mobile: the hero is already tight (peek behavior above eats into its
+   height), so half the clouds are dropped rather than risk crowding the
+   headline/form. The two bottom-corner clouds are kept (small), since
+   they sit furthest from the centered text/form column. */
+@media (max-width: 767px) {
+  .cloud--1, .cloud--2 { display: none; }
+  .cloud--3 {
+    width: clamp(120px, 42vw, 190px);
+    bottom: 12%;
+    left: -4%;
+  }
+  .cloud--4 {
+    width: clamp(130px, 46vw, 200px);
+    bottom: -4%;
+    right: -6%;
+  }
 }
 
 .hero__content {
@@ -367,12 +389,12 @@ input:focus-visible {
    ===================================================================== */
 .bravies {
   position: relative;
-  padding: var(--space-5) var(--space-2);
+  padding: var(--space-3) var(--space-2) var(--space-5);
   background: var(--color-surface-white);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .bravies__intro {
@@ -380,7 +402,20 @@ input:focus-visible {
   font-weight: 700;
   text-align: center;
   max-width: 32ch;
+  margin-bottom: var(--space-2);
   color: var(--color-text-dark);
+}
+
+/* From portrait-tablet width upward, the heading needs to read as one
+   line rather than wrap and compete with the cards for vertical room
+   (feedback: it was "too big" relative to the card row). Sized down and
+   allowed its natural width instead of wrapping at 32ch. */
+@media (min-width: 768px) {
+  .bravies__intro {
+    font-size: clamp(1.1rem, 2.3vw, 1.6rem);
+    max-width: none;
+    white-space: nowrap;
+  }
 }
 
 /* --- Card row: mobile default = single column, one card per row --- */
@@ -427,8 +462,17 @@ input:focus-visible {
 .brave-card__trigger {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  /* minmax(0, 1fr) is the critical part: without the explicit 0 minimum,
+     a grid/flex track defaults to sizing around its content's natural
+     size, which let the portrait image ignore max-height entirely and
+     overflow past the card (this was the actual bug behind "Заки's
+     photo is bigger than the card" — his art's aspect ratio just made
+     the pre-existing overflow visible; every card had the same latent
+     issue). The caption row is a fixed height instead of a percentage,
+     which is what let it silently miscompute to a sliver with no bio
+     text showing and no visible hover expansion. */
+  grid-template-rows: minmax(0, 1fr) auto;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -441,7 +485,8 @@ input:focus-visible {
 
 /* Rectangular character-image placeholder (per spec, not circular) */
 .brave-card__portrait {
-  flex: 1;
+  min-height: 0; /* see comment on .brave-card__trigger above */
+  min-width: 0;
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -450,26 +495,14 @@ input:focus-visible {
   overflow: visible; /* allows the placeholder to pop outside the frame on activation */
 }
 
-.brave-card__portrait-placeholder {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0.5rem;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(30, 36, 51, 0.06),
-    rgba(30, 36, 51, 0.06) 10px,
-    rgba(30, 36, 51, 0.02) 10px,
-    rgba(30, 36, 51, 0.02) 20px
-  );
-  border: 2px dashed rgba(30, 36, 51, 0.25);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-small);
-  font-weight: 700;
+.brave-card__portrait-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(30, 36, 51, 0.18));
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform: translateY(0) scale(1);
 }
@@ -487,12 +520,10 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  height: 20%;
-  min-height: 3.2em;
-  margin: 0; /* trigger's box already matches the card's outer edge —
-    the border lives on a separate absolutely-positioned ::before, so no
-    offset is needed here (a previous negative-margin attempt caused the
-    caption to overshoot past the border on both sides + bottom) */
+  height: 70px; /* fixed px, not a %, so it can't silently miscompute
+    inside the grid — this was the actual cause of "text not visible /
+    hover does nothing": a percentage here was resolving against an
+    unstable value once the portrait track above it was overflowing */
   padding: 0.5rem 0.75rem 0.6rem;
   overflow: hidden;
   background: var(--card-color, var(--color-zaki));
@@ -510,10 +541,10 @@ input:focus-visible {
 }
 
 .brave-card__bio {
-  font-size: 0.8rem;
-  line-height: 1.3;
+  font-size: 0.95rem;
+  line-height: 1.32;
   color: var(--card-text-on-accent, var(--color-text-dark));
-  opacity: 0.85;
+  opacity: 0.95;
 }
 
 /* --- Activated state: hover (pointer devices), tap-toggle (via JS), and
@@ -529,12 +560,30 @@ input:focus-visible {
 
 .brave-card.is-active .brave-card__caption,
 .brave-card__trigger:hover .brave-card__caption {
-  height: 30%;
+  height: 128px;
 }
 
-.brave-card.is-active .brave-card__portrait-placeholder,
-.brave-card__trigger:hover .brave-card__portrait-placeholder {
-  transform: translateY(-18%) scale(1.22);
+.brave-card.is-active .brave-card__portrait-img,
+.brave-card__trigger:hover .brave-card__portrait-img {
+  transform: translateY(-10%) scale(1.1);
+}
+
+/* Mobile: no tap-to-expand. Every card already renders full-width and
+   full-height in a single column, so the collapsed/expanded distinction
+   (useful for picking one card out of a crowded desktop row) doesn't
+   apply — all captions show their full text by default, and portraits
+   stay at their base size regardless of the .is-active class the JS
+   still toggles (harmless now, since it no longer changes anything
+   visually at this width). */
+@media (max-width: 767px) {
+  .brave-card__caption {
+    height: 128px; /* same value as the desktop "expanded" state */
+  }
+
+  .brave-card.is-active .brave-card__portrait-img,
+  .brave-card__trigger:hover .brave-card__portrait-img {
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* =====================================================================
@@ -544,6 +593,10 @@ input:focus-visible {
    visual reordering is needed at this breakpoint.
    ===================================================================== */
 @media (min-width: 768px) and (orientation: portrait) {
+  .hero {
+    min-height: calc(100vh - var(--card-peek-tablet-portrait));
+  }
+
   .card-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(220px, 1fr));

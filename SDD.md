@@ -164,3 +164,145 @@ Please generate the code for the following three files separately:
 1\. \`index.html\` (Semantic structure, linked CSS/JS assets)  
 2\. \`style.css\` (Mobile-first styles, explicit tablet/desktop breakpoints, design variables)  
 3\. \`script.js\` (Form validation, event handlers, mock API states)  
+
+---
+
+## 6. Implementation Decisions Log
+
+This section records decisions made during the build that the spec above
+left ambiguous, plus changes made in response to review feedback. It is
+maintained continuously as the project progresses — treat it as the
+source of truth where it's more specific than the sections above.
+
+### Build approach
+- Built in 5 phases: (1) Hero + Bravies Intro, (2) Problem + What It
+  Teaches + How It Works, (3) Testimonials + Desired State, (4) FAQ +
+  Wait-list Signup, (5) integration pass. **Currently in Phase 1.**
+- Tech stack: vanilla JS confirmed as sufficient — no framework needed
+  (no shared state across components, no routing, no dynamic data
+  fetching; a framework's runtime weight works against a
+  conversion-focused landing page).
+
+### Design tokens
+- Brand hex values corrected from the original spec: Веста `#278C5D`
+  (was `#278CSD`), Мишо `#E5E1D6` (was `#ESE1D6`).
+- Fonts: Baloo 2 (display/headings — rounded, playful) + Nunito Sans
+  (body/UI text), chosen to fit the "bright, colorful, kids-friendly"
+  design brief; not specified in the original spec.
+- Section background colors for Problem / What It Teaches / How It
+  Works / Testimonials / Desired State / FAQ / Wait-list Signup are
+  **still undecided** — the spec fixes the alternation order but not
+  actual hex values. Placeholder tokens are stubbed in `style.css` under
+  a `TODO (Phase 2)` comment; real values needed before those sections
+  are built.
+
+### Hero section
+- "15 degrees" corner rounding (from an earlier spec draft) was
+  interpreted as `border-radius: 15px`; current spec already states
+  `15px` directly, so this is resolved.
+- Hero "peek" behavior: the hero's height is intentionally reduced
+  (rather than 100vh) at every breakpoint so the top of the Bravies
+  section — heading + start of the first card — is visible above the
+  fold, not just on desktop. Peek amounts (tunable via CSS variables):
+  mobile `230px`, portrait tablet `260px`, landscape tablet/desktop
+  `300px`, ≥1440px `340px`. This was an explicit request to prioritize
+  character-preview visibility over keeping the hero comfortable on
+  short viewports.
+- Clouds: implemented with the 5 real PNGs supplied (not CSS shapes).
+  Movement is a direct function of scroll position within the hero (one
+  `--scroll-progress` CSS variable, 0–1), so scrolling back up naturally
+  reverses the drift — no separate "scroll up" logic needed. Clouds are
+  intentionally varied in size or placement (large one bottom-right,
+  the previously-too-small bottom-left one enlarged) so they read as
+  naturally scattered rather than four uniform copies. On mobile, three
+  of the four clouds are hidden entirely and the fourth (bottom-right)
+  is shown small, since the tightened mobile hero leaves little safe
+  room without risking overlap with the text/form column.
+
+### Bravies Intro section
+- Card aspect ratio: `3:5` (width:height), matching "cards are 6cm x
+  10cm" literally — this replaced an earlier `1:6` misreading from a
+  draft spec that produced impractically tall cards.
+- Character image placeholders were rectangular (not circular), per
+  spec wording, and have since been **replaced with the real supplied
+  character artwork** (`assets/characters/{zaki,vihren,neda,vesta,misho}.png`).
+- The "thicker bottom border" is implemented as the caption's own solid
+  background (colored with the card's brand accent), not a literal CSS
+  border — a border can only ever render as a thin stripe, not a
+  readable panel holding name + bio text.
+- Per-character caption text color is chosen for contrast against that
+  character's accent (white text on Заки/Веста's darker colors, dark
+  text on Вихрен/Неда/Мишо's lighter colors) — not specified in the
+  spec, needed for legibility.
+- Character names render in all caps (`text-transform: uppercase`).
+- Card activation (hover/tap/default-active Неда): expands the caption
+  and enlarges the portrait; the card itself does **not** scale up
+  (an earlier version did — removed per feedback as one effect too
+  many). Expanded caption height is roughly half of an earlier, overly
+  tall first attempt.
+- All cards render at the same size regardless of which is active —
+  card width is controlled once by a shared `.brave-card` rule, not
+  overridden per character.
+- Mobile has no tap-to-expand: since every card is already full-width
+  in a single column, the collapsed/expanded distinction doesn't apply.
+  All captions show full text by default and portraits stay at base
+  scale, regardless of the `.is-active` class (which JS still toggles,
+  but which no longer changes anything visually below 768px).
+- Card DOM order matches the spec's mobile/tablet-portrait order
+  (Неда, Вихрен, Веста, Заки, Мишо); the desktop/landscape-tablet order
+  (Заки, Вихрен, Неда, Веста, Мишо) is applied via the CSS `order`
+  property rather than reordering the DOM. **Known trade-off:** desktop
+  keyboard/tab order won't match left-to-right visual order. Flagged,
+  not yet resolved with a final decision.
+- Portrait vs. landscape tablet is detected with a combination of
+  `min-width` and `orientation` media queries (not just width), so an
+  iPad in portrait gets the 3-row layout and the same device rotated to
+  landscape gets the single row.
+- Intro heading (`"Твоето дете играе и учи..."`) is sized down and set
+  to `white-space: nowrap` from 768px upward so it reads as one line
+  and doesn't compete with the card row for vertical space — the
+  original fluid heading scale left it too large relative to the cards.
+- Bio text size increased from an initial `0.8rem` to `0.95rem` for
+  readability, per feedback.
+
+### Bug fix: card image overflow + non-working caption expand
+- Root cause found by rendering the page and inspecting computed layout
+  directly (not guessed from a screenshot): `.brave-card__portrait` was
+  a flex item with the browser's default `min-height: auto`, which
+  ignores `max-height` on the image inside and sizes the item to the
+  image's natural aspect-fitted height instead. This mostly went
+  unnoticed because most characters' art happened to roughly fit, but
+  Заки's narrower/taller art (240×700 vs. ~395×700 for the others)
+  exposed it clearly — his portrait area rendered at ~431px tall inside
+  a 300px card. The same underlying instability is what made the
+  caption's percentage-based height unreliable (no stable space to
+  compute against), which is why it never visibly expanded on hover.
+- Fix: rebuilt the card's internal layout on CSS Grid
+  (`grid-template-rows: minmax(0, 1fr) auto`) with an explicit
+  `min-height: 0` on the portrait, and switched the caption from a
+  percentage height to fixed pixel values (`70px` collapsed / `128px`
+  expanded) instead of relying on percentage-of-flex-content sizing.
+  Verified after the fix, across all 5 cards, that no portrait overflows
+  its card and that hover/active reliably resizes the caption.
+- Also reduced the activation enlarge amount (`scale(1.22)` →
+  `scale(1.1)`, `translateY(-18%)` → `translateY(-10%)`) and added
+  margin below the section heading, since the previous amount let an
+  enlarged/active portrait (including Неда's default-active state)
+  reach up into the heading text above the card row.
+
+### Open items carried forward (not yet resolved)
+- Two invalid hex codes in early spec drafts are now fixed in this
+  version's Design System section — no longer open.
+- Section background colors (Problem → Wait-list Signup) — still TBD.
+- Icon source for the Desired State section's 2×2 grid (custom SVG vs.
+  icon library) — not yet decided, relevant when Phase 3 is built.
+- Bottom-of-page Wait-list Signup section confirmed to reuse the exact
+  same form/copy pattern as the hero form (per spec: "Same form for
+  email and submit button as in the hero section") — `script.js`
+  already supports this via a reusable `initWaitlistForm()` called once
+  per `[data-waitlist-form]` element, so Phase 4 just needs to add the
+  markup with that attribute.
+- Desktop card tab-order vs. visual-order mismatch (see above) — no
+  decision made yet on whether to address it (e.g. via a JS-based DOM
+  reorder) or accept it.
+
