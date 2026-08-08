@@ -226,8 +226,8 @@ input:focus-visible {
   background-image: url('assets/clouds/cloud-4.png');
   width: clamp(240px, 46vw, 400px);
   aspect-ratio: 3.01 / 1;
-  bottom: -2%;
-  right: -3%;
+  bottom: 6%;
+  right: 4%;
   --cloud-dir: 1;
   --cloud-distance: 170px;
 }
@@ -238,7 +238,7 @@ input:focus-visible {
   .cloud--1 { top: 4%;  left: 3%;  width: clamp(260px, 20vw, 380px); }
   .cloud--2 { top: 10%; right: 6%; width: clamp(170px, 13vw, 250px); }
   .cloud--3 { bottom: 20%; left: 8%; width: clamp(220px, 22vw, 340px); }
-  .cloud--4 { bottom: -4%; right: -2%; width: clamp(320px, 26vw, 480px); }
+  .cloud--4 { bottom: 8%; right: 6%; width: clamp(320px, 26vw, 480px); }
 }
 
 /* Mobile: the hero is already tight (peek behavior above eats into its
@@ -254,8 +254,8 @@ input:focus-visible {
   }
   .cloud--4 {
     width: clamp(130px, 46vw, 200px);
-    bottom: -4%;
-    right: -6%;
+    bottom: 4%;
+    right: 2%;
   }
 }
 
@@ -312,6 +312,10 @@ input:focus-visible {
 .waitlist-form__input:focus { border-color: var(--color-neda); background: rgba(255, 255, 255, 0.22); }
 .waitlist-form__input.is-invalid { border-color: var(--color-error); }
 
+@media (max-width: 767px) {
+  .waitlist-form__input { text-align: center; }
+}
+
 /* Light-background variant, for use once the bottom signup section
    (Phase 4) sits on a white or pastel background instead of the hero's
    deep blue. Not applied yet — reserved here so Phase 4 doesn't have to
@@ -360,9 +364,22 @@ input:focus-visible {
   min-height: 1.25rem;
   margin-top: var(--space-1);
   font-size: var(--font-size-small);
-  font-weight: 600;
-  color: #FFD9D2; /* light tint of --color-error, readable on the hero's blue */
+  font-weight: 700;
+  color: #7F1D1D; /* dark, saturated red for strong contrast against its own white chip */
   text-align: left;
+}
+
+/* A solid white chip behind the message guarantees contrast regardless
+   of the section's own background color (blue hero today, unknown
+   colors in later sections) — a plain light-red text color wasn't
+   prominent enough against the hero's blue. Only shown when there's
+   actually an error to display, via :not(:empty) (script.js sets/clears
+   this element's textContent directly). */
+.waitlist-form__error:not(:empty) {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  background: var(--color-surface-white);
+  border-radius: 8px;
 }
 
 /* --- Success message: fades in once script.js removes [hidden] and adds .is-visible --- */
@@ -533,13 +550,13 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  height: 70px; /* fixed px, not a %, so it can't silently miscompute —
-    see the note on .brave-card__portrait above */
+  height: 130px; /* fits the longest bio (Мишо's wraps to 3 lines) without
+    clipping it — verified via each card's actual content scrollHeight,
+    not just eyeballed */
   padding: 0.5rem 0.75rem 0.6rem;
   overflow: hidden;
   background: var(--card-color, var(--color-zaki));
   border-radius: 0 0 var(--radius-card) var(--radius-card);
-  transition: height 0.35s ease;
 }
 
 .brave-card__name {
@@ -559,19 +576,14 @@ input:focus-visible {
 }
 
 /* --- Activated state: hover (pointer devices), tap-toggle (via JS), and
-   default-applied to Неда per spec. Caption expands upward and the
-   portrait enlarges/overflows above the card's top edge — the card
-   itself no longer scales up (removed per feedback: those two effects
-   alone read as plenty of "activation," a third (card growth) felt like
-   overkill). --- */
+   default-applied to Неда per spec. Only the portrait enlarges/overflows
+   above the card's top edge now — the caption no longer changes size on
+   activation (removed per feedback: text should always be fully visible,
+   not slide up on hover), and the card itself doesn't scale up either
+   (removed earlier for the same "one effect is enough" reasoning). --- */
 .brave-card.is-active,
 .brave-card__trigger:hover {
   z-index: 5;
-}
-
-.brave-card.is-active .brave-card__caption,
-.brave-card__trigger:hover .brave-card__caption {
-  height: 100px;
 }
 
 .brave-card.is-active .brave-card__portrait-img,
@@ -579,18 +591,12 @@ input:focus-visible {
   transform: translateY(-14%) scale(1.16);
 }
 
-/* Mobile: no tap-to-expand. Every card already renders full-width and
-   full-height in a single column, so the collapsed/expanded distinction
-   (useful for picking one card out of a crowded desktop row) doesn't
-   apply — all captions show their full text by default, and portraits
-   stay at their base size regardless of the .is-active class the JS
-   still toggles (harmless now, since it no longer changes anything
-   visually at this width). */
+/* Mobile: no tap-to-enlarge either. Every card already renders
+   full-width in a single column with full text always visible (see
+   above), so portraits stay at their base size regardless of the
+   .is-active class the JS still toggles (harmless now, since it no
+   longer changes anything visually at this width). */
 @media (max-width: 767px) {
-  .brave-card__caption {
-    height: 100px; /* same value as the desktop "expanded" state */
-  }
-
   .brave-card.is-active .brave-card__portrait-img,
   .brave-card__trigger:hover .brave-card__portrait-img {
     transform: translateY(0) scale(1);

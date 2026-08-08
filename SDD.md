@@ -331,6 +331,43 @@ source of truth where it's more specific than the sections above.
   at `max-width: 320px` and the form row centered, rather than
   letting it fill all available space.
 
+### Card text: removed the hover/tap expand-collapse entirely
+- Per feedback, the "collapsed name + peek of bio, expands on
+  hover/tap" behavior from the original spec was removed — every card
+  now shows its full name + bio at all times, at every breakpoint (no
+  more distinction between mobile's always-expanded state and
+  desktop's hover-to-expand state; they're now the same behavior
+  everywhere). The caption's height is a fixed `130px` with no
+  transition or toggle.
+- The portrait enlarge-on-hover/tap effect was **not** removed — only
+  the text-sliding behavior was. Неда still renders enlarged by default
+  (`.is-active`), other cards enlarge on hover, and mobile still
+  disables the portrait enlarge specifically (per the earlier "no
+  tap-to-enlarge on mobile" decision).
+- While verifying this change, found (via actual computed
+  `scrollHeight`, not just eyeballing) that Мишо's bio — the longest of
+  the five, wrapping to 3 lines — was being clipped by the caption's
+  `overflow: hidden` at the height that fit everyone else's shorter,
+  2-line bios. Increased the fixed caption height (100px → 130px) to
+  fit the longest one; verified afterward that all 5 cards' content now
+  fits without clipping.
+
+### Error message contrast
+- The error message's light-red text color read as too low-contrast
+  against the hero's blue background. Rather than just picking a
+  different text color (which would need re-tuning again once later
+  sections put this same form on unknown background colors), gave it a
+  solid white pill background with dark, saturated red text
+  (`#7F1D1D`) — contrast is now guaranteed regardless of what's behind
+  it. Only renders when there's actually an error to show, via the
+  `:not(:empty)` selector (script.js sets/clears this element's
+  `textContent` directly, so this needs no JS changes).
+
+### Minor polish
+- Mobile: email input placeholder/text centered (was left-aligned).
+- Bottom-right cloud repositioned — moved up and further toward center
+  at every breakpoint (was tucked hard into the corner).
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.
