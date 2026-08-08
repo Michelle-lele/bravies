@@ -368,6 +368,27 @@ source of truth where it's more specific than the sections above.
 - Bottom-right cloud repositioned — moved up and further toward center
   at every breakpoint (was tucked hard into the corner).
 
+### Card redesign: portraits always enlarged, halo replaces hover-enlarge
+- Мишо's bio shortened ("се сеща винаги точно навреме..." →
+  "се сеща навреме...") — it was the longest of the five and had been
+  forcing a taller shared caption height for everyone. Caption height
+  reduced accordingly: `110px` desktop, `90px` mobile (mobile cards are
+  wider, so the same text wraps to fewer lines and needs less room).
+  Verified via `scrollHeight` that no card's text clips at either size.
+- The portrait's enlarged size — previously only applied on hover/active
+  — is now the **permanent default for every card**, all the time. There
+  is no more "base" vs. "hover" size distinction for the portrait.
+- Replaced the old hover/active treatment (portrait enlarge) with a
+  halo/spotlight glow behind the card: a blurred radial gradient in the
+  card's own accent color, hidden by default and shown on hover or when
+  `.is-active` (Неда by default, per spec). Implemented as `::after`
+  with `z-index: -1`, with `isolation: isolate` on `.brave-card` so the
+  negative z-index stays scoped to that card instead of sinking behind
+  neighboring cards. Tuned to `blur(28px)` / `opacity: 0.85` after a
+  first attempt (`blur(6px)`/`0.55`) proved too subtle to read as an
+  intentional glow — confirmed visible via a cropped, zoomed render
+  before/after, not just assumed from the property values.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

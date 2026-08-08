@@ -461,6 +461,30 @@ input:focus-visible {
     for .brave-card__portrait, one level up */
   flex-shrink: 0;
   overflow: visible;
+  isolation: isolate; /* scopes the halo's negative z-index (below) to
+    this card only, so it can't sink behind sibling cards or the page */
+}
+
+/* Halo / spotlight glow behind the card on hover or when active (Неда
+   by default). Sits behind everything else in the card via z-index:-1
+   — isolation:isolate above keeps that contained to this card's own
+   stacking context instead of falling behind neighboring cards. */
+.brave-card::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--card-color, var(--color-zaki)) 0%, transparent 65%);
+  opacity: 0;
+  filter: blur(28px);
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.brave-card.is-active::after,
+.brave-card:hover::after {
+  opacity: 0.85;
 }
 
 .brave-card::before {
@@ -500,17 +524,9 @@ input:focus-visible {
 /* Rectangular character-image placeholder (per spec, not circular).
    Fills the ENTIRE card (not just the space above the caption) and the
    caption sits on top of it as an absolutely-positioned overlay — see
-   .brave-card__caption below. This is what makes the hover/active
-   enlarge effect actually work: previously the portrait's own box
-   shrank whenever the caption grew (they shared a grid track), so the
-   image's rendered size shrank at the same moment the enlarge scale()
-   was applied, and the shrink sometimes outweighed the scale — net
-   result looked like the image getting SMALLER on hover. With the
-   portrait's box now constant, scale()/translateY() are the only thing
-   changing, so the enlarge is reliable. It also means more of the card
-   is available for the character art by default (the caption only
-   covers what it needs, rather than the portrait giving up a fixed
-   share of the card whether the caption needs it or not). */
+   .brave-card__caption below. The portrait's box is constant regardless
+   of caption/hover state, which is what makes sizing reliable (see the
+   longer note in the decisions log for the history of bugs this fixed). */
 .brave-card__portrait {
   position: absolute;
   inset: 0;
@@ -519,7 +535,7 @@ input:focus-visible {
   align-items: flex-end;
   justify-content: center;
   padding: var(--space-2) var(--space-2) 0.5rem;
-  overflow: visible; /* allows the character art to pop outside the frame on activation */
+  overflow: visible; /* allows the character art to pop outside the frame */
 }
 
 .brave-card__portrait-img {
@@ -530,17 +546,20 @@ input:focus-visible {
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 6px 10px rgba(30, 36, 51, 0.18));
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform: translateY(0) scale(1);
+  /* Per feedback: the enlarged size that used to only apply on
+     hover/active is now the permanent default for every card — there
+     is no separate "hover" transform for the portrait any more. The
+     "activated" visual treatment is now the halo/spotlight glow
+     (.brave-card::after, above) instead of a size change. */
+  transform: translateY(-14%) scale(1.16);
 }
 
 /* Caption bar: THIS is the spec's "thicker bottom border" — rather than
    an actual CSS border (which can only ever be a thin stripe, not a
    readable text panel), it's a solid-colored block using the card's
    accent color, sized to sit flush against the card's rounded bottom
-   corners and side borders. Collapsed by default (name + a peek of the
-   bio's first line); expands upward on activation to reveal the full
-   bio. */
+   corners and side borders. Always shows the full name + bio (no more
+   collapsed/expand states — removed per earlier feedback). */
 .brave-card__caption {
   position: absolute;
   left: 0;
@@ -550,13 +569,18 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  height: 130px; /* fits the longest bio (Мишо's wraps to 3 lines) without
-    clipping it — verified via each card's actual content scrollHeight,
-    not just eyeballed */
+  height: 110px; /* shorter now that Мишо's bio (previously the longest,
+    forcing a taller shared height) was trimmed to match the others */
   padding: 0.5rem 0.75rem 0.6rem;
   overflow: hidden;
   background: var(--card-color, var(--color-zaki));
   border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+/* Mobile cards are wider (up to 320px vs ~160-220px on desktop), so the
+   same bio text wraps to fewer lines and needs less vertical room. */
+@media (max-width: 767px) {
+  .brave-card__caption { height: 90px; }
 }
 
 .brave-card__name {
@@ -575,32 +599,9 @@ input:focus-visible {
   opacity: 0.95;
 }
 
-/* --- Activated state: hover (pointer devices), tap-toggle (via JS), and
-   default-applied to Неда per spec. Only the portrait enlarges/overflows
-   above the card's top edge now — the caption no longer changes size on
-   activation (removed per feedback: text should always be fully visible,
-   not slide up on hover), and the card itself doesn't scale up either
-   (removed earlier for the same "one effect is enough" reasoning). --- */
 .brave-card.is-active,
-.brave-card__trigger:hover {
+.brave-card:hover {
   z-index: 5;
-}
-
-.brave-card.is-active .brave-card__portrait-img,
-.brave-card__trigger:hover .brave-card__portrait-img {
-  transform: translateY(-14%) scale(1.16);
-}
-
-/* Mobile: no tap-to-enlarge either. Every card already renders
-   full-width in a single column with full text always visible (see
-   above), so portraits stay at their base size regardless of the
-   .is-active class the JS still toggles (harmless now, since it no
-   longer changes anything visually at this width). */
-@media (max-width: 767px) {
-  .brave-card.is-active .brave-card__portrait-img,
-  .brave-card__trigger:hover .brave-card__portrait-img {
-    transform: translateY(0) scale(1);
-  }
 }
 
 /* =====================================================================
