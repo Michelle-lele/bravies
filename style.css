@@ -37,18 +37,13 @@
   --color-error: #D9402A;
   --color-success: #278C5D; /* reuses Веста's brand green — already reads as "success" */
 
-  /*
-    TODO (Phase 2): the spec calls for the Problem / "What it teaches" /
-    How it works / Testimonials / Desired state / FAQ / Wait-list Signup
-    sections to alternate colorful/white backgrounds, with colorful ones
-    "complementary to the Bravies brand colors" — but no explicit hex
-    values are given for these. Tokens below are placeholders to be
-    filled in when those sections are actually built, so every later
-    phase pulls from one shared source instead of picking colors ad hoc.
-    --color-section-colorful-1: TBD;
-    --color-section-colorful-2: TBD;
-    --color-section-colorful-3: TBD;
-  */
+  /* --- Section background colors (Phase 2) ---
+     Bold, straight from the Bravie brand palette — matching the hero's
+     full-saturation-block + white-text pattern rather than soft pastel
+     tints. Alternates with white per spec, continuing from Bravies'
+     white background. */
+  --color-section-problem-bg: #725598; /* Заки's purple */
+  --color-section-works-bg: #278C5D;   /* Веста's green */
 
   /* --- Type --- */
   --font-display: 'Baloo 2', system-ui, sans-serif;  /* rounded, playful — headlines */
@@ -705,4 +700,265 @@ input:focus-visible {
 
   .card-row { gap: var(--space-4); }
   .brave-card { width: clamp(180px, 11vw, 220px); }
+}
+
+/* =====================================================================
+   PHASE 2 — Problem / What It Teaches / How It Works
+   Added additively; nothing above this point was restructured. Reuses
+   existing tokens (--font-display, --font-size-h2, --space-*,
+   --card-aspect, --radius-card, --color-* brand values) rather than
+   introducing a parallel system.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Shared scroll-reveal (Intersection Observer driven, see script.js).
+   Starts hidden/offset, animates in once when scrolled into view.
+--------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------------------------------------------------------------------
+   PROBLEM SECTION
+--------------------------------------------------------------------- */
+.problem {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-section-problem-bg);
+  color: var(--color-hero-text);
+}
+
+.problem__inner {
+  max-width: 62ch;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.problem__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+}
+
+.problem__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  opacity: 0.96;
+}
+
+/* ---------------------------------------------------------------------
+   WHAT IT TEACHES SECTION
+--------------------------------------------------------------------- */
+.teaches {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-surface-white);
+  color: var(--color-text-dark);
+}
+
+.teaches__inner {
+  max-width: 62ch;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.teaches__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+}
+
+.teaches__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  text-align: left; /* the list reads awkwardly centered; left-align the
+    body copy once the list appears, still inside the centered column */
+}
+
+.teaches__list-intro {
+  font-weight: 700;
+  margin-top: var(--space-1);
+}
+
+.teaches__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.teaches__list li {
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+/* Custom checkmark bullets, cycling through the 5 brand colors for a
+   bit of the "bright, colorful" character instead of plain black dots —
+   there are exactly 5 list items here, a happy coincidence with the 5
+   Bravie colors, but the cycle is written generically (nth-child modulo)
+   so it wouldn't break if the copy gains or loses an item later. */
+.teaches__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-surface-white);
+  background: var(--color-zaki);
+  border-radius: 50%;
+}
+.teaches__list li:nth-child(5n+2)::before { background: var(--color-vihren); }
+.teaches__list li:nth-child(5n+3)::before { background: var(--color-neda); color: var(--color-text-dark); }
+.teaches__list li:nth-child(5n+4)::before { background: var(--color-vesta); }
+.teaches__list li:nth-child(5n+5)::before { background: var(--color-misho); color: var(--color-text-dark); }
+
+/* ---------------------------------------------------------------------
+   HOW IT WORKS SECTION
+--------------------------------------------------------------------- */
+.how-it-works {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-section-works-bg);
+  color: var(--color-hero-text);
+}
+
+.how-it-works__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.how-it-works__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.how-it-works__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Zigzag: step 1 and 3 show text-left/card-right (normal row order,
+   matching DOM order); step 2 flips to text-right/card-left via
+   row-reverse — visual only, so DOM/reading order (text before card)
+   stays the same for every step regardless of screen side. */
+.how-it-works__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.how-it-works__step--2 {
+  flex-direction: row-reverse;
+}
+
+.how-it-works__text {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.how-it-works__number {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(248, 250, 252, 0.18);
+  border: 2px solid rgba(248, 250, 252, 0.5);
+}
+
+.how-it-works__text p {
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.how-it-works__card-wrap {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Card placeholder: reuses the same aspect ratio token as the Bravies
+   cards (--card-aspect, 3:5 per spec) and the same "played on a table"
+   tilt technique (a small per-step rotate()) rather than inventing a
+   new approach. No real artwork yet, so this is a dashed-pattern
+   placeholder in the same spirit as the Bravies cards' pre-image state —
+   NOTE for whichever phase adds real card art here: wrap it in an <img>
+   sized with width/height:100% + object-fit:contain (not max-width/
+   max-height + auto), and if it ends up nested in any flex/grid
+   container, set min-height:0 on that container. Skipping max-width/
+   max-height here caused a real overflow bug on the Bravies cards
+   (documented in SDD.md) — this note exists so it isn't rediscovered. */
+.how-it-works__card {
+  width: min(220px, 60vw);
+  aspect-ratio: var(--card-aspect);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-2);
+  background: var(--color-surface-white);
+  border: 3px dashed rgba(30, 36, 51, 0.25);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.how-it-works__step--1 .how-it-works__card { transform: rotate(-3deg); }
+.how-it-works__step--2 .how-it-works__card { transform: rotate(2.5deg); }
+.how-it-works__step--3 .how-it-works__card { transform: rotate(-2deg); }
+
+/* Mobile: card stacks ABOVE its related text (spec's explicit mobile
+   rule) — a visual-only reorder via `order`, DOM/reading order is
+   unchanged (still text markup before card markup either way). Zigzag
+   direction is dropped in favor of a single stacked column, since
+   left/right sides don't mean anything at this width. */
+@media (max-width: 767px) {
+  .how-it-works__step,
+  .how-it-works__step--2 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .how-it-works__card-wrap { order: -1; }
+
+  .how-it-works__text { text-align: center; align-items: center; }
 }

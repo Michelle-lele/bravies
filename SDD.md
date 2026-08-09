@@ -423,6 +423,49 @@ source of truth where it's more specific than the sections above.
   not just desktop, since the request wasn't scoped to one — worth
   confirming that's the intended scope.
 
+## Phase 2 — Problem / What It Teaches / How It Works (complete)
+
+- Section background colors resolved (was an open TODO): Problem =
+  `#725598` (Заки's purple), What It Teaches = `#F8FAFC` (white, same as
+  Bravies), How It Works = `#278C5D` (Веста's green) — bold, direct
+  brand colors with white text, matching the hero's block-color pattern
+  rather than the soft-tint approach considered earlier.
+- Fixed a duplicated clause in the spec's "How it works" step 2 copy
+  ("Всеки избира карта от ръката си" was repeated) — confirmed
+  unintentional, used once.
+- Problem and What It Teaches have no spec'd responsive/mobile layout
+  (only How It Works does) — defaulted both to a single centered text
+  column at every breakpoint, consistent with how the rest of the page
+  handles plain prose.
+- What It Teaches' 5-item list uses custom checkmark bullets that cycle
+  through the 5 Bravie brand colors (a coincidence of count, written
+  generically via `nth-child` so it wouldn't break if the list changes
+  length later).
+- How It Works zigzag: implemented via `flex-direction: row-reverse` on
+  step 2 only (steps 1 and 3 use normal row) rather than reordering
+  markup — DOM/reading order stays "text before card" for every step
+  regardless of visual side, so screen reader/keyboard order doesn't
+  flip per step.
+- Card placeholders reuse the existing `--card-aspect` (3:5) token and
+  the same per-element `rotate()` tilt technique already used on the
+  Bravies cards, rather than a new approach. Left a comment for whoever
+  adds real card art here to use `width/height:100% + object-fit:
+  contain` (not `max-width/max-height + auto`) and check for the
+  min-height:0 flex/grid issue if nested — pointing at the Bravies-card
+  bug history so it isn't rediscovered from scratch.
+- Mobile: How It Works cards stack above their related text via
+  `order: -1` on the card wrapper (visual-only; DOM order unchanged).
+- Scroll-in-up animation implemented via a generic `.reveal` class +
+  IntersectionObserver (not a scroll listener) — reveals once per
+  element and unobserves afterward (one-time entrance, not a repeating
+  effect), and is skipped entirely under `prefers-reduced-motion`.
+- Verified by rendering (not just reading the CSS): scroll-reveal
+  actually toggles per-element as they enter the viewport; mobile card
+  stacking order confirmed via computed `getBoundingClientRect`; no
+  Phase 1 regression at tablet width (an initial "broken hero" result
+  was traced to a test-script timing artifact from `scroll-behavior:
+  smooth`, not an actual bug, after re-testing with a fresh page load).
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

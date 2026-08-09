@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAllWaitlistForms();
   initBravieCards();
   initHeroClouds();
+  initScrollReveal();
 });
 
 /* ---------------------------------------------------------------------
@@ -187,4 +188,41 @@ function initHeroClouds() {
 
   window.addEventListener('resize', updateProgress);
   updateProgress();
+}
+
+/* ---------------------------------------------------------------------
+   4. SCROLL REVEAL (Phase 2 — Problem / What It Teaches / How It Works)
+   Any element with the `.reveal` class starts hidden/offset via CSS and
+   animates in once it scrolls into view, using IntersectionObserver
+   rather than a scroll listener (cheaper — no per-frame math needed).
+   Each element reveals once and is then unobserved: the intent is a
+   one-time "this content is arriving" entrance, not a repeating effect
+   every time the user scrolls past it again.
+--------------------------------------------------------------------- */
+function initScrollReveal() {
+  const revealEls = document.querySelectorAll('.reveal');
+  if (revealEls.length === 0) return;
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    // CSS already shows these at full opacity/position with no transition
+    // under prefers-reduced-motion, so there's nothing for the observer
+    // to do — skip creating it entirely.
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      obs.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.15,
+    rootMargin: '0px 0px -10% 0px', // trigger slightly before the element
+      // fully reaches the bottom edge of the viewport, so it doesn't feel
+      // like it's arriving at the very last possible moment
+  });
+
+  revealEls.forEach((el) => observer.observe(el));
 }
