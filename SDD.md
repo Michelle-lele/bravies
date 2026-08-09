@@ -389,6 +389,40 @@ source of truth where it's more specific than the sections above.
   intentional glow — confirmed visible via a cropped, zoomed render
   before/after, not just assumed from the property values.
 
+### Portrait size: desktop-only enlarge, halo replaced with a pulse
+- The larger portrait size is now scoped to the "landscape tablet /
+  desktop" breakpoint only (`min-width: 1024px`, or `min-width: 768px`
+  + landscape) — the same breakpoint already used for the single-row
+  card layout and hero peek. Mobile and portrait tablet now render
+  portraits at the small/contained size instead. **Note:** this means
+  landscape tablets get the "desktop" treatment too, consistent with
+  how every other desktop-specific rule in this file already draws the
+  line — flagging in case "desktop" was meant more narrowly (e.g.
+  ≥1440px only).
+- Removed the halo/spotlight effect entirely per feedback (not a fan of
+  it) — `.brave-card::after` and the `isolation: isolate` it needed are
+  gone.
+- Replaced it with a brief "pulse": on hover or when active (Неда by
+  default), the already-enlarged desktop portrait briefly grows a bit
+  further (scale 1.16 → 1.22) and settles back, via a `@keyframes`
+  animation rather than a persistent state change. Desktop-only, per
+  feedback. Verified via computed transform values mid-animation (not
+  just visually) that it actually peaks and returns.
+
+### Cloud position
+- Bottom-right cloud moved back toward the right edge (only the
+  horizontal position changed — vertical position from the previous
+  "move up" request was left as-is, per feedback).
+
+### Card tilt ("played on a table" effect)
+- Added a small, per-character rotation (1.5°–2.5°, alternating
+  direction: Заки -2.5°, Вихрен 2°, Неда -1.5°, Веста 2.5°, Мишо -2°) to
+  each card via its existing modifier class, so the row reads like
+  playing cards casually set down rather than a perfectly aligned grid.
+  Applied at every breakpoint (mobile stack, tablet grid, desktop row),
+  not just desktop, since the request wasn't scoped to one — worth
+  confirming that's the intended scope.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

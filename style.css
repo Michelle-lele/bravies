@@ -227,7 +227,7 @@ input:focus-visible {
   width: clamp(240px, 46vw, 400px);
   aspect-ratio: 3.01 / 1;
   bottom: 6%;
-  right: 4%;
+  right: -5%;
   --cloud-dir: 1;
   --cloud-distance: 170px;
 }
@@ -238,7 +238,7 @@ input:focus-visible {
   .cloud--1 { top: 4%;  left: 3%;  width: clamp(260px, 20vw, 380px); }
   .cloud--2 { top: 10%; right: 6%; width: clamp(170px, 13vw, 250px); }
   .cloud--3 { bottom: 20%; left: 8%; width: clamp(220px, 22vw, 340px); }
-  .cloud--4 { bottom: 8%; right: 6%; width: clamp(320px, 26vw, 480px); }
+  .cloud--4 { bottom: 8%; right: -3%; width: clamp(320px, 26vw, 480px); }
 }
 
 /* Mobile: the hero is already tight (peek behavior above eats into its
@@ -255,7 +255,7 @@ input:focus-visible {
   .cloud--4 {
     width: clamp(130px, 46vw, 200px);
     bottom: 4%;
-    right: 2%;
+    right: -6%;
   }
 }
 
@@ -461,30 +461,6 @@ input:focus-visible {
     for .brave-card__portrait, one level up */
   flex-shrink: 0;
   overflow: visible;
-  isolation: isolate; /* scopes the halo's negative z-index (below) to
-    this card only, so it can't sink behind sibling cards or the page */
-}
-
-/* Halo / spotlight glow behind the card on hover or when active (Неда
-   by default). Sits behind everything else in the card via z-index:-1
-   — isolation:isolate above keeps that contained to this card's own
-   stacking context instead of falling behind neighboring cards. */
-.brave-card::after {
-  content: '';
-  position: absolute;
-  inset: -18%;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--card-color, var(--color-zaki)) 0%, transparent 65%);
-  opacity: 0;
-  filter: blur(28px);
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-}
-
-.brave-card.is-active::after,
-.brave-card:hover::after {
-  opacity: 0.85;
 }
 
 .brave-card::before {
@@ -500,12 +476,18 @@ input:focus-visible {
 
 /* Per-character accent color, plus a matching text color chosen for
    contrast against that specific accent (some brand colors are light
-   enough to need dark text, others need white — see each value below). */
-.brave-card--zaki   { --card-color: var(--color-zaki);   --card-text-on-accent: var(--color-surface-white); }
-.brave-card--vihren { --card-color: var(--color-vihren); --card-text-on-accent: var(--color-text-dark); }
-.brave-card--neda    { --card-color: var(--color-neda);   --card-text-on-accent: var(--color-text-dark); }
-.brave-card--vesta   { --card-color: var(--color-vesta);  --card-text-on-accent: var(--color-surface-white); }
-.brave-card--misho   { --card-color: var(--color-misho);  --card-text-on-accent: var(--color-text-dark); }
+   enough to need dark text, others need white — see each value below).
+   Each also gets a small, individually-tuned tilt — alternating
+   positive/negative by a couple of degrees — so the row reads like
+   playing cards casually set down on a table rather than a stiff,
+   perfectly-aligned grid. Kept deliberately subtle; applied at every
+   breakpoint (mobile stack, tablet grid, desktop row) for a consistent
+   feel throughout, not just on desktop. */
+.brave-card--zaki   { --card-color: var(--color-zaki);   --card-text-on-accent: var(--color-surface-white); transform: rotate(-2.5deg); }
+.brave-card--vihren { --card-color: var(--color-vihren); --card-text-on-accent: var(--color-text-dark);   transform: rotate(2deg); }
+.brave-card--neda    { --card-color: var(--color-neda);   --card-text-on-accent: var(--color-text-dark);   transform: rotate(-1.5deg); }
+.brave-card--vesta   { --card-color: var(--color-vesta);  --card-text-on-accent: var(--color-surface-white); transform: rotate(2.5deg); }
+.brave-card--misho   { --card-color: var(--color-misho);  --card-text-on-accent: var(--color-text-dark);   transform: rotate(-2deg); }
 
 .brave-card__trigger {
   position: relative;
@@ -546,12 +528,10 @@ input:focus-visible {
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 6px 10px rgba(30, 36, 51, 0.18));
-  /* Per feedback: the enlarged size that used to only apply on
-     hover/active is now the permanent default for every card — there
-     is no separate "hover" transform for the portrait any more. The
-     "activated" visual treatment is now the halo/spotlight glow
-     (.brave-card::after, above) instead of a size change. */
-  transform: translateY(-14%) scale(1.16);
+  /* Small/contained size by default (mobile + both tablet orientations).
+     The larger size — and the hover pulse — are desktop-only, added in
+     the "landscape tablet / desktop" breakpoint further down. */
+  transform: translateY(0) scale(1);
 }
 
 /* Caption bar: THIS is the spec's "thicker bottom border" — rather than
@@ -672,6 +652,29 @@ input:focus-visible {
   .card-row > li:first-child { grid-column: auto; }
 
   .brave-card { width: clamp(160px, 13vw, 210px); }
+
+  /* Desktop/landscape-tablet only: portraits render at the larger size
+     (moved here from the old universal default — mobile and portrait
+     tablet now stay at the small/contained size instead). */
+  .brave-card__portrait-img {
+    transform: translateY(-14%) scale(1.16);
+  }
+
+  /* Replaces the earlier halo/spotlight effect (removed per feedback)
+     with a brief "pulse": a small, quick enlarge-then-settle-back on
+     hover or when active (Неда by default) — not a persistent size
+     change, just a short flourish on top of the desktop base size
+     above. Desktop-only, per feedback. */
+  @keyframes brave-card-pulse {
+    0%   { transform: translateY(-14%) scale(1.16); }
+    50%  { transform: translateY(-14%) scale(1.22); }
+    100% { transform: translateY(-14%) scale(1.16); }
+  }
+
+  .brave-card.is-active .brave-card__portrait-img,
+  .brave-card__trigger:hover .brave-card__portrait-img {
+    animation: brave-card-pulse 0.5s ease;
+  }
 
   /* Desktop/landscape-tablet visual order (see comment above and in
      index.html near the card-row markup) */
