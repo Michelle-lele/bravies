@@ -466,6 +466,53 @@ source of truth where it's more specific than the sections above.
   was traced to a test-script timing artifact from `scroll-behavior:
   smooth`, not an actual bug, after re-testing with a fresh page load).
 
+### What It Teaches: reworked into Bravie-tagged icon+color tiles
+- Content reorganized from one continuous text block (intro paragraph +
+  plain list + two trailing paragraphs) into 5 icon+color point tiles,
+  each echoing one Bravie's brand color from the Bravies Intro section
+  above — but **names are not repeated** here, per feedback: only the
+  color/icon pairing serves as the visual callback.
+- Copy for each point was substantially reworked (not just re-tagged) —
+  see the conversation for the full before/after. Notably, Вихрен's
+  point was split out from an overlap with Веста's: Вихрен's is about
+  recognizing safe *unfamiliar* adults/places to turn to in the moment
+  (e.g. uniformed staff), Веста's is about sharing *afterward* with
+  people the child already knows. This distinction was a deliberate
+  clarification from the person, not something inferable from the
+  original spec text alone.
+- Intro paragraph ("изградена върху съвременните препоръки...") and
+  outro paragraph ("не се преподава - изиграва се...") were kept
+  unchanged, per explicit instruction.
+- Icons are placeholders (dashed circle, tinted to the point's color)
+  pending the person's real draft icon assets — same "swap in an <img>
+  with width/height:100% + object-fit:contain" guidance as the How It
+  Works card placeholders.
+- Grid uses `repeat(auto-fit, minmax(260px, 1fr))` — tuned specifically
+  so 5 items settle into a balanced 3+2 layout rather than an uneven
+  4+1 (an earlier `220px` minimum produced the 4+1 split; caught by
+  rendering, not assumed from the CSS).
+- Content-strategy note from the conversation, worth preserving: there
+  was deliberate consideration of whether icon+text tiles here would
+  "give away" too much of the actual game mechanic. Conclusion: the
+  5 Bravie trait icons are already fully public (shown with full
+  name+lesson in the Bravies Intro section higher up), so reusing them
+  here adds no new spoiler surface — reinforcement, not new disclosure.
+  This section's text was already this specific in the original spec
+  (naming exact principles like the family password), so the icon
+  pairing doesn't increase specificity either. This reasoning does
+  **not** extend to the actual situation/response game cards (e.g. the
+  "Бягам към хората" / "Замръзвам" card art the person shared as a
+  reference image) — showing the *complete* set of those was flagged as
+  a real spoiler concern (shows the mechanic's full breadth, not just
+  flavor) and was explicitly decided against; at most 1-2 as
+  illustrative texture, if any, elsewhere on the page.
+- Also discussed and decided against: adding a background silhouette of
+  an adult looming over a child to the Problem section, for fear/tone
+  reasons (composition reads as threatening regardless of subtlety, and
+  clashes with the Desired State section's calm-payoff framing later on
+  the page). No code change resulted; noted here since it's a real
+  content-direction decision, not just implementation detail.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

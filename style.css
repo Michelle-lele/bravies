@@ -769,73 +769,86 @@ input:focus-visible {
 }
 
 .teaches__inner {
-  max-width: 62ch;
+  max-width: 1100px; /* wider than Problem's column — needs room for the
+    point-tile grid below, not just prose */
   margin: 0 auto;
-  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-4);
 }
 
 .teaches__heading {
   font-size: var(--font-size-h2);
   font-weight: 700;
+  text-align: center;
 }
 
 .teaches__body {
+  max-width: 62ch;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   font-size: var(--font-size-body);
   line-height: 1.6;
-  text-align: left; /* the list reads awkwardly centered; left-align the
-    body copy once the list appears, still inside the centered column */
+  text-align: center;
 }
 
-.teaches__list-intro {
-  font-weight: 700;
-  margin-top: var(--space-1);
-}
-
-.teaches__list {
+/* Point tiles: each echoes one Bravie's icon + brand color from the
+   Bravies Intro section (see index.html comment — names aren't repeated
+   here, the color/icon pairing alone is the callback). Colors cycle via
+   nth-child in the same order as the Bravies Intro cards' DOM order
+   (Неда, Вихрен, Веста, Заки, Мишо) so the two sections visually rhyme;
+   written generically (nth-child modulo, same technique as the earlier
+   checkmark-bullet version this replaces) so it wouldn't break if a
+   point is added or removed later. */
+.teaches__points {
   list-style: none;
   margin: 0;
   padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+
+.teaches__point {
+  --point-color: var(--color-neda);
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-}
-
-.teaches__list li {
-  position: relative;
-  padding-left: 1.75rem;
-}
-
-/* Custom checkmark bullets, cycling through the 5 brand colors for a
-   bit of the "bright, colorful" character instead of plain black dots —
-   there are exactly 5 list items here, a happy coincidence with the 5
-   Bravie colors, but the cycle is written generically (nth-child modulo)
-   so it wouldn't break if the copy gains or loses an item later. */
-.teaches__list li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  top: 0.05em;
-  width: 1.25rem;
-  height: 1.25rem;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-surface-white);
-  background: var(--color-zaki);
-  border-radius: 50%;
+  gap: var(--space-1);
+  text-align: center;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--point-color) 10%, var(--color-surface-white));
+  border: 2px solid color-mix(in srgb, var(--point-color) 35%, transparent);
 }
-.teaches__list li:nth-child(5n+2)::before { background: var(--color-vihren); }
-.teaches__list li:nth-child(5n+3)::before { background: var(--color-neda); color: var(--color-text-dark); }
-.teaches__list li:nth-child(5n+4)::before { background: var(--color-vesta); }
-.teaches__list li:nth-child(5n+5)::before { background: var(--color-misho); color: var(--color-text-dark); }
+
+.teaches__point:nth-child(5n+2) { --point-color: var(--color-vihren); }
+.teaches__point:nth-child(5n+3) { --point-color: var(--color-vesta); }
+.teaches__point:nth-child(5n+4) { --point-color: var(--color-zaki); }
+.teaches__point:nth-child(5n+5) { --point-color: var(--color-misho); }
+
+/* Icon placeholder — swap for the real draft icon assets when ready.
+   Sized/shaped so a dropped-in <img> (or inline SVG) just needs
+   width/height:100% + object-fit:contain, same guidance as the
+   How It Works card-image placeholder note above. */
+.teaches__point-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--point-color) 60%, transparent);
+  background: color-mix(in srgb, var(--point-color) 18%, var(--color-surface-white));
+}
+
+.teaches__point p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
 
 /* ---------------------------------------------------------------------
    HOW IT WORKS SECTION
