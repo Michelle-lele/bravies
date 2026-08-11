@@ -513,6 +513,41 @@ source of truth where it's more specific than the sections above.
   the page). No code change resulted; noted here since it's a real
   content-direction decision, not just implementation detail.
 
+### What It Teaches: 6th tile, box restyle, per-tile reveal
+- Added a 6th point tile for the Help/Buddy cards — a "joker" category
+  not tied to any single Bravie (usable in place of any character's
+  card). New turquoise token `--color-buddy: #2FB6B0`, matching the
+  person's draft card art color. Copy is a first draft, not yet
+  reviewed/revised by the person (flagged in a code comment) — covers
+  both halves mentioned: asking for help is a reasonable choice (not
+  weakness), and in a buddy pair only one of the two needs to spot the
+  right reaction. Grid math worked out cleanly: 6 items at the existing
+  `minmax(260px, 1fr)` settle into a 3+3 grid (same mechanism as the
+  earlier 5-item 3+2 fix).
+- Tile restyle, per feedback: interior is solid white now (was a pastel
+  tint of the point color), border is the full-strength brand color
+  (was a 35%-opacity tint), 3px.
+- Icon badge enlarged (56px → 84px) and repositioned to straddle the
+  card's top edge — 2/3 of its height above the box, 1/3 inside —
+  instead of sitting inline above the text. Implemented via absolute
+  positioning + a shared `--icon-size` custom property (defined once on
+  `.teaches__points`, inherited down to each tile) so the badge size and
+  the grid's top clearance space both derive from one value. Needed a
+  follow-up fix after first render: the top row's badges were
+  overlapping the intro paragraph above the grid, since the shared
+  section gap didn't account for the badges poking upward — added
+  clearance via `margin-top` on the grid itself, sized directly from
+  `--icon-size`. Caught and fixed by rendering, not assumed correct
+  from the CSS.
+- Scroll reveal changed from one animation for the whole tile grid to
+  one per tile: the `.reveal` class moved from the wrapping `<ul>` to
+  each `<li>`. No JS changes needed — `initScrollReveal()` already
+  queries all `.reveal` elements generically, so it now just observes 6
+  elements instead of 1. Verified via each tile's own `is-visible`
+  class state mid-scroll (top row revealed before the bottom row was
+  even in view) that tiles genuinely animate in independently, not
+  simultaneously.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.
