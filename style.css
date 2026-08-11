@@ -813,12 +813,14 @@ input:focus-visible {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-3);
+  column-gap: var(--space-3);
   --icon-size: 84px;
-  /* Extra clearance above the grid so the first row's icon badges (which
-     poke up 2/3 of their height above their own box) don't overlap the
-     paragraph above — the shared .teaches__inner gap alone isn't enough
-     for that. */
+  /* Row gap needs to be bigger than column gap: each row's icon badges
+     poke up 2/3 of their height above their own box, so without extra
+     clearance they touch (or overlap) the bottom of the row above. */
+  row-gap: calc(var(--icon-size) * 2 / 3 + var(--space-2));
+  /* Same clearance need for the very first row, against the paragraph
+     above the grid instead of another row. */
   margin-top: calc(var(--icon-size) * 2 / 3 - var(--space-4));
 }
 
@@ -860,8 +862,7 @@ input:focus-visible {
   height: var(--icon-size);
   flex-shrink: 0;
   border-radius: 50%;
-  border: 2px dashed color-mix(in srgb, var(--point-color) 60%, transparent);
-  background: color-mix(in srgb, var(--point-color) 18%, var(--color-surface-white));
+  background: var(--point-color);
 }
 
 .teaches__point p {
