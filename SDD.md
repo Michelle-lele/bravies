@@ -548,6 +548,33 @@ source of truth where it's more specific than the sections above.
   even in view) that tiles genuinely animate in independently, not
   simultaneously.
 
+### What It Teaches: icon spacing + solid icon color
+- Row 2's icon badges were touching row 1's boxes — the grid's uniform
+  `gap` wasn't accounting for badges poking up 2/3 of their height above
+  their own box on every row, not just the first. Split into separate
+  `row-gap` (sized with the same `--icon-size`-based clearance math used
+  for the top-of-grid fix) and `column-gap` (unchanged), so every row
+  boundary gets the clearance it needs.
+- Icon placeholder changed from a tinted/dashed circle to a solid fill
+  in the tile's brand color, per feedback.
+
+### How It Works: step titles + section height reduction
+- Each step's copy was already one run-on sentence-group in a single
+  `<p>`; split into a title (the first sentence — uppercase, yellow
+  `--color-neda` accent, own line) and one `<p class="...__step-line">`
+  per remaining sentence, each on its own line. Chose yellow specifically
+  because it reads clearly against this section's green background and
+  reuses an existing brand color rather than introducing a new one-off
+  accent.
+- Section was running 2+ screens tall on desktop — per feedback, reduced
+  to ≤1.5 screens. The card placeholder's width was the single biggest
+  lever (its 3:5 aspect-ratio means every pixel of width becomes 1.67px
+  of height): shrunk from `min(220px, 60vw)` to `min(130px, 36vw)`.
+  Combined with tightening the section's padding, heading margin, and
+  inter-step gap (all `--space-5` → `--space-4`), measured section
+  height dropped to ~910px in a 900px-tall viewport (~1 screen) —
+  verified via actual `getBoundingClientRect()`, not estimated.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.

@@ -875,7 +875,7 @@ input:focus-visible {
    HOW IT WORKS SECTION
 --------------------------------------------------------------------- */
 .how-it-works {
-  padding: var(--space-5) var(--space-2);
+  padding: var(--space-4) var(--space-2);
   background: var(--color-section-works-bg);
   color: var(--color-hero-text);
 }
@@ -889,7 +889,7 @@ input:focus-visible {
   font-size: var(--font-size-h2);
   font-weight: 700;
   text-align: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .how-it-works__steps {
@@ -898,7 +898,7 @@ input:focus-visible {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 /* Zigzag: step 1 and 3 show text-left/card-right (normal row order,
@@ -918,7 +918,7 @@ input:focus-visible {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0.3rem;
 }
 
 .how-it-works__number {
@@ -933,12 +933,30 @@ input:focus-visible {
   border-radius: 50%;
   background: rgba(248, 250, 252, 0.18);
   border: 2px solid rgba(248, 250, 252, 0.5);
+  margin-bottom: 0.2rem;
 }
 
-.how-it-works__text p {
-  font-size: var(--font-size-body);
-  line-height: 1.6;
+/* First sentence of each step is its title: uppercase, accent color,
+   own line — per feedback, distinguishing it from the plain
+   explanatory sentences that follow (each of which also gets its own
+   line, rather than running together as one paragraph). Yellow
+   (--color-neda) reads clearly against this section's green
+   background and keeps the accent tied to the existing brand palette
+   rather than introducing a new one-off color. */
+.how-it-works__step-title {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-neda);
+}
+
+.how-it-works__step-line {
+  margin: 0;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
 }
 
 .how-it-works__card-wrap {
@@ -957,9 +975,13 @@ input:focus-visible {
    max-height + auto), and if it ends up nested in any flex/grid
    container, set min-height:0 on that container. Skipping max-width/
    max-height here caused a real overflow bug on the Bravies cards
-   (documented in SDD.md) — this note exists so it isn't rediscovered. */
+   (documented in SDD.md) — this note exists so it isn't rediscovered.
+   Sized small deliberately (per feedback the section was running
+   2+ screens tall on desktop) — this is the single biggest lever on
+   the section's overall height, since the card's aspect-ratio (3:5)
+   means every pixel of width becomes 1.67px of height. */
 .how-it-works__card {
-  width: min(220px, 60vw);
+  width: min(130px, 36vw);
   aspect-ratio: var(--card-aspect);
   display: flex;
   align-items: center;
