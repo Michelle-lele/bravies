@@ -826,6 +826,8 @@ input:focus-visible {
 
 .teaches__point {
   --point-color: var(--color-neda);
+  --icon-glyph-color: var(--color-text-dark); /* Неда's yellow is light — dark glyph, same call as its card caption text color */
+  --icon-url: url('assets/icons/resist.png');
   position: relative;
   overflow: visible;
   display: flex;
@@ -841,18 +843,54 @@ input:focus-visible {
   border: 3px solid var(--point-color);
 }
 
-.teaches__point:nth-child(6n+2) { --point-color: var(--color-vihren); }
-.teaches__point:nth-child(6n+3) { --point-color: var(--color-vesta); }
-.teaches__point:nth-child(6n+4) { --point-color: var(--color-zaki); }
-.teaches__point:nth-child(6n+5) { --point-color: var(--color-misho); }
-.teaches__point:nth-child(6n+6) { --point-color: var(--color-buddy); }
+/* Colors and icon assets below reuse the exact same light/dark glyph
+   calls already made for each Bravie's card caption text (see the
+   .brave-card--* rules) — e.g. Вихрен's orange and Мишо's beige both
+   needed dark text there for the same contrast reason they need a dark
+   icon glyph here. Кeeping the two decisions in sync rather than
+   re-litigating contrast per element. */
+.teaches__point:nth-child(6n+2) {
+  --point-color: var(--color-vihren);
+  --icon-glyph-color: var(--color-text-dark);
+  --icon-url: url('assets/icons/running_away.png');
+}
+.teaches__point:nth-child(6n+3) {
+  --point-color: var(--color-vesta);
+  --icon-glyph-color: var(--color-surface-white);
+  --icon-url: url('assets/icons/tell.png');
+}
+.teaches__point:nth-child(6n+4) {
+  --point-color: var(--color-zaki);
+  --icon-glyph-color: var(--color-surface-white);
+  --icon-url: url('assets/icons/keyword.png');
+}
+.teaches__point:nth-child(6n+5) {
+  --point-color: var(--color-misho);
+  --icon-glyph-color: var(--color-text-dark); /* the person's original question — Мишо's beige is light, needs a dark glyph */
+  /* no --icon-url and no --icon-glyph-display override: no confirmed
+     icon asset yet — face.png was rejected (style/resolution mismatch,
+     see SDD.md) — so this tile's ::after stays suppressed via the
+     content:none default below, leaving a plain color-filled circle
+     rather than an unmasked solid square (an actual bug caught while
+     testing this: mask-image:none doesn't hide the layer, it just
+     removes the mask, which left a solid block showing instead). */
+}
+.teaches__point:nth-child(6n+6) {
+  --point-color: var(--color-buddy);
+  --icon-glyph-color: var(--color-text-dark); /* turquoise tested closer to
+    "light" than "dark" for glyph contrast purposes — verified by
+    rendering both options, not assumed */
+  --icon-url: url('assets/icons/help.png');
+}
 
 /* Icon badge: straddles the card's top edge — 2/3 of its height above
    the card, 1/3 inside it — rather than sitting inline above the text.
-   Swap for the real draft icon assets when ready; guidance for whoever
-   does that is the same as the How It Works card placeholder note
-   above (width/height:100% + object-fit:contain on the dropped-in
-   <img>). */
+   The circle itself stays filled with --point-color; the glyph is a
+   separate layer on top using CSS mask, which lets one single-color
+   source PNG (white shape, transparent background — true of all 5
+   confirmed icons) be tinted to whatever --icon-glyph-color contrast
+   requires per tile, rather than needing a differently-colored image
+   file for every possible pairing. */
 .teaches__point-icon {
   position: absolute;
   top: calc(var(--icon-size) * -2 / 3);
@@ -863,6 +901,33 @@ input:focus-visible {
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--point-color);
+}
+
+.teaches__point-icon::after {
+  content: none; /* suppressed by default; tiles with a confirmed icon
+    (below) override this to '' to activate the glyph layer — needed
+    because mask-image:none does NOT hide an unmasked layer, it just
+    removes the mask, which left Мишо's placeholder showing a solid
+    unmasked square instead of nothing */
+  position: absolute;
+  inset: 22%;
+  background-color: var(--icon-glyph-color);
+  -webkit-mask-image: var(--icon-url);
+  mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.teaches__point:nth-child(6n+1) .teaches__point-icon::after,
+.teaches__point:nth-child(6n+2) .teaches__point-icon::after,
+.teaches__point:nth-child(6n+3) .teaches__point-icon::after,
+.teaches__point:nth-child(6n+4) .teaches__point-icon::after,
+.teaches__point:nth-child(6n+6) .teaches__point-icon::after {
+  content: '';
 }
 
 .teaches__point p {

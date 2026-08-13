@@ -575,6 +575,65 @@ source of truth where it's more specific than the sections above.
   height dropped to ~910px in a 900px-tall viewport (~1 screen) —
   verified via actual `getBoundingClientRect()`, not estimated.
 
+### How It Works: reverted sentence-per-line back to a paragraph
+- The previous change split each step's body into one `<p>` per
+  sentence; reverted per feedback back to a single flowing paragraph
+  (still `.how-it-works__step-line`, just one instance holding all the
+  sentences together again). The title line (first sentence, uppercase/
+  accent) is unaffected and stays separate.
+
+### What It Teaches: real icons wired in (5 of 6), contrast-aware coloring
+- The person supplied 6 draft icon assets. Reviewed each against the
+  section's 6 tiles: 5 (resist/open-hand, running-away, tell/megaphone,
+  keyword/key, help/shield+heart) are flat single-color silhouette
+  glyphs, same visual family, and were wired in. The 6th (`face.png`, a
+  small multi-tone gray emoji-style graphic, 128×128 vs. 420-1500px for
+  the others) was rejected for both a style mismatch (won't recolor
+  cleanly the way a flat silhouette does) and a resolution mismatch
+  (would look visibly softer than the rest at the same display size).
+  Мишо's tile stays a plain color-filled circle (no glyph) until a
+  same-style replacement is picked — search terms suggested: "confused/
+  frozen/distracted/thinking," not "face" or "emoji," in a matching flat
+  single-color style. Suggested libraries for that replacement (or any
+  future icon swaps): Phosphor Icons, Material Symbols (Filled/Rounded),
+  Font Awesome Solid.
+- Icon → tile mapping: resist→Неда, running_away→Вихрен, tell→Веста,
+  keyword→Заки, help→Buddy (turquoise).
+- Contrast problem raised by the person: Мишо's beige (`--color-misho`)
+  is light, so a white icon glyph would have poor contrast. Solved with
+  CSS `mask-image` instead of plain `<img>` tags: each of the 5 source
+  PNGs is a solid alpha shape, so `mask-image` lets ONE asset be tinted
+  to whatever color a given tile needs via `background-color`, rather
+  than needing a separately-colored file per pairing. Glyph color per
+  tile reuses the exact same light/dark contrast calls already made for
+  each Bravie's card caption text (`--card-text-on-accent`) — e.g.
+  Вихрен's orange and Мишо's beige both needed dark there for the same
+  reason they need a dark glyph here. Buddy's turquoise (new, no prior
+  precedent) was tested both ways by rendering and cropping both
+  options side by side; dark read with visibly crisper contrast, so
+  that's what shipped — not assumed from color values alone.
+- Two real bugs found and fixed while verifying, neither guessable from
+  the CSS alone:
+  1. **`mask-image` is blocked under `file://` by CORS** in Chromium
+     (regular `<img src>` isn't affected — this is mask-specific).
+     Confirmed by serving the project over a local HTTP server instead
+     and re-testing; icons rendered correctly there. This only matters
+     for local testing — any real hosting (http/https) is unaffected —
+     but it's worth remembering the next time something needs visual
+     verification: if `mask-image` (or anything else fetch-like) seems
+     broken while opening `index.html` directly as a file, try serving
+     it over HTTP before assuming the code is wrong.
+  2. **`mask-image: none` does not hide an unmasked layer** — it was
+     meant to leave Мишо's placeholder circle empty (no icon yet), but
+     removing the mask just makes the layer render fully unmasked,
+     which showed up as a solid dark square. Fixed by defaulting the
+     glyph pseudo-element to `content: none` (not rendered at all) and
+     only having tiles with a confirmed icon override that to `content:
+     ''` to activate it.
+- No HTML changes were needed for any of this — the icon `<span>`
+  elements already existed as empty placeholders from Phase 2; the
+  glyph is entirely a CSS-layer (`::after` + mask) addition.
+
 ### Open items carried forward (not yet resolved)
 - Two invalid hex codes in early spec drafts are now fixed in this
   version's Design System section — no longer open.
