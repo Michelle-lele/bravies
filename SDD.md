@@ -1,652 +1,141 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-## ***1\. Goal***
+*Status: Phase 1 (Hero + Bravies Intro) and Phase 2 (Problem + What It
+Teaches + How It Works) complete. Phase 3 (Testimonials + Desired
+State) next, then Phase 4 (FAQ + Wait-list Signup), then Phase 5
+(integration pass). This document reflects current, as-built behavior
+— not a change history. Tech stack decision: vanilla JS (no framework
+needed).*
+
+## 1. Goal
 
 A high-converting, single-page landing page in Bulgarian to collect user emails for a waitlist for kids' board game.
 
-## ***2\. Tech Stack***
+## 2. Tech Stack
 
-- HTML5 (semantic layout)  
-- CSS3 (Responsive, Flexbox/Grid, pure CSS)  
-- Vanilla JavaScript or other suitable JS framework (Form handling and UI interactions, animation effects such as parallax)
+- HTML5 (semantic layout)
+- CSS3 (Responsive, Flexbox/Grid, pure CSS)
+- Vanilla JavaScript (form handling, UI interactions, scroll-driven animation)
 
-## ***3\. UI/UX Requirements***
+## 3. UI/UX Requirements
 
-- **Hero Section**: 
+### Hero Section
 
-H1 headline (Смелчовци в беда"),  subheadline ("Игра за умни действия в ситуации с (не)познати."), and a prominent Email Input \+ "Запиши се за първите 100" button. 
+H1 "Смелчовци в беда", subheadline "Игра за умни действия в ситуации с (не)познати.", email input + "Запиши се за първите 100" button.
 
-- **Bravies Intro Section** \- 
+- Background `#5080BF`, text white `#F8FAFC`.
+- Email input capped at `max-width: 320px` and centered alongside the button on desktop (was stretching to fill the whole hero-content width); text/placeholder centered on mobile.
+- Mobile has extra top padding so the H1 isn't flush against the viewport edge.
+- **Hero height is reduced at every breakpoint** (not `100vh`) so the top of the Bravies section peeks above the fold everywhere, not just desktop: mobile `230px` peek, portrait tablet `260px`, landscape tablet/desktop `300px`, ≥1440px `340px`.
+- **Clouds**: 5 real supplied PNGs (not CSS shapes), varied sizes/placement so they read as scattered rather than uniform. Movement is a direct function of scroll position within the hero (one `--scroll-progress` CSS variable, 0–1) — scrolling up naturally reverses the drift. On mobile, only 2 of the 5 are shown (bottom-left and bottom-right, both small); the rest are hidden to avoid crowding the text column on a tightened mobile hero.
+- Error message (shared by both waitlist forms on the page): solid white pill background with dark red (`#7F1D1D`) text — guarantees contrast regardless of the section background behind it. Only rendered when non-empty.
 
-Intro text: "Твоето дете играе и учи със Смелчовците как да:"
+### Bravies Intro Section
 
-5 horizontal elements representing playing cards with round corners (15px). The elements should be in a 3:5 aspect ratio (real cards will be 6x10cm). Each card should have a thick, colourful border and a rectangular placeholder for the character image inside the card. The bottom border should be thicker to show text including the character name and a brief intro. 
+Intro text: "Твоето дете играе и учи със Смелчовците как да:" — sized down and set to `white-space: nowrap` from 768px up so it reads as one line; wraps normally on mobile.
 
-Responsive layouts: On desktop and tablet (landscape), only the character name is shown by default, plus half a row of the following brief intro text. 
+5 cards, `border-radius: 15px`, **3:5 aspect ratio** (physical cards are 6×10cm), uniform thick colorful border on all sides. Character portrait is real artwork (not a placeholder), filling the entire card; the caption is a bottom overlay panel with a **solid** brand-color background (not a literal CSS border — a border can only ever be a thin stripe, not a panel that holds text) containing the name (uppercase) and bio. **All text is always fully visible, at every breakpoint** — there is no hover/tap-to-expand text state.
 
-On hover/tap on each card, the text section increases in height to fill more of the card height and show the full text (e.g., expands up). The character placeholder is enlarged and is extended outside the card. By default, the middle card (Неда) is in that state until another card is activated.
+Portrait size:
+- **Desktop / landscape tablet only** (`min-width: 1024px`, or `min-width: 768px` + landscape): portraits render enlarged by default for every card (not just on hover), `scale(1.16) / translateY(-14%)`. Hovering or activating a card adds a brief "pulse" (grows slightly further and settles back via `@keyframes`, not a persistent size change).
+- **Mobile / portrait tablet**: portraits stay at the small, contained size; no enlarge, no pulse.
 
-At least the top half of the cards in this section are visible above the fold (first screen) on desktop resolution.
+Each card has a small individual tilt (1.5°–2.5°, alternating direction per character) at every breakpoint, so the row reads like playing cards set down on a table rather than a stiff grid.
 
-* On desktop and landscape tablet \- All cards should be on a single row,   
-* on portrait tablet \- 3 rows (1 \- Неда, 2 \- Вихрен и Веста, 2 \- Заки и Мишо cards per row) and,   
-* on mobile \- 1 card per row.
+Card order: DOM order matches the mobile/portrait-tablet reading order (Неда, Вихрен, Веста, Заки, Мишо — Неда is default-active). Desktop/landscape-tablet reorders **visually only** via CSS `order` to Заки, Вихрен, Неда, Веста, Мишо. *(Known accessibility trade-off, not yet resolved: desktop tab/keyboard order still follows DOM order, not the visual left-to-right order.)*
 
-Text for cards in the following order for desktop:
+Layout:
+- Desktop / landscape tablet: single row.
+- Portrait tablet (`≥768px` + portrait orientation): 3 rows — Неда alone, Вихрен + Веста, Заки + Мишо.
+- Mobile: 1 card per row.
 
-1. Заки \- знае всички хитрини на хората с лоши намерения.  
-2. Вихрен \- бяга от опасностите като вихър.  
-3. Неда \- слуша вътрешния си глас си и казва “Не\!”.  
-4. Веста \- споделя всичко на близките си.  
-5. Мишо \- се сеща винаги точно навреме какво трябва да направи.
+Brand colors (corrected from early spec typos): Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`.
 
-The order for tablet (portrait) and mobile is as follows: Неда, Вихрен, Веста, Заки, Мишо.
+### The Problem Section
 
-- **The problem section**:
+H2: "Обяснявам хиляди пъти, но тя е толкова доверчива…" + 3 unchanged paragraphs.
 
-H2: "Обяснявам хиляди пъти, но тя е толкова доверчива…”
+- Background: solid `#725598` (Заки's purple), white text.
+- Single centered text column (max `62ch`) at every breakpoint — no section-specific mobile layout needed, it's plain prose.
+- Heading is wrapped in large, yellow (`--color-neda`)-accented quotation marks (`„...“`), styled as a visible pull-quote rather than plain unmarked text.
 
-Text: “Детето знае, че не трябва да взема бонбони от непознати и че не трябва да се качва в чужда кола. 
+### What It Teaches Section
 
-Но в реална ситуация \- когато е само и объркано, когато (не)познатият е усмихнат и любезен или изглежда безпомощен \- ще разпознае ли опасността? И по-важното \- ще съумее ли да действа правилно? А може би ще замръзне от любезност или страх?
+H2: "На какво учи играта?" + intro paragraph (unchanged). Closing paragraph ("Всичко това не се преподава - изиграва се...") was **replaced with a CTA button**: "Хайде да играем!", scroll-links to the How It Works section (`#how-it-works`). Uses the reusable `.cta-button` component (yellow, same color as the hero form's submit button — the Desired State section's later CTA should reuse this same component rather than a new one-off style).
 
-Теорията помага, но умението за действие се изгражда само с повторение \- и то много преди да е нужно.”
+- Background white `#F8FAFC`.
+- Middle content is **6 icon+color point tiles** (not a bulleted list) — 5 tied to a Bravie's brand color, plus a 6th turquoise (`--color-buddy: #2FB6B0`) tile for the Help/Buddy "joker" cards, which aren't tied to any single Bravie. **No Bravie names are shown here** — only the color/icon pairing calls back to the Bravies Intro section above.
+- Tile style: white interior, solid full-strength brand-color border (3px). Icon badge: 84px circle, solid brand-color fill, straddling the tile's top edge (2/3 above, 1/3 inside).
+- Icons: real assets wired for 5 of 6 (resist→Неда, running_away→Вихрен, tell→Веста, keyword→Заки, help→Buddy), tinted per-tile via CSS `mask-image` (one white source PNG, recolored via `background-color` per tile — works because `mask-image` is blocked under `file://` by a Chromium CORS quirk that doesn't affect `<img>`, so always verify icon changes over a local HTTP server, not by opening the file directly). Glyph colors are chosen to be **colorful**, not just dark-for-contrast: Неда's hand is burnt orange (`--color-icon-burnt-orange: #A8501A`), Вихрен's runner is deep red (`--color-icon-deep-red: #7A2020`), Buddy's shield+heart is deep teal (`--color-icon-deep-teal: #0E4749`); Веста's megaphone and Заки's key stay plain white (confirmed good as-is). **Мишо's icon is still an empty placeholder** — the supplied `face.png` was rejected (style + resolution mismatch with the other 5 flat single-color glyphs); needs a same-style replacement (search "confused/frozen/distracted," not "face"/"emoji" — suggested libraries: Phosphor Icons, Material Symbols Filled/Rounded, Font Awesome Solid).
+- Grid: 3 columns on desktop (settles into a 3+3 layout for 6 tiles), reflows to 2 columns on tablet, 1 on mobile. Each tile scroll-reveals independently (not all at once).
 
-- **What the game teaches? Section**
+Point copy (final, except Buddy — see note):
 
-H2: “На какво учи играта?”  
-Text: ‘“Смелчовци в беда” е изградена върху съвременните препоръки за детска безопасност \- включително разграничението между "непознат" и "човек с лоши намерения", което е много по-полезно за децата от простото "не говори с непознати."  
-Чрез играта децата се учат да:
+1. **Неда**: Учи детето да се доверява на интуицията си, когато нещо не му се струва наред, да казва ясно и без вина „Не!“, и да пита родителите си преди да предприеме каквото и да е.
+2. **Вихрен**: Учи детето да разпознава безопасни места и безопасни възрастни, към които да се обърне при нужда - например униформен служител или продавач, не непременно познат човек. И че може просто да си тръгне от опасна ситуация, без да е длъжно да обяснява или да бъде учтиво.
+3. **Веста**: Учи детето да споделя с близките си всяка ситуация, която го е накарала да се почувства неудобно - без значение колко малка изглежда.
+4. **Заки**: Играта въвежда и конкретни принципи за безопасност - семейна парола, правилото „само възрастни помагат на възрастни“, и защо никой доверен човек никога не иска от дете да пази тайна.
+5. **Мишо**: Децата се запознават и с реакциите, които им пречат в реална ситуация - замръзване, прекалена учтивост, разсеяност. Не за да се срамуват, а за да се сещат навреме какво да направят и да ги преодоляват с практика.
+6. **Buddy** *(first draft, not yet reviewed by the person)*: Учи детето, че да поискаш помощ не е слабост, а разумен избор. И че когато сте заедно с приятел, е достатъчно поне един от двамата да познае правилната реакция - защото да си в екип също означава да се пазите взаимно.
 
-* вярват на интуицията си когато нещо не им се струва наред  
-* казват НЕ ясно и без вина  
-* питат родителите си преди да направят каквото и да е  
-* разпознават кога могат просто да си тръгнат \- без да са задължени да обясняват или да са учтиви  
-* споделят с близките си всяка ситуация която ги е накарала да се почувстват неудобно
+*Note: Вихрен's point is deliberately distinct from Веста's — Вихрен covers recognizing safe **unfamiliar** adults/places to turn to in the moment; Веста covers sharing **afterward** with people the child already knows.*
 
+### How It Works Section
 
-Играта въвежда и конкретни принципи за безопасност \- семейна парола, правилото "само възрастни помагат на възрастни", и защо никой доверен човек никога не иска от дете да пази тайна.
+H2: "Как работи играта?"
 
-Децата се запознават и с реакциите, които им пречат в реална ситуация \- замръзване, прекалена учтивост, разсеяност. Не за да се срамуват, а за да ги разпознават и преодоляват с практика.  
-Всичко това не се преподава \- изиграва се. Всеки играч взима решение, после цялото семейство обсъжда заедно.’
+Step copy (spec's original step 2 had a duplicated clause — fixed, used once):
+1. Изтегляте ситуация. (Не)познат иска помощ. Предлага изкушение. Кара те да пазиш тайна. Какво правиш?
+2. Всеки избира карта от ръката си. Кажи НЕ. Бягай. Кажи на близък. Правилната реакция, в точния момент.
+3. Играчите си помагат и обсъждат заедно. Всички отговарят правилно - всички споделят наградата.
 
-- **How it works section**:
+- Background: solid `#E5E1D6` (Мишо's beige — was Веста's green; changed per feedback). Being light rather than dark, this drove several follow-on color changes: body text is dark (`--color-text-dark`, was white), the step-number badge is a solid purple (`--color-zaki`) circle with a white number (was a translucent-white ring, which nearly disappeared on a light background), and each step's title accent is purple (`--color-zaki`, was yellow — yellow had too little contrast against light beige; purple also now visually matches the number badge).
+- Each step's **first sentence is its title** — uppercase, accent color, own line; the rest of that step's sentences follow as one normal paragraph below it.
+- Zigzag: step 1 text-left/card-right, step 2 text-right/card-left, step 3 text-left/card-right (via `row-reverse` on step 2 only — DOM/reading order is always text-before-card regardless of visual side).
+- Cards: small (`width: min(130px, 36vw)`), 3:5 ratio, individually tilted (same technique as the Bravies cards). **Card size was deliberately shrunk** to keep the whole section's height to ≤1.5 screens on desktop (was running 2+). Steps 1 and 2 now use real supplied card art (situation card → step 1, "Не!" reaction card → step 2); step 3 still has no art, stays a dashed-border white placeholder box.
+  - Real card `<img>`s must NOT be sized with `width/height:100%` here — unlike the Bravies-portrait pattern, this element defines its own box directly (width + aspect-ratio from the base `.how-it-works__card` rule), so `100%` resolves against the flex parent instead and blows the image up far past its intended size. Only `object-fit` is needed on the image itself.
+  - On mobile, `.how-it-works__card-wrap` needs `min-height: auto` (not the `0` used for the desktop row layout) — in the mobile column layout, `flex:1 1 0` with `min-height:0` collapses the item toward zero height instead of sizing to the image's aspect ratio, since there's no automatic content minimum left to fall back on.
+- Mobile: each step's card stacks above its related text (visual-only reorder).
+- Scroll-triggered slide-in-up animation, per-element (each step's text block and card reveal independently, not the whole section at once), one-time (doesn't repeat), skipped under `prefers-reduced-motion`.
 
-H2: “Как работи играта?”
+### Testimonials Section *(not yet built)*
 
-Texts: “1. Изтегляте ситуация. (Не)познат иска помощ. Предлага изкушение. Кара те да пазиш тайна. Какво правиш?
+H2: "Какво казват децата и родителите?" Quoted text: "Това е най-яката игра, на която съм играл." — Анди на 5.5 години. Left-right sliding slider, only this one quote for now.
 
-2\. Всеки избира карта от ръката си \- Всеки избира карта от ръката си. Кажи НЕ. Бягай. Кажи на близък. Правилната реакция, в точния момент. 
+### Desired State Section *(not yet built)*
 
-3\. Играчите си помагат и обсъждат заедно. Всички отговарят правилно \- всички споделят наградата.”
+H2: "Представете си този момент…" + body text (unchanged from original spec). 2×2 text-box grid on desktop/tablet, 1 per row on mobile, each with a distinct icon (placeholder — source not yet decided). CTA button "Искам това спокойствие" scrolling to the bottom signup section.
 
-Each step should be located on the screen as follows: left \- right \- left side. In the remaining space (right-left-right), put a placeholder for a card image (3:5 ratio, slightly tilted as if a played card on the table)
+### FAQs Section *(not yet built)*
 
-On scroll within that section, the cards and the separate steps should have a slide-in-up animation. 
+Standard vertically-unfolding FAQ layout, questions always visible, arrow to unfold each answer. Two dummy Q&As.
 
-Responsive Layout: On mobile each card should be stacked above the text box relevant to it.
+### Wait-list Signup Section *(not yet built)*
 
-- **Testimonials section**:
+H2: "Записването е отворено". Same form as the hero section — `script.js` already supports this via a reusable `initWaitlistForm()` called once per `[data-waitlist-form]` element, so this section just needs the matching markup + attribute, no JS changes.
 
-H2: “Какво казват децата и родителите?”
+### Design System
 
-Quoted text: “Това е най-яката игра, на която съм играл.”  
-\- Анди на 5.5 години
+- Fonts: Baloo 2 (display/headings) + Nunito Sans (body/UI) — not specified in the original brief, chosen to fit "bright, colorful, kids-friendly."
+- Brand colors: Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`, Buddy/joker `#2FB6B0` (turquoise, new — not one of the original 5 Bravies). Deep-toned icon-only variants: burnt orange `#A8501A`, deep red `#7A2020`, deep teal `#0E4749` (used for colorful icon glyphs where plain white/dark wouldn't do).
+- Section backgrounds, in the spec's alternation order: Hero `#5080BF` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → **Testimonials / Desired State / FAQ / Wait-list Signup: still undecided**, continue the alternation with bold brand colors.
+- Responsiveness: mobile (375px), tablet (768px portrait + landscape), desktop (1440px). Portrait vs. landscape tablet is distinguished via `orientation` media queries where the layout actually differs (Bravies section).
 
-Make it a slider (left \- right sliding) for now only with this quote. 
+## 4. Functional Requirements (JS)
 
-- **Desired state section**:
+- Validate email format before submission; show an inline error message if invalid (see error message styling above).
+- On valid submission: hide the form, fade in "Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!"
+- Validation applies identically to both waitlist forms (hero + bottom signup) via the shared `[data-waitlist-form]` pattern.
+- Storage: log the collected email to the console (mock API POST).
 
-H2: “Представете си този момент…”  
-Text: “На площадката сте. Заговаряте се с друга майка и за секунда изпускате детето си от поглед. Когато се обръщате, виждате непознат да говори с него. Но вместо вълна на паника, вие усещате... спокойствие.  
-Наблюдавате как детето ви прави крачка назад, казва нещо кратко, но уверено, обръща се и с бързи крачки идва при вас, за да ви разкаже какво се е случило. Без страх, без объркване, без колебание.  
-Това е усещането за истинска увереност. Това е моментът, в който осъзнавате, че:”  
-The following text in text boxes 2x2 on desktop and tablet and 1 per row on mobile. Each item also has a distinct icon related to the content (leave as a placeholder only for now).
+## 5. Constraints
 
-1. Вашето дете знае как да се пази самостоятелно.  
-2. Изградили сте невидима броня от умения и инстинкти.  
-3. Постоянната тревожност е заменена с дълбоко вътрешно спокойствие.  
-4. Най-накрая можете да си отдъхнете, знаейки, че сте му дали най-ценния подарък.
+- All CSS in `style.css`; all JS in `script.js`.
 
-CTA button with text: “Искам това спокойствие” that leads to the sign-up section at the bottom. 
+## Open Decisions
 
-- **FAQs section**
-
-Standard FAQ layout with vertically unfolding answers and questions always visible, as well as an arrow to unfold each answer. Add two dummy texts.
-
-- **Wait-list signup section**
-
-H2: “Записването е отворено”  
-Same form for email and submit button as in the hero section.
-
--  **Design System**: Bright and colorful, kids-friendly.
-
-Bravies intro cards, brand colors: 
-
-* Заки: \#725598  
-* Вихрен: \#F68044  
-* Неда: \#FDD43B  
-* Веста: \#278C5D  
-* Мишо: \#E5E1D6
-
-Background:   
-Hero section: \#5080BF, Text: White (\#F8FAFC).  
-White clouds that are moving from inside to the outside of the page on scroll down and the opposite movement on scroll up. 
-
-Bravies intro section: White (\#F8FAFC).
-
-The remaining sections should alternate colorful/white background in this fixed order per section: Problem, What it teaches?, How it works, Testimonials, Desired state, FAQ, Wishlist Sign-up. The colourful backgrounds should be complementary to the Bravies/brand card colours above.
-
--  **Responsiveness**: Must look flawless on mobile (375px), tablet (768px, 1024px) and desktop (1440px).
-
-## ***4\. Functional Requirements (JS)***
-
-- **Validation**: Validate email format before submission. Show an error message if invalid.
-
-On valid submission, hide the form and show a smooth fade-in message: "Благодарим Ви\! Вече сте записани. Ще се свържем с Вас за първия тираж\!"
-
-The validation rules apply for both forms: in the hero section and the bottom wait-list section.
-
--  **Storage**: For now, log the collected email to the browser console (or mock an API post request).
-
-## ***5\. Constraints***
-
-- All CSS must live in a separate \`style.css\` file.  
-- All JS must live in a separate \`script.js\` file.
-
-- **Success State** 
-
-Act as a precise, senior frontend engineer executing a Spec-Driven Development (SDD) contract. 
-
-I am providing my project specification document here. Do not guess, improvise, or shortcut any features. Your task is to write clean, fully commented, production-ready code that strictly matches all the rules, breakpoints, and states outlined in this specification.
-
-Please generate the code for the following three files separately:  
-1\. \`index.html\` (Semantic structure, linked CSS/JS assets)  
-2\. \`style.css\` (Mobile-first styles, explicit tablet/desktop breakpoints, design variables)  
-3\. \`script.js\` (Form validation, event handlers, mock API states)  
-
----
-
-## 6. Implementation Decisions Log
-
-This section records decisions made during the build that the spec above
-left ambiguous, plus changes made in response to review feedback. It is
-maintained continuously as the project progresses — treat it as the
-source of truth where it's more specific than the sections above.
-
-### Build approach
-- Built in 5 phases: (1) Hero + Bravies Intro, (2) Problem + What It
-  Teaches + How It Works, (3) Testimonials + Desired State, (4) FAQ +
-  Wait-list Signup, (5) integration pass. **Currently in Phase 1.**
-- Tech stack: vanilla JS confirmed as sufficient — no framework needed
-  (no shared state across components, no routing, no dynamic data
-  fetching; a framework's runtime weight works against a
-  conversion-focused landing page).
-
-### Design tokens
-- Brand hex values corrected from the original spec: Веста `#278C5D`
-  (was `#278CSD`), Мишо `#E5E1D6` (was `#ESE1D6`).
-- Fonts: Baloo 2 (display/headings — rounded, playful) + Nunito Sans
-  (body/UI text), chosen to fit the "bright, colorful, kids-friendly"
-  design brief; not specified in the original spec.
-- Section background colors for Problem / What It Teaches / How It
-  Works / Testimonials / Desired State / FAQ / Wait-list Signup are
-  **still undecided** — the spec fixes the alternation order but not
-  actual hex values. Placeholder tokens are stubbed in `style.css` under
-  a `TODO (Phase 2)` comment; real values needed before those sections
-  are built.
-
-### Hero section
-- "15 degrees" corner rounding (from an earlier spec draft) was
-  interpreted as `border-radius: 15px`; current spec already states
-  `15px` directly, so this is resolved.
-- Hero "peek" behavior: the hero's height is intentionally reduced
-  (rather than 100vh) at every breakpoint so the top of the Bravies
-  section — heading + start of the first card — is visible above the
-  fold, not just on desktop. Peek amounts (tunable via CSS variables):
-  mobile `230px`, portrait tablet `260px`, landscape tablet/desktop
-  `300px`, ≥1440px `340px`. This was an explicit request to prioritize
-  character-preview visibility over keeping the hero comfortable on
-  short viewports.
-- Clouds: implemented with the 5 real PNGs supplied (not CSS shapes).
-  Movement is a direct function of scroll position within the hero (one
-  `--scroll-progress` CSS variable, 0–1), so scrolling back up naturally
-  reverses the drift — no separate "scroll up" logic needed. Clouds are
-  intentionally varied in size or placement (large one bottom-right,
-  the previously-too-small bottom-left one enlarged) so they read as
-  naturally scattered rather than four uniform copies. On mobile, three
-  of the four clouds are hidden entirely and the fourth (bottom-right)
-  is shown small, since the tightened mobile hero leaves little safe
-  room without risking overlap with the text/form column.
-
-### Bravies Intro section
-- Card aspect ratio: `3:5` (width:height), matching "cards are 6cm x
-  10cm" literally — this replaced an earlier `1:6` misreading from a
-  draft spec that produced impractically tall cards.
-- Character image placeholders were rectangular (not circular), per
-  spec wording, and have since been **replaced with the real supplied
-  character artwork** (`assets/characters/{zaki,vihren,neda,vesta,misho}.png`).
-- The "thicker bottom border" is implemented as the caption's own solid
-  background (colored with the card's brand accent), not a literal CSS
-  border — a border can only ever render as a thin stripe, not a
-  readable panel holding name + bio text.
-- Per-character caption text color is chosen for contrast against that
-  character's accent (white text on Заки/Веста's darker colors, dark
-  text on Вихрен/Неда/Мишо's lighter colors) — not specified in the
-  spec, needed for legibility.
-- Character names render in all caps (`text-transform: uppercase`).
-- Card activation (hover/tap/default-active Неда): expands the caption
-  and enlarges the portrait; the card itself does **not** scale up
-  (an earlier version did — removed per feedback as one effect too
-  many). Expanded caption height is roughly half of an earlier, overly
-  tall first attempt.
-- All cards render at the same size regardless of which is active —
-  card width is controlled once by a shared `.brave-card` rule, not
-  overridden per character.
-- Mobile has no tap-to-expand: since every card is already full-width
-  in a single column, the collapsed/expanded distinction doesn't apply.
-  All captions show full text by default and portraits stay at base
-  scale, regardless of the `.is-active` class (which JS still toggles,
-  but which no longer changes anything visually below 768px).
-- Card DOM order matches the spec's mobile/tablet-portrait order
-  (Неда, Вихрен, Веста, Заки, Мишо); the desktop/landscape-tablet order
-  (Заки, Вихрен, Неда, Веста, Мишо) is applied via the CSS `order`
-  property rather than reordering the DOM. **Known trade-off:** desktop
-  keyboard/tab order won't match left-to-right visual order. Flagged,
-  not yet resolved with a final decision.
-- Portrait vs. landscape tablet is detected with a combination of
-  `min-width` and `orientation` media queries (not just width), so an
-  iPad in portrait gets the 3-row layout and the same device rotated to
-  landscape gets the single row.
-- Intro heading (`"Твоето дете играе и учи..."`) is sized down and set
-  to `white-space: nowrap` from 768px upward so it reads as one line
-  and doesn't compete with the card row for vertical space — the
-  original fluid heading scale left it too large relative to the cards.
-- Bio text size increased from an initial `0.8rem` to `0.95rem` for
-  readability, per feedback.
-
-### Bug fix: card image overflow + non-working caption expand
-- Root cause found by rendering the page and inspecting computed layout
-  directly (not guessed from a screenshot): `.brave-card__portrait` was
-  a flex item with the browser's default `min-height: auto`, which
-  ignores `max-height` on the image inside and sizes the item to the
-  image's natural aspect-fitted height instead. This mostly went
-  unnoticed because most characters' art happened to roughly fit, but
-  Заки's narrower/taller art (240×700 vs. ~395×700 for the others)
-  exposed it clearly — his portrait area rendered at ~431px tall inside
-  a 300px card. The same underlying instability is what made the
-  caption's percentage-based height unreliable (no stable space to
-  compute against), which is why it never visibly expanded on hover.
-- Fix: rebuilt the card's internal layout on CSS Grid
-  (`grid-template-rows: minmax(0, 1fr) auto`) with an explicit
-  `min-height: 0` on the portrait, and switched the caption from a
-  percentage height to fixed pixel values (`70px` collapsed / `128px`
-  expanded) instead of relying on percentage-of-flex-content sizing.
-  Verified after the fix, across all 5 cards, that no portrait overflows
-  its card and that hover/active reliably resizes the caption.
-- Also reduced the activation enlarge amount (`scale(1.22)` →
-  `scale(1.1)`, `translateY(-18%)` → `translateY(-10%)`) and added
-  margin below the section heading, since the previous amount let an
-  enlarged/active portrait (including Неда's default-active state)
-  reach up into the heading text above the card row.
-
-### Bug fix: caption/portrait sizing coupling caused hover to shrink instead of enlarge
-- After the previous grid-based fix, a new issue surfaced: portrait and
-  caption shared a grid track, so growing the caption on hover
-  (70px→128px) shrank the portrait's own track — and since the image's
-  rendered size was computed from that shrinking box (max-height:100%
-  of it), the underlying shrink sometimes outweighed the `scale()`
-  transform meant to enlarge it. Net visible effect: characters looked
-  like they were shrinking on hover instead of growing.
-- Fix: restructured so the portrait fills the entire card at all times
-  (`position: absolute; inset: 0`) and the caption is a bottom overlay
-  on top of it (`position: absolute; left/right/bottom: 0`), rather than
-  the two sharing a row/track. The portrait's box is now constant
-  regardless of caption state, so `scale()`/`translateY()` are the only
-  thing changing on hover — reliable by construction, not just by
-  tuned values. Verified numerically (not just visually) that Заки's
-  rendered image height increases on hover (276px → 320px).
-- Same fix incidentally gives characters more visible room by default
-  (portrait no longer gives up a fixed share of the card to the caption
-  whether the caption needs it or not), which also addressed a separate
-  "too much blank space at the bottom" complaint once the expanded
-  caption height was reduced (128px → 100px) at the same time.
-- Applied the identical `min-height: 0` fix one level up, to
-  `.brave-card` itself — it's a flex item of `.card-row`, so without
-  this override its default content-based minimum height could make
-  cards render at different heights depending on content, overriding
-  the `aspect-ratio`. Verified all 5 cards report identical heights at
-  both mobile (506.97px) and desktop (300px) widths.
-- Hover/active enlarge amount tuned to `scale(1.16) / translateY(-14%)`
-  — smaller than an earlier `1.22/-18%` attempt (which reached into the
-  heading above) but restored to a genuinely-enlarging effect (an
-  intermediate `1.1/-10%` attempt was the one that exposed the
-  shrink bug above).
-
-### Hero section — mobile/desktop spacing
-- Mobile: increased top padding so the H1 isn't flush against the
-  viewport edge.
-- Desktop/landscape-tablet: the email input was stretching to fill the
-  full hero-content width (~700px) via `flex: 1` with no cap — capped
-  at `max-width: 320px` and the form row centered, rather than
-  letting it fill all available space.
-
-### Card text: removed the hover/tap expand-collapse entirely
-- Per feedback, the "collapsed name + peek of bio, expands on
-  hover/tap" behavior from the original spec was removed — every card
-  now shows its full name + bio at all times, at every breakpoint (no
-  more distinction between mobile's always-expanded state and
-  desktop's hover-to-expand state; they're now the same behavior
-  everywhere). The caption's height is a fixed `130px` with no
-  transition or toggle.
-- The portrait enlarge-on-hover/tap effect was **not** removed — only
-  the text-sliding behavior was. Неда still renders enlarged by default
-  (`.is-active`), other cards enlarge on hover, and mobile still
-  disables the portrait enlarge specifically (per the earlier "no
-  tap-to-enlarge on mobile" decision).
-- While verifying this change, found (via actual computed
-  `scrollHeight`, not just eyeballing) that Мишо's bio — the longest of
-  the five, wrapping to 3 lines — was being clipped by the caption's
-  `overflow: hidden` at the height that fit everyone else's shorter,
-  2-line bios. Increased the fixed caption height (100px → 130px) to
-  fit the longest one; verified afterward that all 5 cards' content now
-  fits without clipping.
-
-### Error message contrast
-- The error message's light-red text color read as too low-contrast
-  against the hero's blue background. Rather than just picking a
-  different text color (which would need re-tuning again once later
-  sections put this same form on unknown background colors), gave it a
-  solid white pill background with dark, saturated red text
-  (`#7F1D1D`) — contrast is now guaranteed regardless of what's behind
-  it. Only renders when there's actually an error to show, via the
-  `:not(:empty)` selector (script.js sets/clears this element's
-  `textContent` directly, so this needs no JS changes).
-
-### Minor polish
-- Mobile: email input placeholder/text centered (was left-aligned).
-- Bottom-right cloud repositioned — moved up and further toward center
-  at every breakpoint (was tucked hard into the corner).
-
-### Card redesign: portraits always enlarged, halo replaces hover-enlarge
-- Мишо's bio shortened ("се сеща винаги точно навреме..." →
-  "се сеща навреме...") — it was the longest of the five and had been
-  forcing a taller shared caption height for everyone. Caption height
-  reduced accordingly: `110px` desktop, `90px` mobile (mobile cards are
-  wider, so the same text wraps to fewer lines and needs less room).
-  Verified via `scrollHeight` that no card's text clips at either size.
-- The portrait's enlarged size — previously only applied on hover/active
-  — is now the **permanent default for every card**, all the time. There
-  is no more "base" vs. "hover" size distinction for the portrait.
-- Replaced the old hover/active treatment (portrait enlarge) with a
-  halo/spotlight glow behind the card: a blurred radial gradient in the
-  card's own accent color, hidden by default and shown on hover or when
-  `.is-active` (Неда by default, per spec). Implemented as `::after`
-  with `z-index: -1`, with `isolation: isolate` on `.brave-card` so the
-  negative z-index stays scoped to that card instead of sinking behind
-  neighboring cards. Tuned to `blur(28px)` / `opacity: 0.85` after a
-  first attempt (`blur(6px)`/`0.55`) proved too subtle to read as an
-  intentional glow — confirmed visible via a cropped, zoomed render
-  before/after, not just assumed from the property values.
-
-### Portrait size: desktop-only enlarge, halo replaced with a pulse
-- The larger portrait size is now scoped to the "landscape tablet /
-  desktop" breakpoint only (`min-width: 1024px`, or `min-width: 768px`
-  + landscape) — the same breakpoint already used for the single-row
-  card layout and hero peek. Mobile and portrait tablet now render
-  portraits at the small/contained size instead. **Note:** this means
-  landscape tablets get the "desktop" treatment too, consistent with
-  how every other desktop-specific rule in this file already draws the
-  line — flagging in case "desktop" was meant more narrowly (e.g.
-  ≥1440px only).
-- Removed the halo/spotlight effect entirely per feedback (not a fan of
-  it) — `.brave-card::after` and the `isolation: isolate` it needed are
-  gone.
-- Replaced it with a brief "pulse": on hover or when active (Неда by
-  default), the already-enlarged desktop portrait briefly grows a bit
-  further (scale 1.16 → 1.22) and settles back, via a `@keyframes`
-  animation rather than a persistent state change. Desktop-only, per
-  feedback. Verified via computed transform values mid-animation (not
-  just visually) that it actually peaks and returns.
-
-### Cloud position
-- Bottom-right cloud moved back toward the right edge (only the
-  horizontal position changed — vertical position from the previous
-  "move up" request was left as-is, per feedback).
-
-### Card tilt ("played on a table" effect)
-- Added a small, per-character rotation (1.5°–2.5°, alternating
-  direction: Заки -2.5°, Вихрен 2°, Неда -1.5°, Веста 2.5°, Мишо -2°) to
-  each card via its existing modifier class, so the row reads like
-  playing cards casually set down rather than a perfectly aligned grid.
-  Applied at every breakpoint (mobile stack, tablet grid, desktop row),
-  not just desktop, since the request wasn't scoped to one — worth
-  confirming that's the intended scope.
-
-## Phase 2 — Problem / What It Teaches / How It Works (complete)
-
-- Section background colors resolved (was an open TODO): Problem =
-  `#725598` (Заки's purple), What It Teaches = `#F8FAFC` (white, same as
-  Bravies), How It Works = `#278C5D` (Веста's green) — bold, direct
-  brand colors with white text, matching the hero's block-color pattern
-  rather than the soft-tint approach considered earlier.
-- Fixed a duplicated clause in the spec's "How it works" step 2 copy
-  ("Всеки избира карта от ръката си" was repeated) — confirmed
-  unintentional, used once.
-- Problem and What It Teaches have no spec'd responsive/mobile layout
-  (only How It Works does) — defaulted both to a single centered text
-  column at every breakpoint, consistent with how the rest of the page
-  handles plain prose.
-- What It Teaches' 5-item list uses custom checkmark bullets that cycle
-  through the 5 Bravie brand colors (a coincidence of count, written
-  generically via `nth-child` so it wouldn't break if the list changes
-  length later).
-- How It Works zigzag: implemented via `flex-direction: row-reverse` on
-  step 2 only (steps 1 and 3 use normal row) rather than reordering
-  markup — DOM/reading order stays "text before card" for every step
-  regardless of visual side, so screen reader/keyboard order doesn't
-  flip per step.
-- Card placeholders reuse the existing `--card-aspect` (3:5) token and
-  the same per-element `rotate()` tilt technique already used on the
-  Bravies cards, rather than a new approach. Left a comment for whoever
-  adds real card art here to use `width/height:100% + object-fit:
-  contain` (not `max-width/max-height + auto`) and check for the
-  min-height:0 flex/grid issue if nested — pointing at the Bravies-card
-  bug history so it isn't rediscovered from scratch.
-- Mobile: How It Works cards stack above their related text via
-  `order: -1` on the card wrapper (visual-only; DOM order unchanged).
-- Scroll-in-up animation implemented via a generic `.reveal` class +
-  IntersectionObserver (not a scroll listener) — reveals once per
-  element and unobserves afterward (one-time entrance, not a repeating
-  effect), and is skipped entirely under `prefers-reduced-motion`.
-- Verified by rendering (not just reading the CSS): scroll-reveal
-  actually toggles per-element as they enter the viewport; mobile card
-  stacking order confirmed via computed `getBoundingClientRect`; no
-  Phase 1 regression at tablet width (an initial "broken hero" result
-  was traced to a test-script timing artifact from `scroll-behavior:
-  smooth`, not an actual bug, after re-testing with a fresh page load).
-
-### What It Teaches: reworked into Bravie-tagged icon+color tiles
-- Content reorganized from one continuous text block (intro paragraph +
-  plain list + two trailing paragraphs) into 5 icon+color point tiles,
-  each echoing one Bravie's brand color from the Bravies Intro section
-  above — but **names are not repeated** here, per feedback: only the
-  color/icon pairing serves as the visual callback.
-- Copy for each point was substantially reworked (not just re-tagged) —
-  see the conversation for the full before/after. Notably, Вихрен's
-  point was split out from an overlap with Веста's: Вихрен's is about
-  recognizing safe *unfamiliar* adults/places to turn to in the moment
-  (e.g. uniformed staff), Веста's is about sharing *afterward* with
-  people the child already knows. This distinction was a deliberate
-  clarification from the person, not something inferable from the
-  original spec text alone.
-- Intro paragraph ("изградена върху съвременните препоръки...") and
-  outro paragraph ("не се преподава - изиграва се...") were kept
-  unchanged, per explicit instruction.
-- Icons are placeholders (dashed circle, tinted to the point's color)
-  pending the person's real draft icon assets — same "swap in an <img>
-  with width/height:100% + object-fit:contain" guidance as the How It
-  Works card placeholders.
-- Grid uses `repeat(auto-fit, minmax(260px, 1fr))` — tuned specifically
-  so 5 items settle into a balanced 3+2 layout rather than an uneven
-  4+1 (an earlier `220px` minimum produced the 4+1 split; caught by
-  rendering, not assumed from the CSS).
-- Content-strategy note from the conversation, worth preserving: there
-  was deliberate consideration of whether icon+text tiles here would
-  "give away" too much of the actual game mechanic. Conclusion: the
-  5 Bravie trait icons are already fully public (shown with full
-  name+lesson in the Bravies Intro section higher up), so reusing them
-  here adds no new spoiler surface — reinforcement, not new disclosure.
-  This section's text was already this specific in the original spec
-  (naming exact principles like the family password), so the icon
-  pairing doesn't increase specificity either. This reasoning does
-  **not** extend to the actual situation/response game cards (e.g. the
-  "Бягам към хората" / "Замръзвам" card art the person shared as a
-  reference image) — showing the *complete* set of those was flagged as
-  a real spoiler concern (shows the mechanic's full breadth, not just
-  flavor) and was explicitly decided against; at most 1-2 as
-  illustrative texture, if any, elsewhere on the page.
-- Also discussed and decided against: adding a background silhouette of
-  an adult looming over a child to the Problem section, for fear/tone
-  reasons (composition reads as threatening regardless of subtlety, and
-  clashes with the Desired State section's calm-payoff framing later on
-  the page). No code change resulted; noted here since it's a real
-  content-direction decision, not just implementation detail.
-
-### What It Teaches: 6th tile, box restyle, per-tile reveal
-- Added a 6th point tile for the Help/Buddy cards — a "joker" category
-  not tied to any single Bravie (usable in place of any character's
-  card). New turquoise token `--color-buddy: #2FB6B0`, matching the
-  person's draft card art color. Copy is a first draft, not yet
-  reviewed/revised by the person (flagged in a code comment) — covers
-  both halves mentioned: asking for help is a reasonable choice (not
-  weakness), and in a buddy pair only one of the two needs to spot the
-  right reaction. Grid math worked out cleanly: 6 items at the existing
-  `minmax(260px, 1fr)` settle into a 3+3 grid (same mechanism as the
-  earlier 5-item 3+2 fix).
-- Tile restyle, per feedback: interior is solid white now (was a pastel
-  tint of the point color), border is the full-strength brand color
-  (was a 35%-opacity tint), 3px.
-- Icon badge enlarged (56px → 84px) and repositioned to straddle the
-  card's top edge — 2/3 of its height above the box, 1/3 inside —
-  instead of sitting inline above the text. Implemented via absolute
-  positioning + a shared `--icon-size` custom property (defined once on
-  `.teaches__points`, inherited down to each tile) so the badge size and
-  the grid's top clearance space both derive from one value. Needed a
-  follow-up fix after first render: the top row's badges were
-  overlapping the intro paragraph above the grid, since the shared
-  section gap didn't account for the badges poking upward — added
-  clearance via `margin-top` on the grid itself, sized directly from
-  `--icon-size`. Caught and fixed by rendering, not assumed correct
-  from the CSS.
-- Scroll reveal changed from one animation for the whole tile grid to
-  one per tile: the `.reveal` class moved from the wrapping `<ul>` to
-  each `<li>`. No JS changes needed — `initScrollReveal()` already
-  queries all `.reveal` elements generically, so it now just observes 6
-  elements instead of 1. Verified via each tile's own `is-visible`
-  class state mid-scroll (top row revealed before the bottom row was
-  even in view) that tiles genuinely animate in independently, not
-  simultaneously.
-
-### What It Teaches: icon spacing + solid icon color
-- Row 2's icon badges were touching row 1's boxes — the grid's uniform
-  `gap` wasn't accounting for badges poking up 2/3 of their height above
-  their own box on every row, not just the first. Split into separate
-  `row-gap` (sized with the same `--icon-size`-based clearance math used
-  for the top-of-grid fix) and `column-gap` (unchanged), so every row
-  boundary gets the clearance it needs.
-- Icon placeholder changed from a tinted/dashed circle to a solid fill
-  in the tile's brand color, per feedback.
-
-### How It Works: step titles + section height reduction
-- Each step's copy was already one run-on sentence-group in a single
-  `<p>`; split into a title (the first sentence — uppercase, yellow
-  `--color-neda` accent, own line) and one `<p class="...__step-line">`
-  per remaining sentence, each on its own line. Chose yellow specifically
-  because it reads clearly against this section's green background and
-  reuses an existing brand color rather than introducing a new one-off
-  accent.
-- Section was running 2+ screens tall on desktop — per feedback, reduced
-  to ≤1.5 screens. The card placeholder's width was the single biggest
-  lever (its 3:5 aspect-ratio means every pixel of width becomes 1.67px
-  of height): shrunk from `min(220px, 60vw)` to `min(130px, 36vw)`.
-  Combined with tightening the section's padding, heading margin, and
-  inter-step gap (all `--space-5` → `--space-4`), measured section
-  height dropped to ~910px in a 900px-tall viewport (~1 screen) —
-  verified via actual `getBoundingClientRect()`, not estimated.
-
-### How It Works: reverted sentence-per-line back to a paragraph
-- The previous change split each step's body into one `<p>` per
-  sentence; reverted per feedback back to a single flowing paragraph
-  (still `.how-it-works__step-line`, just one instance holding all the
-  sentences together again). The title line (first sentence, uppercase/
-  accent) is unaffected and stays separate.
-
-### What It Teaches: real icons wired in (5 of 6), contrast-aware coloring
-- The person supplied 6 draft icon assets. Reviewed each against the
-  section's 6 tiles: 5 (resist/open-hand, running-away, tell/megaphone,
-  keyword/key, help/shield+heart) are flat single-color silhouette
-  glyphs, same visual family, and were wired in. The 6th (`face.png`, a
-  small multi-tone gray emoji-style graphic, 128×128 vs. 420-1500px for
-  the others) was rejected for both a style mismatch (won't recolor
-  cleanly the way a flat silhouette does) and a resolution mismatch
-  (would look visibly softer than the rest at the same display size).
-  Мишо's tile stays a plain color-filled circle (no glyph) until a
-  same-style replacement is picked — search terms suggested: "confused/
-  frozen/distracted/thinking," not "face" or "emoji," in a matching flat
-  single-color style. Suggested libraries for that replacement (or any
-  future icon swaps): Phosphor Icons, Material Symbols (Filled/Rounded),
-  Font Awesome Solid.
-- Icon → tile mapping: resist→Неда, running_away→Вихрен, tell→Веста,
-  keyword→Заки, help→Buddy (turquoise).
-- Contrast problem raised by the person: Мишо's beige (`--color-misho`)
-  is light, so a white icon glyph would have poor contrast. Solved with
-  CSS `mask-image` instead of plain `<img>` tags: each of the 5 source
-  PNGs is a solid alpha shape, so `mask-image` lets ONE asset be tinted
-  to whatever color a given tile needs via `background-color`, rather
-  than needing a separately-colored file per pairing. Glyph color per
-  tile reuses the exact same light/dark contrast calls already made for
-  each Bravie's card caption text (`--card-text-on-accent`) — e.g.
-  Вихрен's orange and Мишо's beige both needed dark there for the same
-  reason they need a dark glyph here. Buddy's turquoise (new, no prior
-  precedent) was tested both ways by rendering and cropping both
-  options side by side; dark read with visibly crisper contrast, so
-  that's what shipped — not assumed from color values alone.
-- Two real bugs found and fixed while verifying, neither guessable from
-  the CSS alone:
-  1. **`mask-image` is blocked under `file://` by CORS** in Chromium
-     (regular `<img src>` isn't affected — this is mask-specific).
-     Confirmed by serving the project over a local HTTP server instead
-     and re-testing; icons rendered correctly there. This only matters
-     for local testing — any real hosting (http/https) is unaffected —
-     but it's worth remembering the next time something needs visual
-     verification: if `mask-image` (or anything else fetch-like) seems
-     broken while opening `index.html` directly as a file, try serving
-     it over HTTP before assuming the code is wrong.
-  2. **`mask-image: none` does not hide an unmasked layer** — it was
-     meant to leave Мишо's placeholder circle empty (no icon yet), but
-     removing the mask just makes the layer render fully unmasked,
-     which showed up as a solid dark square. Fixed by defaulting the
-     glyph pseudo-element to `content: none` (not rendered at all) and
-     only having tiles with a confirmed icon override that to `content:
-     ''` to activate it.
-- No HTML changes were needed for any of this — the icon `<span>`
-  elements already existed as empty placeholders from Phase 2; the
-  glyph is entirely a CSS-layer (`::after` + mask) addition.
-
-### Open items carried forward (not yet resolved)
-- Two invalid hex codes in early spec drafts are now fixed in this
-  version's Design System section — no longer open.
-- Section background colors (Problem → Wait-list Signup) — still TBD.
-- Icon source for the Desired State section's 2×2 grid (custom SVG vs.
-  icon library) — not yet decided, relevant when Phase 3 is built.
-- Bottom-of-page Wait-list Signup section confirmed to reuse the exact
-  same form/copy pattern as the hero form (per spec: "Same form for
-  email and submit button as in the hero section") — `script.js`
-  already supports this via a reusable `initWaitlistForm()` called once
-  per `[data-waitlist-form]` element, so Phase 4 just needs to add the
-  markup with that attribute.
-- Desktop card tab-order vs. visual-order mismatch (see above) — no
-  decision made yet on whether to address it (e.g. via a JS-based DOM
-  reorder) or accept it.
-
+- Section background colors for Testimonials, Desired State, FAQ, and Wait-list Signup.
+- Icon source for the Desired State section's 2×2 grid.
+- Мишо's "What It Teaches" icon — placeholder until a same-style replacement is picked.
+- Buddy tile copy (What It Teaches) — first draft, not yet reviewed.
+- Desktop Bravies card tab-order vs. visual-order mismatch — no decision yet on whether to address it.

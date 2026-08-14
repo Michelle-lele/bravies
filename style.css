@@ -27,6 +27,14 @@
     "joker" category not tied to any single Bravie (per feedback: their
     draft card art is already turquoise) */
 
+  /* Deep-toned variants of the same hues, for icon glyphs that should
+     read as colorful rather than plain dark/white (per feedback on the
+     What It Teaches icons) — a burnt-orange hand, a deep-red runner,
+     a deep teal-blue heart. */
+  --color-icon-burnt-orange: #A8501A;
+  --color-icon-deep-red: #7A2020;
+  --color-icon-deep-teal: #0E4749;
+
   /* --- Hero --- */
   --color-hero-bg: #5080BF;
   --color-hero-text: #F8FAFC;
@@ -46,7 +54,10 @@
      tints. Alternates with white per spec, continuing from Bravies'
      white background. */
   --color-section-problem-bg: #725598; /* Заки's purple */
-  --color-section-works-bg: #278C5D;   /* Веста's green */
+  --color-section-works-bg: var(--color-misho); /* Мишо's beige — was Веста's
+    green; changed per feedback. Being light rather than a bold saturated
+    color, it needs different text/accent handling than the rest of this
+    section's rules assumed — see .how-it-works below. */
 
   /* --- Type --- */
   --font-display: 'Baloo 2', system-ui, sans-serif;  /* rounded, playful — headlines */
@@ -753,6 +764,16 @@ input:focus-visible {
   font-weight: 700;
 }
 
+/* Accent-colored, oversized quotation marks — turns the heading into a
+   visible pull-quote rather than reading as an unmarked headline. */
+.problem__quote-mark {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: var(--color-neda);
+  line-height: 0;
+  vertical-align: -0.08em;
+}
+
 .problem__body {
   display: flex;
   flex-direction: column;
@@ -826,7 +847,8 @@ input:focus-visible {
 
 .teaches__point {
   --point-color: var(--color-neda);
-  --icon-glyph-color: var(--color-text-dark); /* Неда's yellow is light — dark glyph, same call as its card caption text color */
+  --icon-glyph-color: var(--color-icon-burnt-orange); /* per feedback:
+    colorful rather than plain dark on Неда's yellow */
   --icon-url: url('assets/icons/resist.png');
   position: relative;
   overflow: visible;
@@ -843,15 +865,13 @@ input:focus-visible {
   border: 3px solid var(--point-color);
 }
 
-/* Colors and icon assets below reuse the exact same light/dark glyph
-   calls already made for each Bravie's card caption text (see the
-   .brave-card--* rules) — e.g. Вихрен's orange and Мишо's beige both
-   needed dark text there for the same contrast reason they need a dark
-   icon glyph here. Кeeping the two decisions in sync rather than
-   re-litigating contrast per element. */
+/* Icon glyph colors below are chosen for a colorful result rather than
+   reusing the plain dark/white split from each Bravie's card caption
+   text (per feedback: "colorful would be better") — Веста's and
+   Заки's white glyphs were confirmed good as-is and left unchanged. */
 .teaches__point:nth-child(6n+2) {
   --point-color: var(--color-vihren);
-  --icon-glyph-color: var(--color-text-dark);
+  --icon-glyph-color: var(--color-icon-deep-red);
   --icon-url: url('assets/icons/running_away.png');
 }
 .teaches__point:nth-child(6n+3) {
@@ -877,9 +897,8 @@ input:focus-visible {
 }
 .teaches__point:nth-child(6n+6) {
   --point-color: var(--color-buddy);
-  --icon-glyph-color: var(--color-text-dark); /* turquoise tested closer to
-    "light" than "dark" for glyph contrast purposes — verified by
-    rendering both options, not assumed */
+  --icon-glyph-color: var(--color-icon-deep-teal); /* per feedback: a
+    deep green/blue instead of plain dark on the turquoise circle */
   --icon-url: url('assets/icons/help.png');
 }
 
@@ -936,13 +955,44 @@ input:focus-visible {
   line-height: 1.5;
 }
 
+.teaches__cta {
+  display: flex;
+  justify-content: center;
+}
+
+/* Reusable CTA button — reuses the hero form button's yellow, since
+   that's already the page's established "primary action" color, rather
+   than introducing a new one-off CTA color. Written generically (not
+   scoped to .teaches) since the Desired State section's "Искам това
+   спокойствие" CTA will need the same treatment later. */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  background: var(--color-neda);
+  border-radius: var(--radius-input);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.cta-button:hover { background: #ffe27a; }
+.cta-button:active { transform: scale(0.98); }
+
 /* ---------------------------------------------------------------------
    HOW IT WORKS SECTION
 --------------------------------------------------------------------- */
 .how-it-works {
   padding: var(--space-4) var(--space-2);
   background: var(--color-section-works-bg);
-  color: var(--color-hero-text);
+  color: var(--color-text-dark); /* was --color-hero-text (white) — wrong
+    once the background changed from Веста's dark green to Мишо's light
+    beige; every other color below this point was re-checked against the
+    new background too, not just this one line */
 }
 
 .how-it-works__inner {
@@ -996,18 +1046,22 @@ input:focus-visible {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(248, 250, 252, 0.18);
-  border: 2px solid rgba(248, 250, 252, 0.5);
+  /* Was a translucent-white ring, designed to sit on Веста's dark green.
+     On the new light beige background that would barely be visible —
+     solid purple + white number gives real contrast instead. */
+  background: var(--color-zaki);
+  color: var(--color-surface-white);
   margin-bottom: 0.2rem;
 }
 
 /* First sentence of each step is its title: uppercase, accent color,
    own line — per feedback, distinguishing it from the plain
    explanatory sentences that follow (each of which also gets its own
-   line, rather than running together as one paragraph). Yellow
-   (--color-neda) reads clearly against this section's green
-   background and keeps the accent tied to the existing brand palette
-   rather than introducing a new one-off color. */
+   line, rather than running together as one paragraph). Was yellow
+   (--color-neda), which read clearly on the section's old dark green
+   background but would be too low-contrast on the new light beige one
+   — switched to Заки's purple, which also now matches the step-number
+   badge for a consistent accent throughout the section. */
 .how-it-works__step-title {
   margin: 0;
   font-family: var(--font-display);
@@ -1015,7 +1069,7 @@ input:focus-visible {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: var(--color-neda);
+  color: var(--color-zaki);
 }
 
 .how-it-works__step-line {
@@ -1026,25 +1080,20 @@ input:focus-visible {
 
 .how-it-works__card-wrap {
   flex: 1 1 0;
+  min-height: 0; /* same flex/img lesson noted below — applies here too now that real <img> cards exist */
   display: flex;
   justify-content: center;
 }
 
-/* Card placeholder: reuses the same aspect ratio token as the Bravies
-   cards (--card-aspect, 3:5 per spec) and the same "played on a table"
-   tilt technique (a small per-step rotate()) rather than inventing a
-   new approach. No real artwork yet, so this is a dashed-pattern
-   placeholder in the same spirit as the Bravies cards' pre-image state —
-   NOTE for whichever phase adds real card art here: wrap it in an <img>
-   sized with width/height:100% + object-fit:contain (not max-width/
-   max-height + auto), and if it ends up nested in any flex/grid
-   container, set min-height:0 on that container. Skipping max-width/
-   max-height here caused a real overflow bug on the Bravies cards
-   (documented in SDD.md) — this note exists so it isn't rediscovered.
-   Sized small deliberately (per feedback the section was running
-   2+ screens tall on desktop) — this is the single biggest lever on
-   the section's overall height, since the card's aspect-ratio (3:5)
-   means every pixel of width becomes 1.67px of height. */
+/* Card: reuses the same aspect ratio token as the Bravies cards
+   (--card-aspect, 3:5 per spec) and the same "played on a table" tilt
+   technique (a small per-step rotate()) rather than inventing a new
+   approach. Steps 1 and 2 now use real card art (--img modifier,
+   below); step 3 still has no artwork, so it stays the dashed-pattern
+   placeholder — sized small deliberately (per feedback the section was
+   running 2+ screens tall on desktop; this is the single biggest lever
+   on the section's overall height, since the 3:5 aspect ratio means
+   every pixel of width becomes 1.67px of height). */
 .how-it-works__card {
   width: min(130px, 36vw);
   aspect-ratio: var(--card-aspect);
@@ -1060,6 +1109,23 @@ input:focus-visible {
   font-size: var(--font-size-small);
   font-weight: 700;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+/* Real card art. NOTE this corrects an assumption carried over from the
+   Bravies-card fix: there, the <img> was a CHILD of a separately-sized
+   container, so width/height:100% made it fill that parent. Here, this
+   element IS the box (width + aspect-ratio come from the base
+   .how-it-works__card rule, above, applied to this same element) — so
+   width:100% would instead resolve against the flex parent (card-wrap)
+   and blow the card up far past its intended ~130px size, which is
+   exactly what happened on first render (measured 530px instead of
+   ~130px). Only object-fit is needed here; no explicit width/height. */
+.how-it-works__card--img {
+  display: block;
+  object-fit: cover;
+  padding: 0;
+  border: none;
+  background: none;
 }
 
 .how-it-works__step--1 .how-it-works__card { transform: rotate(-3deg); }
@@ -1079,7 +1145,20 @@ input:focus-visible {
     gap: var(--space-2);
   }
 
-  .how-it-works__card-wrap { order: -1; }
+  .how-it-works__card-wrap {
+    order: -1;
+    /* min-height:0 (set for the desktop row layout, to prevent the
+       overflow bug documented above) has the opposite effect here:
+       in a COLUMN flex container, flex:1 1 0 with min-height:0 collapses
+       the item toward its 0 flex-basis instead of sizing to the image's
+       aspect-ratio height, since there's no automatic content-based
+       minimum left to fall back on. Confirmed by measuring: the card
+       rendered at the correct 130px width but only ~6px tall. Restoring
+       auto here fixes it without reintroducing the original overflow
+       bug, since that was a row-direction-specific issue. */
+    min-height: auto;
+    flex: 0 0 auto;
+  }
 
   .how-it-works__text { text-align: center; align-items: center; }
 }
