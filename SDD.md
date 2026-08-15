@@ -1,11 +1,21 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-*Status: Phase 1 (Hero + Bravies Intro) and Phase 2 (Problem + What It
-Teaches + How It Works) complete. Phase 3 (Testimonials + Desired
-State) next, then Phase 4 (FAQ + Wait-list Signup), then Phase 5
+*Status: Phase 1 (Hero + Bravies Intro), Phase 2 (Problem + What It
+Teaches + How It Works), and Phase 3 (Testimonials + Desired State)
+complete. Phase 4 (FAQ + Wait-list Signup) next, then Phase 5
 (integration pass). This document reflects current, as-built behavior
 — not a change history. Tech stack decision: vanilla JS (no framework
 needed).*
+
+*⚠️ Phase 3 note: the actual Phase 1–2 `script.js` was not included in
+the file set handed to the assistant for this phase (only
+`index.html`, `style.css`, `SDD.md` were attached). The Hero-cloud
+scroll-progress, reveal-on-scroll, and `initWaitlistForm()` logic
+described below were reconstructed from this document's own
+description of their behavior, not copied from a verified source file.
+Diff the reconstructed `script.js` against your real one before
+relying on it — the Phase 3 addition (testimonials slider) is newly
+written either way and unaffected by this.*
 
 ## 1. Goal
 
@@ -98,13 +108,35 @@ Step copy (spec's original step 2 had a duplicated clause — fixed, used once):
 - Mobile: each step's card stacks above its related text (visual-only reorder).
 - Scroll-triggered slide-in-up animation, per-element (each step's text block and card reveal independently, not the whole section at once), one-time (doesn't repeat), skipped under `prefers-reduced-motion`.
 
-### Testimonials Section *(not yet built)*
+### Testimonials Section
 
-H2: "Какво казват децата и родителите?" Quoted text: "Това е най-яката игра, на която съм играл." — Анди на 5.5 години. Left-right sliding slider, only this one quote for now.
+H2: "Какво казват децата и родителите?" One quote live today: "Това е най-яката игра, на която съм играл." — Анди на 5.5 години.
 
-### Desired State Section *(not yet built)*
+- Placement: after How It Works, at the bottom of the page content (before FAQ/Wait-list in Phase 4). **Corrected in a follow-up pass** — the first Phase 3 build inserted this section right after Bravies by mistake (it was placed at the literal `NEXT-PHASE-INSERT-POINT` marker without checking that the marker itself sat before Phase 2's sections, not after them). Flagging so the same slip doesn't repeat: always confirm an insert-point marker's actual position in the file, not just its existence.
+- Background white `#F8FAFC`, same surface as Bravies/What It Teaches.
+- Built as a real left-right slider (track + `translateX`), not a static single card, even though only one slide exists — adding a second testimonial later is a markup-only change (append another `.testimonials__slide` `<li>` with its own `--slide-accent` inline style), no JS or CSS edits needed.
+- **No card/border.** The quote sits directly on the white background with large quotation-mark glyphs (`--font-display`, ~5rem) above and below the text. Each slide carries a `--slide-accent` custom property that colors both its quotation marks and its dot; the palette cycles through the 5 brand colors in this order: Веста green (default/first) → Вихрен orange → НЕда yellow → Заки purple → Мишо beige. Мишо's beige will read faint against the white background once the cycle reaches it — flagged, not yet resolved.
+- Controls: dots are the primary control (larger, colored per-slide, always visible — even with today's single quote); arrows are a smaller secondary affordance. Neither is hidden for a single slide anymore (an earlier version hid both via an `.is-single` class; removed per your feedback that the mechanism should read as "alive" before quote #2 exists).
+- Every interaction — dot click, arrow click, `ArrowLeft`/`ArrowRight`, touch swipe — replays the quote's fade/rise entrance animation, even when it loops back to the same single slide. This is a forced-reflow restart in JS (`initTestimonialsSlider()`; the CSS animation alone won't replay just by re-applying an unchanged class), not a CSS-only trick.
+- `prefers-reduced-motion` disables both the track's slide transition and the quote's entrance animation.
+- **Implementation note carried over from the first pass**: the dot-pagination wrapper (`[data-slider-dots]`) sits as a sibling of `.testimonials__slider` in the DOM, not nested inside it — the JS scopes its `querySelector` to the shared `.testimonials__inner` ancestor rather than to `slider` itself for this reason.
 
-H2: "Представете си този момент…" + body text (unchanged from original spec). 2×2 text-box grid on desktop/tablet, 1 per row on mobile, each with a distinct icon (placeholder — source not yet decided). CTA button "Искам това спокойствие" scrolling to the bottom signup section.
+### Desired State Section
+
+H2: "Представете си този момент…"
+
+Body (3 short paragraphs) walks through a specific reassurance scenario — child briefly out of sight at a playground, a stranger approaches, but instead of panic the parent feels calm because the child handles it correctly and reports back. Ends on "Това е моментът, в който осъзнавате, че:" leading into the grid.
+
+Grid copy (2×2 desktop/tablet, 1-column mobile), one line each:
+1. Вашето дете знае как да се пази самостоятелно.
+2. Изградили сте невидима броня от умения и инстинкти.
+3. Постоянната тревожност е заменена с дълбоко вътрешно спокойствие.
+4. Най-накрая можете да си отдъхнете, знаейки, че сте му дали най-ценния подарък.
+
+- Background: `--color-vihren` (Вихрен's orange, `#F68044`) — proposed, not locked; see Open Decisions. Dark text (`--color-text-dark`) on it, same contrast logic as the beige How It Works background.
+- 2×2 grid of white text boxes from `768px` up (`grid-template-columns: repeat(2, 1fr)`), 1 column below that. `--radius-card` corners, soft drop shadow.
+- Icon per box: placeholder only — same "3px dashed circle, no image" treatment as the How It Works step-3 card, reusing that established pattern rather than inventing a second placeholder style. Real icon source (one per box, content-matched) still not decided — see Open Decisions.
+- CTA: "Искам това спокойствие", reuses the `.cta-button` component (same yellow as the What It Teaches CTA); links to `#waitlist-signup`. That target doesn't exist until Phase 4 — expected no-op scroll until then.
 
 ### FAQs Section *(not yet built)*
 
@@ -118,7 +150,7 @@ H2: "Записването е отворено". Same form as the hero section 
 
 - Fonts: Baloo 2 (display/headings) + Nunito Sans (body/UI) — not specified in the original brief, chosen to fit "bright, colorful, kids-friendly."
 - Brand colors: Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`, Buddy/joker `#2FB6B0` (turquoise, new — not one of the original 5 Bravies). Deep-toned icon-only variants: burnt orange `#A8501A`, deep red `#7A2020`, deep teal `#0E4749` (used for colorful icon glyphs where plain white/dark wouldn't do).
-- Section backgrounds, in the spec's alternation order: Hero `#5080BF` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → **Testimonials / Desired State / FAQ / Wait-list Signup: still undecided**, continue the alternation with bold brand colors.
+- Section backgrounds, in the spec's alternation order: Hero `#5080BF` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → Testimonials white (`#F8FAFC`) → Desired State `#F68044` (Вихрен orange, **proposed, not locked** — the only warm brand color not yet used as a full section background; flagging for confirmation) → **FAQ / Wait-list Signup: still undecided**, continue the alternation.
 - Responsiveness: mobile (375px), tablet (768px portrait + landscape), desktop (1440px). Portrait vs. landscape tablet is distinguished via `orientation` media queries where the layout actually differs (Bravies section).
 
 ## 4. Functional Requirements (JS)
@@ -134,8 +166,10 @@ H2: "Записването е отворено". Same form as the hero section 
 
 ## Open Decisions
 
-- Section background colors for Testimonials, Desired State, FAQ, and Wait-list Signup.
-- Icon source for the Desired State section's 2×2 grid.
+- Section background colors for FAQ and Wait-list Signup (Testimonials/Desired State now set — see Design System; Desired State's orange is a proposal pending confirmation).
+- Icon source for the Desired State section's 2×2 grid (currently dashed-circle placeholders; final icons should be content-matched per box, not generic).
 - Мишо's "What It Teaches" icon — placeholder until a same-style replacement is picked.
 - Buddy tile copy (What It Teaches) — first draft, not yet reviewed.
 - Desktop Bravies card tab-order vs. visual-order mismatch — no decision yet on whether to address it.
+- Verify the reconstructed `script.js` (Hero clouds, reveal-on-scroll, `initWaitlistForm()`) against your real Phase 1–2 file — see the note at the top of this document.
+- Testimonials' 5-color accent cycle reaches Мишо's pale beige as a 5th option — confirm it's acceptable at low contrast against the white section background, or swap it for something darker once there are enough quotes to reach it.

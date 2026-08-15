@@ -1162,3 +1162,263 @@ input:focus-visible {
 
   .how-it-works__text { text-align: center; align-items: center; }
 }
+
+/* =====================================================================
+   PHASE 3 — Testimonials / Desired State
+   Added additively; nothing above this point was restructured. Reuses
+   existing tokens (--font-display, --font-size-h2, --space-*,
+   --radius-card, --radius-input, --color-* brand values, .reveal,
+   .cta-button) rather than introducing a parallel system.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   TESTIMONIALS SECTION
+--------------------------------------------------------------------- */
+.testimonials {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-surface-white);
+  color: var(--color-text-dark);
+}
+
+.testimonials__inner {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.testimonials__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  text-align: center;
+}
+
+.testimonials__slider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.testimonials__slider:focus-visible {
+  outline: 3px solid var(--color-zaki);
+  outline-offset: 4px;
+  border-radius: var(--radius-card);
+}
+
+.testimonials__viewport {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.testimonials__track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .testimonials__track { transition: none; }
+}
+
+.testimonials__slide {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+/* No card/border — the quote sits directly on the section background.
+   Each slide carries its own --slide-accent (set inline in index.html,
+   cycling through the 5 brand colors); the giant quotation marks pick
+   it up so tone shifts quote-to-quote once more are added. */
+.testimonials__quote {
+  margin: 0;
+  padding: 0 var(--space-3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.testimonials__mark {
+  font-family: var(--font-display);
+  font-size: 5rem;
+  line-height: 0.6;
+  font-weight: 700;
+  color: var(--slide-accent, var(--color-vesta));
+  display: block;
+}
+.testimonials__mark--open { margin-bottom: var(--space-1); }
+.testimonials__mark--close { margin-top: var(--space-2); align-self: flex-end; }
+
+.testimonials__quote p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  line-height: 1.35;
+  color: var(--color-text-dark);
+}
+
+.testimonials__cite {
+  display: block;
+  margin-top: var(--space-3);
+  font-style: normal;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* Quote-content animation: plays on initial paint and is explicitly
+   replayed by JS (forced reflow) on every interaction, including a
+   single-slide self-loop — see initTestimonialsSlider() in script.js. */
+.testimonials__quote {
+  animation: testimonial-bump 0.5s ease;
+}
+@keyframes testimonial-bump {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .testimonials__quote { animation: none; }
+}
+
+/* Dots are the primary control: larger, colored per-slide via the same
+   --slide-accent, always visible (including with a single quote) so the
+   mechanism reads as "alive" before quote #2 exists. Arrows stay as a
+   smaller secondary affordance. */
+.testimonials__arrow {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(30, 36, 51, 0.08);
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.testimonials__arrow:hover { background: rgba(30, 36, 51, 0.16); }
+.testimonials__arrow:active { transform: scale(0.92); }
+.testimonials__arrow svg { width: 1.1rem; height: 1.1rem; }
+
+.testimonials__dots {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.testimonials__dot {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--dot-accent, var(--color-vesta));
+  opacity: 0.35;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.testimonials__dot:hover { opacity: 0.6; }
+.testimonials__dot.is-active {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+@media (max-width: 480px) {
+  .testimonials__mark { font-size: 3.5rem; }
+  .testimonials__quote p { font-size: 1.25rem; }
+  .testimonials__arrow { width: 2rem; height: 2rem; }
+}
+
+/* ---------------------------------------------------------------------
+   DESIRED STATE SECTION
+   Background: proposed --color-vihren (Вихрен's orange) — see
+   SDD.md "Design System" note; flagged there as a proposal to confirm,
+   not a locked decision.
+--------------------------------------------------------------------- */
+.desired-state {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-vihren);
+  color: var(--color-text-dark); /* orange is a mid-bright surface —
+    dark text reads better here than white (checked against the same
+    --color-text-dark used on Мишо's light beige in How It Works). */
+}
+
+.desired-state__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.desired-state__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 700;
+  text-align: center;
+}
+
+.desired-state__body {
+  max-width: 62ch;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 2×2 on tablet/desktop (≥768px), 1 column on mobile — per spec, this
+   section (unlike Problem/Teaches) DOES have an explicit mobile-specific
+   layout requirement. */
+.desired-state__grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+@media (min-width: 768px) {
+  .desired-state__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.desired-state__box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface-white);
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.desired-state__box p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-dark);
+}
+
+/* Icon placeholder: same "plain dashed box, not a guessed real icon"
+   treatment as the How It Works step-3 card placeholder
+   (.how-it-works__card's dashed border), reused here rather than
+   inventing a second placeholder style — swap for a real icon asset
+   (source not yet decided, see SDD.md Open Decisions) later. */
+.desired-state__box-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border: 3px dashed rgba(30, 36, 51, 0.3);
+  border-radius: 50%;
+}
+
+.desired-state__cta {
+  display: flex;
+  justify-content: center;
+}

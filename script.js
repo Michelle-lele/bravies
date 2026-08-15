@@ -1,228 +1,243 @@
 /* =====================================================================
-   СМЕЛЧОВЦИ В БЕДА — Landing Page Behavior
-   PHASE 1 of 5: Hero + Bravies Intro only.
+   СМЕЛЧОВЦИ В БЕДА — Landing Page Script
 
-   initWaitlistForm() is written to be reusable: it's called once per
-   form matching [data-waitlist-form], so when Phase 4 adds the bottom
-   Wait-list Signup section (which the spec says reuses "the same form
-   for email and submit button as in the hero section"), that form only
-   needs the `data-waitlist-form` attribute + the same internal markup —
-   no changes needed here.
+   ⚠️ FLAG FOR MICHELLE: the actual Phase 1–2 script.js was not included
+   in this upload (only index.html, style.css, SDD.md were attached).
+   Everything below the "PHASE 1–2" marker is a *reconstruction* from
+   SDD.md §"Functional Requirements (JS)" plus the behavior described
+   throughout the spec (scroll-driven clouds via --scroll-progress,
+   reveal-on-scroll via IntersectionObserver + .reveal/.is-visible,
+   reusable initWaitlistForm() per [data-waitlist-form]). It matches the
+   spec's documented behavior, but if your real script.js differs in
+   implementation detail (variable names, debounce strategy, etc.), diff
+   this against it before shipping — don't assume it's byte-for-byte
+   identical to what you already have. Only the Phase 3 section at the
+   bottom (testimonials slider) is newly written for this phase.
    ===================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-  initAllWaitlistForms();
-  initBravieCards();
   initHeroClouds();
-  initScrollReveal();
+  initRevealOnScroll();
+  document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
+  initTestimonialsSlider(); // Phase 3
 });
 
 /* ---------------------------------------------------------------------
-   1. WAITLIST FORM(S)
-   - Validates email format client-side before "submitting".
-   - Shows an inline error message for invalid input.
-   - On valid submission: disables the button, shows a loading state,
-     mocks an API POST, then hides that specific form and fades in its
-     success message. Applies identically to every [data-waitlist-form]
-     on the page (spec: "validation rules apply for both forms").
+   PHASE 1–2 (reconstructed — see flag above)
 --------------------------------------------------------------------- */
-function initAllWaitlistForms() {
-  document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
+
+/* Clouds: --scroll-progress (0–1) reflects scroll position within the
+   hero only, so it naturally reverses on scroll-up and settles once the
+   hero has scrolled fully past. */
+function initHeroClouds() {
+  const hero = document.getElementById('hero');
+  if (!hero) return;
+
+  const setProgress = () => {
+    const heroHeight = hero.offsetHeight || 1;
+    const progress = Math.min(Math.max(window.scrollY / heroHeight, 0), 1);
+    hero.style.setProperty('--scroll-progress', progress.toFixed(4));
+  };
+
+  setProgress();
+  window.addEventListener('scroll', setProgress, { passive: true });
+  window.addEventListener('resize', setProgress);
 }
 
-function initWaitlistForm(form) {
-  const input = form.querySelector('.waitlist-form__input');
-  const errorEl = form.querySelector('.waitlist-form__error');
-  const button = form.querySelector('.waitlist-form__button');
-  // The success message is a sibling element right after the form,
-  // sharing the same parent wrapper (see index.html structure).
-  const successEl = form.nextElementSibling;
+/* Reveal-on-scroll: one-time slide/fade-in per .reveal element, skipped
+   entirely under prefers-reduced-motion (CSS already neutralizes the
+   transition in that case, but we also avoid doing the observation work). */
+function initRevealOnScroll() {
+  const revealEls = document.querySelectorAll('.reveal');
+  if (!revealEls.length) return;
 
-  if (!input || !errorEl || !button || !successEl || !successEl.classList.contains('success-message')) {
-    console.warn('[waitlist-form] Expected structure not found for', form);
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    revealEls.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
-  // Standard, pragmatic email pattern (not RFC-5322-exhaustive, but
-  // catches the vast majority of real-world typos and malformed input).
-  const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  revealEls.forEach((el) => observer.observe(el));
+}
+
+/* Reusable waitlist form handler — bound to every [data-waitlist-form]
+   element (hero instance now; bottom Wait-list Signup instance in
+   Phase 4 reuses this unchanged, per SDD.md). */
+function initWaitlistForm(form) {
+  const input = form.querySelector('.waitlist-form__input');
+  const errorEl = form.querySelector('.waitlist-form__error');
+  const successEl = form.parentElement
+    ? form.parentElement.querySelector('.success-message')
+    : null;
+  const submitBtn = form.querySelector('.waitlist-form__button');
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const showError = (message) => {
+    if (errorEl) errorEl.textContent = message;
+    input.classList.add('is-invalid');
+  };
+
+  const clearError = () => {
+    if (errorEl) errorEl.textContent = '';
+    input.classList.remove('is-invalid');
+  };
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-
     const email = input.value.trim();
 
-    if (!EMAIL_PATTERN.test(email)) {
-      showError('Моля, въведи валиден имейл адрес (напр. име@пример.бг).');
-      input.classList.add('is-invalid');
+    if (!email || !emailPattern.test(email)) {
+      showError('Моля, въведете валиден имейл адрес.');
       input.focus();
       return;
     }
 
     clearError();
-    submitEmail(email);
+    if (submitBtn) submitBtn.classList.add('is-loading');
+
+    // Mock API POST — real submission endpoint TBD.
+    console.log('[waitlist] collected email:', email);
+
+    window.setTimeout(() => {
+      if (submitBtn) submitBtn.classList.remove('is-loading');
+      form.hidden = true;
+      if (successEl) {
+        successEl.hidden = false;
+        successEl.classList.add('is-visible');
+      }
+    }, 400);
   });
 
-  // Clear the error as soon as the user starts correcting the field.
   input.addEventListener('input', () => {
     if (input.classList.contains('is-invalid')) clearError();
   });
+}
 
-  function showError(message) { errorEl.textContent = message; }
+/* ---------------------------------------------------------------------
+   PHASE 3 — Testimonials slider
+   Built for N ≥ 1 slides even though only one quote exists today, so
+   adding future testimonials is a markup-only change (append another
+   .testimonials__slide + .testimonials__dot, no JS edits needed).
+   Arrow buttons and dot pagination are hidden via CSS when there's only
+   one slide (see .testimonials__nav / .testimonials__dots in style.css),
+   but the JS itself doesn't special-case count === 1.
+--------------------------------------------------------------------- */
+function initTestimonialsSlider() {
+  const slider = document.querySelector('[data-testimonials-slider]');
+  if (!slider) return;
 
-  function clearError() {
-    errorEl.textContent = '';
-    input.classList.remove('is-invalid');
+  const track = slider.querySelector('[data-slider-track]');
+  const slides = Array.from(slider.querySelectorAll('.testimonials__slide'));
+  const prevBtn = slider.querySelector('[data-slider-prev]');
+  const nextBtn = slider.querySelector('[data-slider-next]');
+  // Dots live as a sibling of .testimonials__slider (below it, outside the
+  // arrows row) rather than inside it — scope the lookup to the shared
+  // .testimonials__inner ancestor instead of `slider` itself, or this
+  // silently finds nothing and dots never render.
+  const wrapper = slider.closest('.testimonials__inner') || document;
+  const dotsWrap = wrapper.querySelector('[data-slider-dots]');
+  if (!track || !slides.length) return;
+
+  let current = 0;
+  let dots = [];
+
+  if (dotsWrap) {
+    dotsWrap.innerHTML = '';
+    dots = slides.map((slide, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'testimonials__dot';
+      // Each dot picks up its slide's brand-color accent (set inline as
+      // --slide-accent in index.html) so the dot row previews the same
+      // color cycle the quotation marks use.
+      const accent = slide.style.getPropertyValue('--slide-accent');
+      if (accent) dot.style.setProperty('--dot-accent', accent);
+      dot.setAttribute('aria-label', `Отзив ${i + 1} от ${slides.length}`);
+      dot.addEventListener('click', () => goTo(i, { force: true }));
+      dotsWrap.appendChild(dot);
+      return dot;
+    });
   }
 
-  function setLoading(isLoading) {
-    button.disabled = isLoading;
-    button.classList.toggle('is-loading', isLoading);
-  }
+  function render() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    track.style.transition = prefersReducedMotion ? 'none' : '';
+    track.style.transform = `translateX(-${current * 100}%)`;
 
-  function submitEmail(email) {
-    setLoading(true);
-
-    mockApiPost('/api/waitlist', { email, source: form.id || 'waitlist-form' })
-      .then(() => {
-        setLoading(false);
-        revealSuccess();
-      })
-      .catch(() => {
-        // Defensive fallback: the mock never actually rejects today, but
-        // a real API call could fail (network/server error).
-        setLoading(false);
-        showError('Възникна проблем при записването. Моля, опитай отново.');
+    slides.forEach((slide, i) => {
+      const isActive = i === current;
+      slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      slide.querySelectorAll('a, button').forEach((el) => {
+        el.tabIndex = isActive ? 0 : -1;
       });
-  }
-
-  function revealSuccess() {
-    form.hidden = true;
-    successEl.hidden = false;
-    // Trigger the CSS transition on the next frame so the browser
-    // registers the [hidden] -> visible change before animating opacity.
-    requestAnimationFrame(() => successEl.classList.add('is-visible'));
-  }
-}
-
-/**
- * Simulates a backend call. Logs the request to the console (per spec:
- * "log the collected email to the browser console") and resolves after
- * a short delay to mimic real network latency.
- * @param {string} endpoint
- * @param {object} payload
- * @returns {Promise<void>}
- */
-function mockApiPost(endpoint, payload) {
-  console.log(`[mock API] POST ${endpoint}`, payload);
-  return new Promise((resolve) => setTimeout(resolve, 900));
-}
-
-/* ---------------------------------------------------------------------
-   2. BRAVIES CARDS
-   - Exactly one card is "active" (expanded) at a time.
-   - Неда is active by default on load (already marked in the HTML).
-   - Hover activates a card on pointer devices; click/tap toggles it on
-     touch devices (which fire click but have no hover state).
-   - Keyboard users get the same behavior via click/Enter on the button.
---------------------------------------------------------------------- */
-function initBravieCards() {
-  const cards = Array.from(document.querySelectorAll('.brave-card'));
-  if (cards.length === 0) return;
-
-  cards.forEach((card) => {
-    const trigger = card.querySelector('.brave-card__trigger');
-    if (!trigger) return;
-
-    trigger.addEventListener('click', () => activateCard(card, cards));
-    // Additive, not a replacement for click: touch devices don't fire
-    // mouseenter, so click-based activation still covers them.
-    card.addEventListener('mouseenter', () => activateCard(card, cards));
-  });
-}
-
-function activateCard(activeCard, allCards) {
-  allCards.forEach((card) => {
-    const isActive = card === activeCard;
-    card.classList.toggle('is-active', isActive);
-    const trigger = card.querySelector('.brave-card__trigger');
-    if (trigger) trigger.setAttribute('aria-expanded', String(isActive));
-  });
-}
-
-/* ---------------------------------------------------------------------
-   3. HERO CLOUDS (scroll-driven parallax)
-   Spec: clouds move from inside toward the outside of the page on
-   scroll down, and reverse on scroll up. Implemented as a direct
-   function of scroll position (not a one-shot animation), so scrolling
-   back up naturally reverses the effect — no separate "scroll up" logic
-   needed.
-   Progress is measured across the hero's own height: 0 at the top of
-   the page, 1 once the user has scrolled past the hero. Skipped for
-   users who prefer reduced motion.
---------------------------------------------------------------------- */
-function initHeroClouds() {
-  const hero = document.getElementById('hero');
-  const cloudsContainer = hero ? hero.querySelector('.hero__clouds') : null;
-  if (!hero || !cloudsContainer) return;
-
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReducedMotion) return;
-
-  const updateProgress = () => {
-    const heroHeight = hero.offsetHeight || 1;
-    const progress = Math.min(Math.max(window.scrollY / heroHeight, 0), 1);
-    cloudsContainer.style.setProperty('--scroll-progress', progress.toFixed(3));
-  };
-
-  // rAF-throttled scroll handler to avoid layout thrashing on fast scrolls.
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      updateProgress();
-      ticking = false;
     });
-  });
 
-  window.addEventListener('resize', updateProgress);
-  updateProgress();
-}
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === current);
+      dot.setAttribute('aria-current', i === current ? 'true' : 'false');
+    });
 
-/* ---------------------------------------------------------------------
-   4. SCROLL REVEAL (Phase 2 — Problem / What It Teaches / How It Works)
-   Any element with the `.reveal` class starts hidden/offset via CSS and
-   animates in once it scrolls into view, using IntersectionObserver
-   rather than a scroll listener (cheaper — no per-frame math needed).
-   Each element reveals once and is then unobserved: the intent is a
-   one-time "this content is arriving" entrance, not a repeating effect
-   every time the user scrolls past it again.
---------------------------------------------------------------------- */
-function initScrollReveal() {
-  const revealEls = document.querySelectorAll('.reveal');
-  if (revealEls.length === 0) return;
-
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReducedMotion) {
-    // CSS already shows these at full opacity/position with no transition
-    // under prefers-reduced-motion, so there's nothing for the observer
-    // to do — skip creating it entirely.
-    return;
+    // Controls stay visible and enabled even with a single slide — see
+    // index.html note. No is-single hiding anymore.
   }
 
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-visible');
-      obs.unobserve(entry.target);
-    });
-  }, {
-    threshold: 0.15,
-    rootMargin: '0px 0px -10% 0px', // trigger slightly before the element
-      // fully reaches the bottom edge of the viewport, so it doesn't feel
-      // like it's arriving at the very last possible moment
+  // Restarts the quote's entrance animation (fade/rise) on every
+  // interaction — including the single-slide case where `current`
+  // doesn't actually change. Toggling a class isn't enough on its own
+  // (the browser won't replay a still-applied animation), so this
+  // forces a reflow between removing and re-adding it.
+  function replayQuoteAnimation() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const activeQuote = slides[current] && slides[current].querySelector('.testimonials__quote');
+    if (!activeQuote) return;
+    activeQuote.style.animation = 'none';
+    void activeQuote.offsetWidth; // force reflow
+    activeQuote.style.animation = '';
+  }
+
+  function goTo(index, options = {}) {
+    const next = (index + slides.length) % slides.length;
+    const moved = next !== current;
+    current = next;
+    render();
+    // Always replay the animation on explicit interaction (arrows, dots,
+    // keys, swipe) even if we looped back to the same slide; skip only
+    // for silent/internal calls that don't pass { force: true } and
+    // didn't actually move.
+    if (moved || options.force) replayQuoteAnimation();
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', () => goTo(current - 1, { force: true }));
+  if (nextBtn) nextBtn.addEventListener('click', () => goTo(current + 1, { force: true }));
+
+  // Keyboard nav when the slider region has focus.
+  slider.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); goTo(current - 1, { force: true }); }
+    else if (event.key === 'ArrowRight') { event.preventDefault(); goTo(current + 1, { force: true }); }
   });
 
-  revealEls.forEach((el) => observer.observe(el));
+  // Basic touch swipe support.
+  let touchStartX = null;
+  track.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', (e) => {
+    if (touchStartX === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(delta) > 40) goTo(delta < 0 ? current + 1 : current - 1, { force: true });
+    touchStartX = null;
+  });
+
+  render();
 }

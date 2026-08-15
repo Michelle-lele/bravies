@@ -160,12 +160,12 @@
       PHASE BOUNDARY — sections below this point are built in later phases:
       Phase 2: The Problem section, "What the game teaches?" section, How It
                Works section
-      Phase 3: Testimonials section, Desired State section
+      Phase 3: Testimonials section, Desired State section (placed after
+               How It Works — see bottom of </main>, just above
+               NEXT-PHASE-INSERT-POINT)
       Phase 4: FAQs section, Wait-list Signup section (bottom)
       Phase 5: Integration pass (cross-section parallax/animation checks)
     -->
-    <!-- NEXT-PHASE-INSERT-POINT -->
-
     <!-- ============================= PROBLEM SECTION =============================
          No responsive/mobile layout is specified in the spec for this section
          (only How It Works has one) — defaulting to a single centered text
@@ -293,6 +293,109 @@
     </section>
 
 
+
+    <!-- ============================= TESTIMONIALS SECTION =============================
+         Slider is built for N ≥ 1 slides on purpose, even though only one
+         quote exists today: add another `.testimonials__slide` (+ matching
+         copy) later and the JS/CSS need no changes. Per your last round of
+         notes: arrows/dots stay visible even with a single slide (dots are
+         the primary control — larger, colored; arrows are a secondary,
+         smaller affordance), and every interaction — dot click, arrow
+         click, arrow key, swipe — always plays the slide/quote animation,
+         even when it loops back to the same single quote, so the
+         mechanism is visibly "alive" before quote #2 exists.
+         Each slide carries a --slide-accent custom property cycling
+         through the 5 brand colors in this fixed order: Веста green
+         (default/first — matches your "dark green" instruction), Вихрен
+         orange, НЕда yellow, Заки purple, Мишо beige. That accent colors
+         both the giant quotation mark and that slide's dot. Note: Мишо's
+         beige is pale against the white section background — it'll read
+         as the faintest of the five once there are enough quotes to
+         reach it; flagging in case you'd rather swap it for a 6th/darker
+         color at that point. -->
+    <section class="testimonials" id="testimonials" aria-labelledby="testimonials-heading">
+      <div class="testimonials__inner">
+        <h2 class="testimonials__heading reveal" id="testimonials-heading">Какво казват децата и родителите?</h2>
+
+        <div
+          class="testimonials__slider reveal"
+          id="testimonials-slider"
+          data-testimonials-slider
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Отзиви"
+          tabindex="0"
+        >
+          <button type="button" class="testimonials__arrow testimonials__arrow--prev" data-slider-prev aria-label="Предишен отзив">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="testimonials__viewport">
+            <ul class="testimonials__track" data-slider-track>
+              <li class="testimonials__slide" style="--slide-accent: var(--color-vesta);" aria-hidden="false">
+                <blockquote class="testimonials__quote">
+                  <span class="testimonials__mark testimonials__mark--open" aria-hidden="true">&ldquo;</span>
+                  <p>Това е най-яката игра, на която съм играл.</p>
+                  <span class="testimonials__mark testimonials__mark--close" aria-hidden="true">&rdquo;</span>
+                  <cite class="testimonials__cite">— Анди на 5.5 години</cite>
+                </blockquote>
+              </li>
+              <!-- Future testimonials: append another <li class="testimonials__slide"
+                   style="--slide-accent: var(--color-vihren);"> (next color in the
+                   cycle) here — no JS/CSS changes needed. -->
+            </ul>
+          </div>
+
+          <button type="button" class="testimonials__arrow testimonials__arrow--next" data-slider-next aria-label="Следващ отзив">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="testimonials__dots" data-slider-dots role="tablist" aria-label="Изберете отзив"></div>
+      </div>
+    </section>
+
+    <!-- ============================= DESIRED STATE SECTION ============================= -->
+    <section class="desired-state" id="desired-state" aria-labelledby="desired-state-heading">
+      <div class="desired-state__inner">
+        <h2 class="desired-state__heading reveal" id="desired-state-heading">Представете си този момент…</h2>
+
+        <div class="desired-state__body reveal">
+          <p>На площадката сте. Заговаряте се с друга майка и за секунда изпускате детето си от поглед. Когато се обръщате, виждате непознат да говори с него. Но вместо вълна на паника, вие усещате... спокойствие.</p>
+          <p>Наблюдавате как детето ви прави крачка назад, казва нещо кратко, но уверено, обръща се и с бързи крачки идва при вас, за да ви разкаже какво се е случило. Без страх, без объркване, без колебание.</p>
+          <p>Това е усещането за истинска увереност. Това е моментът, в който осъзнавате, че:</p>
+        </div>
+
+        <div class="desired-state__grid">
+          <div class="desired-state__box reveal">
+            <span class="desired-state__box-icon" aria-hidden="true"></span>
+            <p>Вашето дете знае как да се пази самостоятелно.</p>
+          </div>
+          <div class="desired-state__box reveal">
+            <span class="desired-state__box-icon" aria-hidden="true"></span>
+            <p>Изградили сте невидима броня от умения и инстинкти.</p>
+          </div>
+          <div class="desired-state__box reveal">
+            <span class="desired-state__box-icon" aria-hidden="true"></span>
+            <p>Постоянната тревожност е заменена с дълбоко вътрешно спокойствие.</p>
+          </div>
+          <div class="desired-state__box reveal">
+            <span class="desired-state__box-icon" aria-hidden="true"></span>
+            <p>Най-накрая можете да си отдъхнете, знаейки, че сте му дали най-ценния подарък.</p>
+          </div>
+        </div>
+
+        <div class="desired-state__cta reveal">
+          <a href="#waitlist-signup" class="cta-button">Искам това спокойствие</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT-PHASE-INSERT-POINT
+         Phase 4's Wait-list Signup section should carry id="waitlist-signup"
+         so the Desired State CTA above (href="#waitlist-signup") resolves
+         once that section exists; it currently scroll-links to a target
+         that doesn't exist yet, which is expected mid-phase. -->
 
   </main>
 
