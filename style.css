@@ -14,6 +14,56 @@
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
+   0. FONTS (self-hosted — see index.html <head> for the reasoning)
+   Dela Gothic One ships one real weight (400) — do not request 700/800/900
+   against it anywhere; the browser will synthetic-bold a single-weight
+   face and it looks blobby/wrong on an already-heavy display font. Every
+   heading rule below has been set to font-weight: 400 for this reason.
+--------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Dela Gothic One';
+  src: url('assets/fonts/dela-gothic-one-cyrillic-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('assets/fonts/nunito-sans-cyrillic-300-normal.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('assets/fonts/nunito-sans-cyrillic-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('assets/fonts/nunito-sans-cyrillic-600-normal.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('assets/fonts/nunito-sans-cyrillic-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('assets/fonts/nunito-sans-cyrillic-800-normal.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------
    1. DESIGN TOKENS
 --------------------------------------------------------------------- */
 :root {
@@ -60,7 +110,7 @@
     section's rules assumed — see .how-it-works below. */
 
   /* --- Type --- */
-  --font-display: 'Baloo 2', system-ui, sans-serif;  /* rounded, playful — headlines */
+  --font-display: 'Dela Gothic One', system-ui, sans-serif;  /* thick, chunky poster face — headlines. Single weight (400) only. */
   --font-body: 'Nunito Sans', system-ui, sans-serif; /* warm, friendly — body/UI text */
 
   /* --- Type scale (fluid, mobile-first) --- */
@@ -117,12 +167,15 @@ body {
   background: var(--color-surface-white);
   color: var(--color-text-dark);
   font-family: var(--font-body);
+  font-weight: 300; /* light body text, per typography direction — labels,
+    citations, and buttons override this explicitly where they need more
+    weight; this is the paragraph-text default. */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden; /* clouds intentionally travel toward/past the viewport edge */
 }
 
-h1, h2, h3 { font-family: var(--font-display); margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
 p { margin: 0; }
 ul { list-style: none; margin: 0; padding: 0; }
 button { font-family: inherit; }
@@ -282,7 +335,7 @@ input:focus-visible {
 
 .hero__title {
   font-size: var(--font-size-h1);
-  font-weight: 800;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   line-height: 1.05;
   color: var(--color-hero-text);
 }
@@ -345,7 +398,7 @@ input:focus-visible {
   padding: 1rem 1.5rem;
   font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   color: var(--color-text-dark);
   background: var(--color-neda);
   border: none;
@@ -574,7 +627,7 @@ input:focus-visible {
 
 .brave-card__name {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -761,14 +814,14 @@ input:focus-visible {
 
 .problem__heading {
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
 }
 
 /* Accent-colored, oversized quotation marks — turns the heading into a
    visible pull-quote rather than reading as an unmarked headline. */
 .problem__quote-mark {
   font-size: 1.4em;
-  font-weight: 800;
+  font-weight: 400; /* inherits Dela Gothic One from parent h2 — one real weight */
   color: var(--color-neda);
   line-height: 0;
   vertical-align: -0.08em;
@@ -804,7 +857,7 @@ input:focus-visible {
 
 .teaches__heading {
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   text-align: center;
 }
 
@@ -972,7 +1025,7 @@ input:focus-visible {
   padding: 1rem 2rem;
   font-family: var(--font-display);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   color: var(--color-text-dark);
   background: var(--color-neda);
   border-radius: var(--radius-input);
@@ -1002,7 +1055,7 @@ input:focus-visible {
 
 .how-it-works__heading {
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   text-align: center;
   margin-bottom: var(--space-4);
 }
@@ -1039,7 +1092,7 @@ input:focus-visible {
 .how-it-works__number {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -1066,7 +1119,7 @@ input:focus-visible {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: var(--color-zaki);
@@ -1191,7 +1244,7 @@ input:focus-visible {
 
 .testimonials__heading {
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   text-align: center;
 }
 
@@ -1243,7 +1296,7 @@ input:focus-visible {
   font-family: var(--font-display);
   font-size: 5rem;
   line-height: 0.6;
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   color: var(--slide-accent, var(--color-vesta));
   display: block;
 }
@@ -1252,7 +1305,13 @@ input:focus-visible {
 
 .testimonials__quote p {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-body); /* deviation from a literal display-font
+    swap — Dela Gothic One is a single-weight poster face; a full sentence
+    set in it at h2 size reads as shouty, not warm. Body font at 600
+    keeps the quote visually prominent while staying readable. Flagging
+    since this wasn't explicitly requested — happy to revert if you'd
+    rather the whole quote stay in the display face. */
+  font-weight: 600;
   font-size: var(--font-size-h2);
   line-height: 1.35;
   color: var(--color-text-dark);
@@ -1356,7 +1415,7 @@ input:focus-visible {
 
 .desired-state__heading {
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 400; /* Dela Gothic One has one real weight */
   text-align: center;
 }
 

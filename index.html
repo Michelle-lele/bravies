@@ -11,7 +11,16 @@
        design system brief. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Fonts are self-hosted from /assets/fonts (see @font-face rules at the
+       top of style.css) rather than loaded from Google Fonts' CDN.
+       Meaningful reason for this one: this is an EU/Bulgaria-facing site
+       collecting emails, and loading fonts.gstatic.com directly sends
+       every visitor's IP to Google before they've consented to
+       anything — this is the exact pattern a 2022 Munich court ruling
+       found to violate GDPR (no consent basis for that third-party
+       transfer). Self-hosting sidesteps the question entirely, plus
+       drops two DNS/TLS round-trips. The preconnect tags above are now
+       unused leftovers — harmless if left in, but fine to delete. -->
 
   <link rel="stylesheet" href="style.css" />
 </head>
