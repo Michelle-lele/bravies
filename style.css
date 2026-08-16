@@ -73,6 +73,13 @@
   --color-neda: #FDD43B;
   --color-vesta: #278C5D;
   --color-misho: #E5E1D6;
+  /* Мишо's full character palette (60% brand = --color-misho above,
+     shirt/overalls) — the other two are for accenting content that
+     sits on or near Мишо's beige without clashing, like How It Works'
+     titles (see .how-it-works__step-title). */
+  --color-misho-accent: #4FA6E0; /* 30% — cap/backpack, sky blue */
+  --color-misho-trim: #8B5E3C;   /* 10% — shoes/trim, brown */
+  --color-misho-hair: #D4B483;   /* signature hair, sandy dirty-blonde */
   --color-buddy: #2FB6B0; /* turquoise — the Help/Buddy cards, a distinct
     "joker" category not tied to any single Bravie (per feedback: their
     draft card art is already turquoise) */
@@ -245,7 +252,15 @@ input:focus-visible {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  --scroll-progress: 0; /* updated by script.js */
+  /* No --scroll-progress default here on purpose: this element must
+     INHERIT the live value script.js sets on #hero (its parent). A
+     custom property declared directly on an element — even "just a
+     fallback" — always wins over an inherited value, regardless of
+     specificity. Declaring `--scroll-progress: 0;` here (as a previous
+     version did) permanently pinned every cloud to 0 and silently broke
+     the entire scroll effect. #hero itself has no declared value either
+     until JS sets one, so `var(--scroll-progress, 0)` below is what
+     supplies the pre-JS/no-JS fallback instead. */
 }
 
 .cloud {
@@ -253,7 +268,7 @@ input:focus-visible {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  transform: translateX(calc(var(--scroll-progress) * var(--cloud-distance) * var(--cloud-dir)));
+  transform: translateX(calc(var(--scroll-progress, 0) * var(--cloud-distance) * var(--cloud-dir)));
 }
 
 .cloud--1 {
@@ -271,7 +286,7 @@ input:focus-visible {
   aspect-ratio: 2.31 / 1;
   top: 16%;
   right: 4%;
-  transform: scaleX(-1) translateX(calc(var(--scroll-progress) * var(--cloud-distance) * var(--cloud-dir)));
+  transform: scaleX(-1) translateX(calc(var(--scroll-progress, 0) * var(--cloud-distance) * var(--cloud-dir)));
   --cloud-dir: 1;
   --cloud-distance: 190px;
 }
@@ -596,6 +611,28 @@ input:focus-visible {
   transform: translateY(0) scale(1);
 }
 
+/* Scroll-triggered pulse for mobile + portrait tablet, where hover isn't
+   a real interaction. Each card pulses individually the first time it
+   scrolls into view (JS: initBraveCardScrollPulse() adds .is-pulsing
+   per-card via IntersectionObserver, one-shot — same convention as the
+   sitewide .reveal system). Uses the small/base transform as its
+   resting state, unlike the desktop pulse below which scales up from
+   the already-enlarged desktop portrait size. Neutralized again inside
+   the desktop breakpoint further down, where hover takes over instead —
+   this rule and the desktop hover rule are deliberately mutually
+   exclusive, not layered. */
+@keyframes brave-card-pulse-mobile {
+  0%   { transform: translateY(0) scale(1); }
+  50%  { transform: translateY(0) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+.brave-card__portrait-img.is-pulsing {
+  animation: brave-card-pulse-mobile 0.6s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brave-card__portrait-img.is-pulsing { animation: none; }
+}
+
 /* Caption bar: THIS is the spec's "thicker bottom border" — rather than
    an actual CSS border (which can only ever be a thin stripe, not a
    readable text panel), it's a solid-colored block using the card's
@@ -733,10 +770,23 @@ input:focus-visible {
     100% { transform: translateY(-14%) scale(1.16); }
   }
 
-  .brave-card.is-active .brave-card__portrait-img,
   .brave-card__trigger:hover .brave-card__portrait-img {
     animation: brave-card-pulse 0.5s ease;
   }
+  /* Desktop uses hover only — the scroll-triggered .is-pulsing class
+     (mobile/portrait-tablet) is neutralized here so the two mechanisms
+     never layer or conflict on the same element. */
+  .brave-card__portrait-img.is-pulsing {
+    animation: none;
+  }
+  /* Deliberately NOT also keyed to .brave-card.is-active — Неда's card
+     carries that class statically from page load (see index.html), so
+     tying the animation to it meant the pulse fired once on load and
+     then never again: the element's computed animation value never
+     actually changed on subsequent hovers (still resolving to the same
+     "brave-card-pulse 0.5s ease" the is-active rule already supplied),
+     so the browser had nothing to restart. Hover-only fixes it —
+     Неда's card now pulses on hover exactly like the other four. */
 
   /* Desktop/landscape-tablet visual order (see comment above and in
      index.html near the card-row markup) */
@@ -1022,6 +1072,7 @@ input:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   padding: 1rem 2rem;
   font-family: var(--font-display);
   font-size: 1.05rem;
@@ -1100,9 +1151,13 @@ input:focus-visible {
   justify-content: center;
   border-radius: 50%;
   /* Was a translucent-white ring, designed to sit on Веста's dark green.
-     On the new light beige background that would barely be visible —
-     solid purple + white number gives real contrast instead. */
-  background: var(--color-zaki);
+     On the light beige background that would barely be visible — solid
+     brown + white number gives real contrast instead. Мишо's own
+     trim/shoe color, matching the step titles below — was purple
+     (--color-zaki) until now, changed for the same reason as the
+     titles: purple was an unrelated accent clashing against Мишо's
+     card art in this section. */
+  background: var(--color-misho-trim);
   color: var(--color-surface-white);
   margin-bottom: 0.2rem;
 }
@@ -1122,7 +1177,11 @@ input:focus-visible {
   font-weight: 400; /* Dela Gothic One has one real weight */
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: var(--color-zaki);
+  color: var(--color-misho-trim); /* was --color-zaki purple — clashed
+    against Мишо-colored card art in this section. Мишо's own trim/shoe
+    brown reads as part of the same character instead of an unrelated
+    accent. Step-number badges (below) are still purple; flag if you'd
+    like those switched to Мишо's sky-blue accent too for full consistency. */
 }
 
 .how-it-works__step-line {
@@ -1250,9 +1309,6 @@ input:focus-visible {
 
 .testimonials__slider {
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
 }
 .testimonials__slider:focus-visible {
   outline: 3px solid var(--color-zaki);
@@ -1261,7 +1317,6 @@ input:focus-visible {
 }
 
 .testimonials__viewport {
-  flex: 1 1 auto;
   overflow: hidden;
 }
 
@@ -1279,29 +1334,40 @@ input:focus-visible {
 }
 
 /* No card/border — the quote sits directly on the section background.
-   Each slide carries its own --slide-accent (set inline in index.html,
-   cycling through the 5 brand colors); the giant quotation marks pick
-   it up so tone shifts quote-to-quote once more are added. */
+   Quotation marks flank the text left/right (not stacked above/below —
+   stacking ate too much vertical space) and are vertically centered
+   against the whole quote block, including the citation line. Each
+   slide carries its own --slide-accent (set inline in index.html,
+   cycling through the 5 brand colors); the marks pick it up so tone
+   shifts quote-to-quote once more are added. */
 .testimonials__quote {
   margin: 0;
-  padding: 0 var(--space-3);
-  text-align: center;
+  padding: 0 var(--space-2);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.testimonials__quote-body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 0;
 }
 
 .testimonials__mark {
+  flex: 0 0 auto;
   font-family: var(--font-display);
-  font-size: 5rem;
-  line-height: 0.6;
+  font-size: 3.5rem;
+  line-height: 1;
   font-weight: 400; /* Dela Gothic One has one real weight */
   color: var(--slide-accent, var(--color-vesta));
-  display: block;
 }
-.testimonials__mark--open { margin-bottom: var(--space-1); }
-.testimonials__mark--close { margin-top: var(--space-2); align-self: flex-end; }
+.testimonials__mark--open { align-self: flex-start; }
+.testimonials__mark--close { align-self: flex-end; }
 
 .testimonials__quote p {
   margin: 0;
@@ -1319,7 +1385,7 @@ input:focus-visible {
 
 .testimonials__cite {
   display: block;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   font-style: normal;
   font-size: var(--font-size-small);
   font-weight: 700;
@@ -1340,31 +1406,15 @@ input:focus-visible {
   .testimonials__quote { animation: none; }
 }
 
-/* Dots are the primary control: larger, colored per-slide via the same
-   --slide-accent, always visible (including with a single quote) so the
-   mechanism reads as "alive" before quote #2 exists. Arrows stay as a
-   smaller secondary affordance. */
-.testimonials__arrow {
-  flex: 0 0 auto;
-  width: 2.25rem;
-  height: 2.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: rgba(30, 36, 51, 0.08);
-  color: var(--color-text-dark);
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-.testimonials__arrow:hover { background: rgba(30, 36, 51, 0.16); }
-.testimonials__arrow:active { transform: scale(0.92); }
-.testimonials__arrow svg { width: 1.1rem; height: 1.1rem; }
-
+/* Dots are the only nav control now (arrows removed per feedback) —
+   larger, colored per-slide via --slide-accent, always visible
+   (including with a single quote) so the mechanism reads as "alive"
+   before quote #2 exists. */
 .testimonials__dots {
   display: flex;
+  justify-content: center;
   gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .testimonials__dot {
@@ -1385,9 +1435,9 @@ input:focus-visible {
 }
 
 @media (max-width: 480px) {
-  .testimonials__mark { font-size: 3.5rem; }
+  .testimonials__mark { font-size: 2.5rem; }
+  .testimonials__quote { gap: var(--space-1); }
   .testimonials__quote p { font-size: 1.25rem; }
-  .testimonials__arrow { width: 2rem; height: 2rem; }
 }
 
 /* ---------------------------------------------------------------------
@@ -1430,54 +1480,59 @@ input:focus-visible {
   text-align: center;
 }
 
-/* 2×2 on tablet/desktop (≥768px), 1 column on mobile — per spec, this
-   section (unlike Problem/Teaches) DOES have an explicit mobile-specific
-   layout requirement. */
-.desired-state__grid {
+/* Checkmark bullet list — replaces the earlier 2×2 icon-box grid.
+   Each item reveals individually (not as one block) via a per-item
+   transition-delay stagger on top of the shared .reveal mechanism, so
+   items cascade in one after another rather than popping together. */
+.desired-state__list {
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-3);
-}
-@media (min-width: 768px) {
-  .desired-state__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.desired-state__box {
+  max-width: 640px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--color-surface-white);
-  border-radius: var(--radius-card);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  gap: var(--space-3);
 }
 
-.desired-state__box p {
+.desired-state__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  text-align: left;
+}
+.desired-state__item:nth-child(1) { transition-delay: 0s; }
+.desired-state__item:nth-child(2) { transition-delay: 0.12s; }
+.desired-state__item:nth-child(3) { transition-delay: 0.24s; }
+.desired-state__item:nth-child(4) { transition-delay: 0.36s; }
+@media (prefers-reduced-motion: reduce) {
+  .desired-state__item { transition-delay: 0s; }
+}
+
+.desired-state__tick {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-vesta);
+  color: var(--color-surface-white);
+  margin-top: 0.15em; /* optical alignment with the first text line */
+}
+.desired-state__tick svg { width: 1.1rem; height: 1.1rem; }
+
+.desired-state__item p {
   margin: 0;
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-weight: 700; /* prominent, per feedback — bullets are the payoff
+    of the section, not fine print */
+  font-size: 1.15rem;
   line-height: 1.5;
   color: var(--color-text-dark);
-}
-
-/* Icon placeholder: same "plain dashed box, not a guessed real icon"
-   treatment as the How It Works step-3 card placeholder
-   (.how-it-works__card's dashed border), reused here rather than
-   inventing a second placeholder style — swap for a real icon asset
-   (source not yet decided, see SDD.md Open Decisions) later. */
-.desired-state__box-icon {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-  border: 3px dashed rgba(30, 36, 51, 0.3);
-  border-radius: 50%;
 }
 
 .desired-state__cta {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
+

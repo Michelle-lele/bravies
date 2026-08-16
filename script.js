@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRevealOnScroll();
   document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
   initTestimonialsSlider(); // Phase 3
+  initBraveCardScrollPulse(); // mobile/tablet scroll-triggered card pulse
 });
 
 /* ---------------------------------------------------------------------
@@ -71,6 +72,45 @@ function initRevealOnScroll() {
 
   revealEls.forEach((el) => observer.observe(el));
 }
+
+/* Bravies cards, mobile + portrait tablet: desktop uses :hover (see
+   style.css), but hover isn't a real interaction on touch devices, so
+   each card instead pulses once, individually, the first time it
+   scrolls into view — same one-shot IntersectionObserver pattern as
+   initRevealOnScroll() above, kept separate because it targets a
+   different element (.brave-card__portrait-img) and class (.is-pulsing,
+   not .is-visible) with its own CSS-defined animation rather than a
+   simple opacity/transform reveal. The corresponding CSS rule is
+   neutralized inside the desktop breakpoint, so this never double-fires
+   alongside hover on larger screens even though the class gets added
+   there too. */
+function initBraveCardScrollPulse() {
+  const portraits = document.querySelectorAll('.brave-card__portrait-img');
+  if (!portraits.length) return;
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-pulsing');
+          obs.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.6 }
+  );
+
+  portraits.forEach((img) => {
+    observer.observe(img);
+    // Clean up after the animation finishes rather than leaving the
+    // class sitting on the element indefinitely.
+    img.addEventListener('animationend', () => img.classList.remove('is-pulsing'));
+  });
+}
+
 
 /* Reusable waitlist form handler — bound to every [data-waitlist-form]
    element (hero instance now; bottom Wait-list Signup instance in
@@ -141,8 +181,8 @@ function initTestimonialsSlider() {
 
   const track = slider.querySelector('[data-slider-track]');
   const slides = Array.from(slider.querySelectorAll('.testimonials__slide'));
-  const prevBtn = slider.querySelector('[data-slider-prev]');
-  const nextBtn = slider.querySelector('[data-slider-next]');
+  // Arrow buttons were removed from the DOM per feedback (dots-only nav);
+  // keyboard arrows and swipe still work below regardless.
   // Dots live as a sibling of .testimonials__slider (below it, outside the
   // arrows row) rather than inside it — scope the lookup to the shared
   // .testimonials__inner ancestor instead of `slider` itself, or this
@@ -219,9 +259,6 @@ function initTestimonialsSlider() {
     // didn't actually move.
     if (moved || options.force) replayQuoteAnimation();
   }
-
-  if (prevBtn) prevBtn.addEventListener('click', () => goTo(current - 1, { force: true }));
-  if (nextBtn) nextBtn.addEventListener('click', () => goTo(current + 1, { force: true }));
 
   // Keyboard nav when the slider region has focus.
   slider.addEventListener('keydown', (event) => {

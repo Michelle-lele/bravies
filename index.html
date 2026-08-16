@@ -306,18 +306,16 @@
     <!-- ============================= TESTIMONIALS SECTION =============================
          Slider is built for N ≥ 1 slides on purpose, even though only one
          quote exists today: add another `.testimonials__slide` (+ matching
-         copy) later and the JS/CSS need no changes. Per your last round of
-         notes: arrows/dots stay visible even with a single slide (dots are
-         the primary control — larger, colored; arrows are a secondary,
-         smaller affordance), and every interaction — dot click, arrow
-         click, arrow key, swipe — always plays the slide/quote animation,
-         even when it loops back to the same single quote, so the
-         mechanism is visibly "alive" before quote #2 exists.
+         copy) later and the JS/CSS need no changes. Dots are the only
+         nav control (arrows removed per feedback) — every interaction —
+         dot click, arrow key, swipe — always plays the slide/quote
+         animation, even when it loops back to the same single quote, so
+         the mechanism is visibly "alive" before quote #2 exists.
          Each slide carries a --slide-accent custom property cycling
          through the 5 brand colors in this fixed order: Веста green
          (default/first — matches your "dark green" instruction), Вихрен
          orange, НЕда yellow, Заки purple, Мишо beige. That accent colors
-         both the giant quotation mark and that slide's dot. Note: Мишо's
+         both the giant quotation marks and that slide's dot. Note: Мишо's
          beige is pale against the white section background — it'll read
          as the faintest of the five once there are enough quotes to
          reach it; flagging in case you'd rather swap it for a 6th/darker
@@ -335,18 +333,16 @@
           aria-label="Отзиви"
           tabindex="0"
         >
-          <button type="button" class="testimonials__arrow testimonials__arrow--prev" data-slider-prev aria-label="Предишен отзив">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-
           <div class="testimonials__viewport">
             <ul class="testimonials__track" data-slider-track>
               <li class="testimonials__slide" style="--slide-accent: var(--color-vesta);" aria-hidden="false">
                 <blockquote class="testimonials__quote">
                   <span class="testimonials__mark testimonials__mark--open" aria-hidden="true">&ldquo;</span>
-                  <p>Това е най-яката игра, на която съм играл.</p>
+                  <div class="testimonials__quote-body">
+                    <p>Това е най-яката игра, на която съм играл.</p>
+                    <cite class="testimonials__cite">— Анди на 5.5 години</cite>
+                  </div>
                   <span class="testimonials__mark testimonials__mark--close" aria-hidden="true">&rdquo;</span>
-                  <cite class="testimonials__cite">— Анди на 5.5 години</cite>
                 </blockquote>
               </li>
               <!-- Future testimonials: append another <li class="testimonials__slide"
@@ -354,10 +350,6 @@
                    cycle) here — no JS/CSS changes needed. -->
             </ul>
           </div>
-
-          <button type="button" class="testimonials__arrow testimonials__arrow--next" data-slider-next aria-label="Следващ отзив">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
         </div>
 
         <div class="testimonials__dots" data-slider-dots role="tablist" aria-label="Изберете отзив"></div>
@@ -375,24 +367,32 @@
           <p>Това е усещането за истинска увереност. Това е моментът, в който осъзнавате, че:</p>
         </div>
 
-        <div class="desired-state__grid">
-          <div class="desired-state__box reveal">
-            <span class="desired-state__box-icon" aria-hidden="true"></span>
+        <ul class="desired-state__list">
+          <li class="desired-state__item reveal">
+            <span class="desired-state__tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
             <p>Вашето дете знае как да се пази самостоятелно.</p>
-          </div>
-          <div class="desired-state__box reveal">
-            <span class="desired-state__box-icon" aria-hidden="true"></span>
+          </li>
+          <li class="desired-state__item reveal">
+            <span class="desired-state__tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
             <p>Изградили сте невидима броня от умения и инстинкти.</p>
-          </div>
-          <div class="desired-state__box reveal">
-            <span class="desired-state__box-icon" aria-hidden="true"></span>
+          </li>
+          <li class="desired-state__item reveal">
+            <span class="desired-state__tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
             <p>Постоянната тревожност е заменена с дълбоко вътрешно спокойствие.</p>
-          </div>
-          <div class="desired-state__box reveal">
-            <span class="desired-state__box-icon" aria-hidden="true"></span>
+          </li>
+          <li class="desired-state__item reveal">
+            <span class="desired-state__tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
             <p>Най-накрая можете да си отдъхнете, знаейки, че сте му дали най-ценния подарък.</p>
-          </div>
-        </div>
+          </li>
+        </ul>
 
         <div class="desired-state__cta reveal">
           <a href="#waitlist-signup" class="cta-button">Искам това спокойствие</a>
