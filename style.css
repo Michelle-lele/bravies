@@ -1812,14 +1812,31 @@ input:focus-visible {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* No `overflow: hidden` here either — same reasoning as the parent
-     section above. Letting this container's contents bleed past its
-     own top edge is what allows the top-left cloud pair to render
-     over the FAQ section instead of being clipped away. */
   /* No --scroll-progress default here, same reasoning as
      .hero__clouds: must inherit the live value set on the parent
      .waitlist-signup by JS, not shadow it with a locally-declared
      fallback. */
+}
+
+/* --top and --bottom are now two SEPARATE containers (same box, same
+   `inset: 0`) rather than one shared one, specifically so they can
+   have opposite `overflow` behavior:
+   --top holds the top-left pair, which is meant to bleed upward over
+   the FAQ section above — stays unclipped.
+   --bottom holds the bottom-right pair. Left unclipped (as it briefly
+   was), it had nothing below it to bleed into — this is the last
+   section on the page — so the hidden portion just extended the
+   page's actual scrollable height into blank space past the visible
+   content, which read as an empty "second scrollbar" at the very end
+   of the page. Clipped here at the section's own edge to fix that;
+   the y-offset percentages on --wl-3/--wl-4 already guarantee ≥50% of
+   each cloud stays visible above this clip line regardless of the
+   cloud's resolved size, so clipping doesn't undo that requirement. */
+.waitlist-signup__clouds--top {
+  overflow: visible;
+}
+.waitlist-signup__clouds--bottom {
+  overflow: hidden;
 }
 
 /* Sizes bumped up (~1.4×) from the first pass per direct request — CSS

@@ -576,9 +576,20 @@
          the page, not just at the very top, so its progress needs to be
          computed from the section's own position, not page scrollY. -->
     <section class="waitlist-signup" id="waitlist-signup" aria-labelledby="waitlist-signup-heading">
-      <div class="waitlist-signup__clouds" aria-hidden="true">
+      <!-- Two separate cloud containers, not one — they need OPPOSITE
+           overflow behavior. The top-left pair is meant to bleed
+           upward over the FAQ section above (no clipping). The
+           bottom-right pair has nothing below it to bleed into (this
+           is the last section on the page) — left unclipped, it
+           stretched the page's actual scrollable height into blank
+           space past the visible content, which read as a second,
+           empty scrollbar/slider at the very end of the page. Same
+           `inset: 0` box, same z-index, just different `overflow`. -->
+      <div class="waitlist-signup__clouds waitlist-signup__clouds--top" aria-hidden="true">
         <div class="cloud cloud--wl-1"></div>
         <div class="cloud cloud--wl-2"></div>
+      </div>
+      <div class="waitlist-signup__clouds waitlist-signup__clouds--bottom" aria-hidden="true">
         <div class="cloud cloud--wl-3"></div>
         <div class="cloud cloud--wl-4"></div>
       </div>
