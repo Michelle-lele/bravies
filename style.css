@@ -167,7 +167,14 @@
 --------------------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* overflow-x: hidden here too, not just on `body` below — the actual
+   scrolling root in most browsers is `html`, not `body`, once `body`
+   has its own overflow set. This only became load-bearing once the
+   Wait-list Signup clouds started bleeding past their section (see
+   that section's own comments) — `html` was still `overflow-x: visible`
+   by default, so once nothing downstream clipped the wide cloud
+   content, the page itself became horizontally scrollable. */
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   margin: 0;
@@ -1597,6 +1604,15 @@ input:focus-visible {
 --------------------------------------------------------------------- */
 .faq {
   padding: var(--space-5) var(--space-2);
+  /* Bottom padding gets extra room beyond the shared var(--space-5) —
+     the Wait-list Signup section's top-left clouds now intentionally
+     bleed up into this section (see that section's own comments), and
+     the cloud's resolved height can exceed the standard --space-5
+     (64px) padding at wider viewports. This extra margin is what the
+     bleed actually has room to happen in without reaching the last
+     FAQ answer's text — verified against actual bounding-box overlap
+     measurements at 768/900/1200/1440px, not just eyeballed. */
+  padding-bottom: 140px;
   background: var(--color-surface-white);
   color: var(--color-text-dark);
 }
@@ -1721,15 +1737,21 @@ input:focus-visible {
 --------------------------------------------------------------------- */
 .waitlist-signup {
   position: relative;
-  overflow: hidden;
-  /* Was var(--space-5) top / var(--space-6) bottom (64px/96px = 160px
-     total) — combined with a layout bug where the hidden success
-     message was still reserving its full height (fixed above) and a
-     redundant double gap on the form (fixed below), the section came
-     out roughly 2x taller than its actual content needed. Trimmed to
-     ~half the original padding here; the other half of the height
-     reduction came from those two fixes, not from padding alone. */
-  padding: var(--space-3) var(--space-2) var(--space-4);
+  /* No `overflow: hidden` here (deliberately removed) — the clouds
+     below are now allowed to bleed upward into the FAQ section above
+     rather than being clipped at this section's own top edge (direct
+     request: "lay clouds over the previous section too, and not cut
+     them"). Horizontal overflow is still safe without a local rule
+     here: `body` already sets `overflow-x: hidden` globally, which
+     covers the modest left/right bleed these clouds use. */
+  /* Padding bumped back up a bit from the previous pass — that pass
+     went further than intended (too short), per direct follow-up.
+     This also intentionally leaves the bottom noticeably roomier than
+     the top: that's reserved space for a future footer row (social
+     links / policy links), not padding to be trimmed later — don't
+     shrink padding-bottom without checking whether that content has
+     landed yet. */
+  padding: var(--space-4) var(--space-2) var(--space-6);
   background: var(--color-neda);
   color: var(--color-text-dark);
 }
@@ -1790,7 +1812,10 @@ input:focus-visible {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
+  /* No `overflow: hidden` here either — same reasoning as the parent
+     section above. Letting this container's contents bleed past its
+     own top edge is what allows the top-left cloud pair to render
+     over the FAQ section instead of being clipped away. */
   /* No --scroll-progress default here, same reasoning as
      .hero__clouds: must inherit the live value set on the parent
      .waitlist-signup by JS, not shadow it with a locally-declared
@@ -1810,46 +1835,66 @@ input:focus-visible {
    wide, as a rough guess), it's worth re-exporting them larger before
    judging final sharpness here — flagging rather than guaranteeing.
 
-   Vertical positioning: `top`/`bottom` are just anchor points (0) —
+/* Vertical positioning: `top`/`bottom` are just anchor points (0) —
    actual placement comes from `--cloud-y-offset`, read by the shared
-   `.cloud` transform (see above). This went through two worse
-   attempts first: percentage `top`/`bottom` (broke once the section
-   got shorter — the same % landed much closer to the heading) and
-   then fixed-px `top`/`bottom` (worked at the exact widths tested, but
-   the *width* clamps scale continuously with vw while the heading
-   text also widens with viewport, so the two collided again across
-   most of the tablet/small-desktop range — confirmed by testing
-   768/900/1000/1200px, not just the usual three breakpoints). A pure
-   percentage `translateY` (e.g. -88%) fixed the collision — it hides a
-   constant PROPORTION of the cloud regardless of resolved size — but
-   that left the visible sliver tiny on mobile and only marginally
-   bigger on desktop (12% of a much taller cloud lands right at the
-   edge of the safe zone, not meaningfully more visible). Mixing % and
-   px inside calc() fixes both: `calc(-100% + 28px)` moves the cloud up
-   by its own full height, then back down by a flat 28px — so exactly
-   28px of cloud shows at the section edge at EVERY breakpoint,
-   independent of how tall the resolved cloud is. 28–34px sits
-   comfortably inside the section's 24px top/bottom padding plus a
-   couple px of margin before text starts, at any viewport. */
+   `.cloud` transform (see above).
+
+   TOP-LEFT PAIR (--wl-1/--wl-2): still uses the `calc(-100% + Npx)`
+   trick from the previous pass — shows a fixed ~28–36px sliver inside
+   THIS section regardless of the cloud's resolved size, which is what
+   keeps it clear of the heading at every viewport (full reasoning
+   below). What changed this round: the section no longer clips
+   anything above its own top edge (see `.waitlist-signup` /
+   `.waitlist-signup__clouds`, both lost their `overflow: hidden`), so
+   the rest of each cloud — previously just cut off — now bleeds
+   upward and renders over the FAQ section above. That's what actually
+   fixes "barely visible": most of each cloud was always being thrown
+   away by clipping, not because the clouds were too small.
+
+   BOTTOM-RIGHT PAIR (--wl-3/--wl-4): switched to a plain percentage
+   (`translateY(40%)`) instead of the px-mixed calc(). Per direct
+   request these need to be "at least 50% visible" — a proportion of
+   the cloud's own height, not a fixed pixel sliver — so a plain
+   percentage is the more direct match: shifting down by 40% of its
+   own height leaves the top 60% visible inside the section, at any
+   resolved size. This section is the last one on the page, so unlike
+   the top pair there's no next section to bleed into; the hidden 40%
+   just extends past the page's bottom edge, which is harmless (no
+   scrollbar — see the `body { overflow-x: hidden }` / page-height
+   note above `.waitlist-signup`).
+
+   Why the top pair keeps the old fixed-px approach instead of also
+   switching to a plain percentage: it still has to clear the heading
+   INSIDE this section, and that clearance is a fixed pixel budget
+   (the section's own top padding), not a proportion of the cloud —
+   this is the one placement that actually needs the calc() trick;
+   the bottom pair never had that constraint. */
 .cloud--wl-1 {
   background-image: url('assets/clouds/cloud-3.png');
-  width: clamp(280px, 42vw, 460px);
+  /* Max width reined in from an earlier 460px — at that size, this
+     cloud's resolved height (up to ~204px) exceeded the FAQ section's
+     available bottom padding even after that padding was increased,
+     and/or crossed into the FAQ list's actual text column
+     horizontally at tablet widths where that column has little side
+     margin. 360px keeps height (up to 160px) within budget at every
+     tested width — see the FAQ section's own padding-bottom comment. */
+  width: clamp(240px, 38vw, 360px);
   aspect-ratio: 2.25 / 1;
   top: 0;
   left: -6%;
   --cloud-dir: -1;
   --cloud-distance: 50px; /* back layer: slower drift */
-  --cloud-y-offset: calc(-100% + 28px);
+  --cloud-y-offset: calc(-100% + 42px);
 }
 .cloud--wl-2 {
   background-image: url('assets/clouds/cloud-1.png');
-  width: clamp(230px, 36vw, 400px);
+  width: clamp(200px, 32vw, 300px); /* same reasoning as --wl-1 above, scaled down to match */
   aspect-ratio: 2.84 / 1;
   top: 0;
   left: 2%;
   --cloud-dir: -1;
   --cloud-distance: 120px; /* front layer: faster drift, overlaps --wl-1 */
-  --cloud-y-offset: calc(-100% + 34px);
+  --cloud-y-offset: calc(-100% + 48px);
 }
 .cloud--wl-3 {
   background-image: url('assets/clouds/cloud-4.png');
@@ -1859,7 +1904,7 @@ input:focus-visible {
   right: -6%;
   --cloud-dir: 1;
   --cloud-distance: 55px; /* back layer: slower drift */
-  --cloud-y-offset: calc(100% - 28px);
+  --cloud-y-offset: 40%; /* shows the top 60% of this cloud — comfortably over the "at least 50%" ask */
 }
 .cloud--wl-4 {
   background-image: url('assets/clouds/cloud-2.png');
@@ -1869,17 +1914,28 @@ input:focus-visible {
   right: 2%;
   --cloud-dir: 1;
   --cloud-distance: 130px; /* front layer: faster drift, overlaps --wl-3 */
-  --cloud-y-offset: calc(100% - 34px);
+  --cloud-y-offset: 35%; /* front layer shows slightly more (65%) than the back one, for depth */
 }
 
-/* Smaller viewport: shrink a bit further — the y-offset trick above
-   already keeps these clear of the heading/button text at every width
-   tested (375 through 1440px+), this is purely a density/taste call so
-   the corner accents don't feel oversized relative to a narrow phone
-   screen. */
+/* Mobile: top-left pair removed entirely (direct request), not just
+   shrunk. Two reasons this is a `display: none` rather than a smaller
+   size like before: (1) at this width the heading is a nowrap single
+   line spanning nearly the full section, so ANY visible cloud sliver
+   sits close to it regardless of how small; removing it sidesteps
+   that risk entirely rather than continuing to fine-tune around it.
+   (2) this was flagged as wanted independent of the collision
+   question ("remove the top left clouds from this section on mobile
+   anyways") — so it's a deliberate simplification for small screens,
+   not just a defensive fix.
+   Bottom-right pair stays, just a bit smaller than its tablet/desktop
+   sizing — the y-offset percentages above already guarantee ≥50%
+   visible at any resolved size, so no positioning changes needed here,
+   only width. */
 @media (max-width: 767px) {
-  .cloud--wl-1 { width: clamp(170px, 46vw, 260px); }
-  .cloud--wl-2 { width: clamp(140px, 38vw, 220px); }
+  .cloud--wl-1,
+  .cloud--wl-2 {
+    display: none;
+  }
   .cloud--wl-3 { width: clamp(190px, 50vw, 300px); }
   .cloud--wl-4 { width: clamp(150px, 40vw, 230px); }
 }
