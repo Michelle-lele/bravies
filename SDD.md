@@ -1,21 +1,21 @@
 # Specification: "Смелчовци в беда" Landing Page
 
 *Status: Phase 1 (Hero + Bravies Intro), Phase 2 (Problem + What It
-Teaches + How It Works), and Phase 3 (Testimonials + Desired State)
-complete. Phase 4 (FAQ + Wait-list Signup) next, then Phase 5
-(integration pass). This document reflects current, as-built behavior
-— not a change history. Tech stack decision: vanilla JS (no framework
-needed).*
+Teaches + How It Works), Phase 3 (Testimonials + Desired State), and
+Phase 4 (FAQ + Wait-list Signup) complete. Phase 5 (integration pass)
+next. This document reflects current, as-built behavior — not a change
+history. Tech stack decision: vanilla JS (no framework needed).*
 
 *⚠️ Phase 3 note: the actual Phase 1–2 `script.js` was not included in
-the file set handed to the assistant for this phase (only
+the file set handed to the assistant for that phase (only
 `index.html`, `style.css`, `SDD.md` were attached). The Hero-cloud
 scroll-progress, reveal-on-scroll, and `initWaitlistForm()` logic
 described below were reconstructed from this document's own
 description of their behavior, not copied from a verified source file.
-Diff the reconstructed `script.js` against your real one before
-relying on it — the Phase 3 addition (testimonials slider) is newly
-written either way and unaffected by this.*
+**Resolved in Phase 4**: the real `script.js` was supplied this phase
+and diffed against the reconstruction — behavior matched, no
+corrections needed. The open item under "Open Decisions" asking for
+this verification is now closed.*
 
 ## 1. Goal
 
@@ -140,13 +140,47 @@ List copy (checkmark bullets, one line each):
 - **Each bullet still animates in individually** — a per-item `transition-delay` stagger (0s / 0.12s / 0.24s / 0.36s via `:nth-child`) layered on top of the shared `.reveal` mechanism, so items cascade in one after another rather than popping in as one block. Disabled under `prefers-reduced-motion` (delay forced to 0s).
 - CTA: "Искам това спокойствие", reuses the `.cta-button` component (same yellow as the What It Teaches CTA); links to `#waitlist-signup`. That target doesn't exist until Phase 4 — expected no-op scroll until then. Text is explicitly centered (`text-align: center` added alongside the existing flex centering, defensively — it already rendered centered in testing, but this guards against any future content change inside the button).
 
-### FAQs Section *(not yet built)*
+### FAQs Section
 
-Standard vertically-unfolding FAQ layout, questions always visible, arrow to unfold each answer. Two dummy Q&As.
+H2: "Въпроси и отговори". Standard vertically-unfolding layout — questions always visible, arrow icon unfolds each answer. **Multiple items can be open at once** (not a single-open/accordion-radio) — no content-level reason found to force mutual exclusivity, and single-open would re-collapse an answer a parent is still reading if they open a second question; flagged as a judgment call, not re-litigated since.
 
-### Wait-list Signup Section *(not yet built)*
+**7 real Q&As** (final copy, not dummy — a duplicate 8th question was cut, see below):
+1. Кой може да играе?
+2. А ако детето ми е на 4 или на 10 години?
+3. Как учат децата чрез играта?
+4. Могат ли децата да играят сами?
+5. Ситуациите страшни ли са?
+6. Няма ли да омръзне след няколко пъти?
+7. Кога ще е готова играта?
 
-H2: "Записването е отворено". Same form as the hero section — `script.js` already supports this via a reusable `initWaitlistForm()` called once per `[data-waitlist-form]` element, so this section just needs the matching markup + attribute, no JS changes.
+- **"На какво учи играта?" was removed** — it duplicated the standalone "What It Teaches" section higher up the page (same content, including the bullet list of what the game teaches), so it's redundant here. IDs were renumbered sequentially 1–7 after the cut; no gaps.
+- Background white (`--color-surface-white`), dark text — continues the alternation after Desired State's orange.
+- Markup: `<h3>` wrapping the trigger `<button>` (WAI-ARIA accordion pattern), answer `<div>` as the `<h3>`'s sibling inside the `<li>`. Trigger carries `aria-expanded` + `aria-controls`; answer carries `role="region"` + `aria-labelledby` pointing back at the question.
+- **Expand/collapse is CSS-only** — animatable `grid-template-rows` (`0fr` collapsed → `1fr` open) on `.faq__answer`, with `overflow: hidden` on the inner wrapper so the row can actually clip to zero. JS (`initFaqAccordion()` in `script.js`) only toggles `.is-open` on `.faq__item` and mirrors it onto the trigger's `aria-expanded` — same "JS decides state, CSS animates it" split already used for `.reveal`/`.is-visible` and the Bravies-card `.is-pulsing` pulse. No JS height measurement needed.
+  - Note for future reference: this `grid-template-rows` + child-`overflow:hidden` technique is a *different* mechanism than the flex `min-height: 0` issue documented elsewhere in this file (that one's about a flex child's main-axis min-size; this is a grid row track collapsing) — don't conflate the two if debugging either.
+- Chevron icon rotates 180° on open (CSS transition off the same `.is-open` state), disabled under `prefers-reduced-motion` along with the row-height transition.
+- Icon/hover accent reuses `--color-zaki` (purple) — already the sitewide `:focus-visible` outline color, so it reads as the established "interactive" accent rather than introducing a new one.
+- `.faq__answer-list` (bullet-list styling inside an answer) is currently unused now that the only answer using it was cut — left in `style.css` rather than deleted, in case a future FAQ answer needs a list again.
+
+### Wait-list Signup Section
+
+H2: "Записването е отворено". Reuses the hero form's exact markup pattern (`waitlist-form` structure + `data-waitlist-form` attribute) — `script.js`'s `document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm)` binds every matching element automatically, so this needed **zero JS changes**, confirmed against the real `script.js` before building. Form and success-message markup are siblings under a shared wrapper (`.waitlist-signup__inner`), same structural requirement as `.hero__content`, since `initWaitlistForm()` finds the success element via `form.parentElement.querySelector('.success-message')`.
+
+- Background `--color-neda` (Неда's yellow).
+- **Heading**: white (`--color-surface-white`), forced to a single line via `white-space: nowrap` + a `clamp(1.35rem, 6vw, 2.5rem)` font-size tuned to still fit "Записването е отворено" on one line down to a 375px viewport — the section's shared dark-text default (used elsewhere on light/pale sections) read weak against this saturated a yellow at H2 size, and two-line wrap looked cramped over the short form beneath it. Verify this still holds at any width narrower than 340px if you test on a smaller device.
+- **Button**: `--color-zaki` (Заки purple) background, white text — direct request, replacing an earlier dark-inverse (`--color-text-dark`) treatment from the first pass. Purple-on-yellow reads clearly without needing an inverse workaround; modifier stayed named `.waitlist-form--on-neda` (distinct from `.waitlist-form--on-light`, which assumes a white/pale surface) since the input's contrast tweak from the first pass is unchanged, only the button's fill color moved.
+- A `.success-message--on-light` modifier (dark text, `--color-vesta` green icon) is still in place from the first pass — the default success state assumes a dark section (white text, pale mint icon), unreadable on yellow.
+- **Section height, cut roughly in half per direct request** (was ~446px on desktop, now ~220px). Three separate things contributed, only one of which was "just reduce padding":
+  1. **Real bug fix, not just a style tweak**: `.success-message`'s own `display: flex` was outranking the browser's built-in `[hidden] { display: none }` rule in CSS specificity (a class beats a bare attribute selector), so the hidden success message was still reserving its full height in the layout — invisible but taking up ~98px of space. Added `.success-message[hidden] { display: none; }` (higher specificity, wins correctly) to fix this globally — it was quietly affecting the hero form too, just harder to notice there against more surrounding whitespace.
+  2. Removed a redundant double gap: `.waitlist-form` carries its own `margin-top` (sized for the hero's plain-block layout), which was stacking on top of `.waitlist-signup__inner`'s own flex `gap` — zeroed out via `.waitlist-signup__inner .waitlist-form { margin-top: 0; }`.
+  3. Padding itself trimmed from `var(--space-5) var(--space-2) var(--space-6)` (64px/96px) to `var(--space-3) var(--space-2) var(--space-4)` (24px/40px).
+- **Clouds — bigger, per direct request**: sizes bumped ~1.4× from the first pass (e.g. the back top-left cloud's max width went from 320px to 460px). This is a pure CSS change against the *same* four PNGs — no new image files needed to see the size increase. Whether they stay crisp at the larger size depends on the source PNGs' own native pixel dimensions, which this project can't verify (no cloud assets in this file set — these are CSS boxes with `background-size: contain`, so a low-res source will visibly soften when upscaled). Rule of thumb if checking: for a sharp render at up to ~460px CSS width on a retina (2×) screen, the source PNG should be at least ~920px wide natively. Worth a visual check once real assets are swapped in — if they look soft, that's a resolution issue, not a CSS one, and the fix is re-exporting larger source files, not further CSS changes.
+- **Clouds, positioning — went through three iterations to get right, worth understanding if this needs further adjustment**: reuses the hero's four cloud PNGs as two overlapping pairs — `.cloud--wl-1`/`.cloud--wl-2` stacked top-left, `.cloud--wl-3`/`.cloud--wl-4` stacked bottom-right — each pair using a different `--cloud-distance` so the front cloud drifts further than the back one on scroll (parallax depth cue). Section has `position: relative; overflow: hidden` (same pattern as `.hero`) so the artwork can bleed past its edges without a horizontal scrollbar.
+  - **Attempt 1** (percentage `top`/`bottom`, matching the hero's own approach) broke as soon as the height fix above landed — the same percentages now resolved much closer to the heading text, overlapping it (white text over a pale cloud shape = unreadable where they crossed).
+  - **Attempt 2** (fixed-px `top`/`bottom`) fixed that, but testing beyond the usual three breakpoints (768/900/1000/1200px, not just mobile/tablet/desktop) turned up a second, wider problem: the cloud *width* clamps scale continuously with `vw`, and the heading text width also grows with viewport, so the two kept colliding across most of the tablet/small-desktop range — only clearing up around ~1330px+, well above typical laptop screens.
+  - **Attempt 3, shipped**: a new `--cloud-y-offset` custom property, folded into the shared `.cloud` transform (`translate(<parallax-x>, var(--cloud-y-offset, 0%))` — hero clouds don't set it, so they default to 0% and are completely unaffected). Each waitlist cloud anchors at `top: 0` / `bottom: 0` and uses `--cloud-y-offset: calc(-100% + 28px)` (or the mirrored `calc(100% - 28px)` for the bottom pair) — this moves the cloud by its own full height, then back by a flat pixel amount, so a *fixed* ~28–34px sliver shows at the section edge **regardless of the cloud's resolved size** at any viewport. This sidesteps the horizontal collision question entirely, since only a shallow, constant-height strip near the very top/bottom edge is ever visible, well clear of both the heading and the button row. Verified clean (no text overlap) at 375/768/900/1000/1200/1440px.
+  - Parallax itself is driven by a **separate** function, `initWaitlistClouds()` in `script.js`, not a shared/generalized version of `initHeroClouds()` — the hero is always page-top (`window.scrollY / heroHeight`), this section can sit anywhere further down (`getBoundingClientRect()`-based instead). Verified directly: swapped in placeholder cloud art, scrolled through the section programmatically, confirmed via computed `transform` values that the front-layer cloud in each pair moves ~2.4× further than its back-layer partner, and that `--scroll-progress` stays at 0 until the section approaches the viewport.
+- The `NEXT-PHASE-INSERT-POINT` marker comment has been removed — Phase 5 is an integration pass only, no new sections to insert.
 
 ### Design System
 
@@ -158,7 +192,7 @@ H2: "Записването е отворено". Same form as the hero section 
   - Body text default weight is now 300 (light), per your original "thick childlike titles / light non-serif paragraphs" direction — explicit `font-weight` overrides (buttons, labels, citations) are unaffected since they set their own weight already.
   - **Cyrillic-quality caveat, for the record**: a specialist Cyrillic type-review source (type.today) flags Dela Gothic One's Cyrillic extension as technically complete but lower design quality than its Latin set — likely subtle stroke/proportion inconsistencies a trained eye would catch. Nothing looked broken in our own rendered tests (see the headline/pairing screenshots from this pass), so treating this as a "know before you scale up" note rather than a blocker.
 - Brand colors: Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`, Buddy/joker `#2FB6B0` (turquoise, new — not one of the original 5 Bravies). Deep-toned icon-only variants: burnt orange `#A8501A`, deep red `#7A2020`, deep teal `#0E4749` (used for colorful icon glyphs where plain white/dark wouldn't do). Мишо's full character palette (for accenting content near her beige without clashing): `--color-misho-accent` sky blue `#4FA6E0` (cap/backpack), `--color-misho-trim` brown `#8B5E3C` (shoes/trim, currently used for How It Works' step titles), `--color-misho-hair` sandy blonde `#D4B483` (not yet used anywhere).
-- Section backgrounds, in the spec's alternation order: Hero `#5080BF` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → Testimonials white (`#F8FAFC`) → Desired State `#F68044` (Вихрен orange, **proposed, not locked** — the only warm brand color not yet used as a full section background; flagging for confirmation) → **FAQ / Wait-list Signup: still undecided**, continue the alternation.
+- Section backgrounds, in the spec's alternation order: Hero `#5080BF` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → Testimonials white (`#F8FAFC`) → Desired State `#F68044` (Вихрен orange, **proposed, not locked** — the only warm brand color not yet used as a full section background; flagging for confirmation) → FAQ white (`#F8FAFC`) → Wait-list Signup `#FDD43B` (Неда yellow, **now set** — see FAQ/Wait-list Signup sections above for the button-contrast follow-on this required).
 - Responsiveness: mobile (375px), tablet (768px portrait + landscape), desktop (1440px). Portrait vs. landscape tablet is distinguished via `orientation` media queries where the layout actually differs (Bravies section).
 
 ## 4. Functional Requirements (JS)
@@ -174,9 +208,14 @@ H2: "Записването е отворено". Same form as the hero section 
 
 ## Open Decisions
 
-- Section background colors for FAQ and Wait-list Signup (Testimonials/Desired State now set — see Design System; Desired State's orange is a proposal pending confirmation).
 - Icon source for Мишо's "What It Teaches" replacement icon — still placeholder.
 - Buddy tile copy (What It Teaches) — first draft, not yet reviewed.
 - Desktop Bravies card tab-order vs. visual-order mismatch — no decision yet on whether to address it.
-- Verify the reconstructed `script.js` (Hero clouds, reveal-on-scroll, `initWaitlistForm()`) against your real Phase 1–2 file — see the note at the top of this document.
 - Testimonials' 5-color accent cycle reaches Мишо's pale beige as a 5th option — confirm it's acceptable at low contrast against the white section background, or swap it for something darker once there are enough quotes to reach it.
+- Desired State's orange background (`--color-vihren`) is still a proposal, not locked — carried over, unaddressed this phase.
+- **Resolved**: Wait-list Signup's button now uses `--color-zaki` (Заки purple) + white text.
+- **Resolved**: the duplicate "На какво учи играта?" FAQ question was cut — 7 questions ship, not 8.
+- **Resolved**: Wait-list Signup's height, cut roughly in half (~446px → ~220px on desktop) — see Wait-list Signup Section above for the three separate contributors, including a genuine cross-cutting CSS bug fix (`[hidden]` on `.success-message` wasn't actually hiding it from layout).
+- **Resolved**: Wait-list Signup's clouds are bigger (~1.4×, same source images) and their positioning is now resolved with a technique (`--cloud-y-offset` + `calc()`) that stays correct regardless of section height or viewport width, rather than the breakpoint-specific values from the first two attempts.
+- **Still open**: FAQ's multiple-open (non-accordion-radio) behavior was chosen without a strong signal either way — flagging in case single-open is actually preferred once you see it live.
+- **New, worth a look**: cloud sharpness at the larger size depends on the source PNGs' native resolution, which couldn't be checked (no cloud assets in this file set). See the "Clouds — bigger" note under Wait-list Signup Section for the rule of thumb on what resolution is needed to stay crisp.

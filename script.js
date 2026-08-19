@@ -1,18 +1,5 @@
 /* =====================================================================
    СМЕЛЧОВЦИ В БЕДА — Landing Page Script
-
-   ⚠️ FLAG FOR MICHELLE: the actual Phase 1–2 script.js was not included
-   in this upload (only index.html, style.css, SDD.md were attached).
-   Everything below the "PHASE 1–2" marker is a *reconstruction* from
-   SDD.md §"Functional Requirements (JS)" plus the behavior described
-   throughout the spec (scroll-driven clouds via --scroll-progress,
-   reveal-on-scroll via IntersectionObserver + .reveal/.is-visible,
-   reusable initWaitlistForm() per [data-waitlist-form]). It matches the
-   spec's documented behavior, but if your real script.js differs in
-   implementation detail (variable names, debounce strategy, etc.), diff
-   this against it before shipping — don't assume it's byte-for-byte
-   identical to what you already have. Only the Phase 3 section at the
-   bottom (testimonials slider) is newly written for this phase.
    ===================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
   initTestimonialsSlider(); // Phase 3
   initBraveCardScrollPulse(); // mobile/tablet scroll-triggered card pulse
+  initFaqAccordion(); // Phase 4
+  initWaitlistClouds(); // Phase 4 (later addition — clouds reused on the Wait-list Signup section)
 });
 
 /* ---------------------------------------------------------------------
-   PHASE 1–2 (reconstructed — see flag above)
+   PHASE 1–2
 --------------------------------------------------------------------- */
 
 /* Clouds: --scroll-progress (0–1) reflects scroll position within the
@@ -277,4 +266,67 @@ function initTestimonialsSlider() {
   });
 
   render();
+}
+
+/* ---------------------------------------------------------------------
+   PHASE 4 — FAQ accordion
+   Multiple items can be open at once (not single-open/accordion-radio)
+   — see index.html comment for reasoning. JS only ever toggles a class
+   (`.is-open` on `.faq__item`) plus the trigger's `aria-expanded`; the
+   actual expand/collapse animation is done in CSS via an animatable
+   grid-template-rows on `.faq__answer` (see style.css), same
+   "JS decides state, CSS animates it" split already used for
+   .reveal/.is-visible and the Bravies-card .is-pulsing effect above.
+--------------------------------------------------------------------- */
+function initFaqAccordion() {
+  const items = document.querySelectorAll('.faq__item');
+  if (!items.length) return;
+
+  items.forEach((item) => {
+    const trigger = item.querySelector('.faq__question');
+    if (!trigger) return;
+
+    trigger.addEventListener('click', () => {
+      const isOpen = item.classList.toggle('is-open');
+      trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  });
+}
+
+/* ---------------------------------------------------------------------
+   PHASE 4 (later addition) — Wait-list Signup clouds
+   Reuses the hero's four cloud PNGs on the Wait-list Signup section,
+   with their own independent parallax. Deliberately a SEPARATE function
+   from initHeroClouds() rather than a generalized/shared one: the hero
+   is always at the top of the page, so its progress is a simple
+   window.scrollY / heroHeight ratio. This section can sit anywhere
+   further down the page, so progress instead has to be derived from
+   the section's own position relative to the viewport (via
+   getBoundingClientRect()) — a different formula, not just a different
+   element reference — so folding it into initHeroClouds() would mean
+   branching that function's internals rather than actually sharing
+   logic. Same output contract either way: writes --scroll-progress
+   (0–1) onto the section element, which .cloud's shared transform rule
+   already reads via var(--scroll-progress, 0), so no CSS-side special
+   casing was needed.
+   Progress reaches 0 when the section's top is at the bottom edge of
+   the viewport (about to enter) and 1 once its bottom has scrolled
+   past the top of the viewport (about to leave) — i.e. it animates
+   continuously for as long as any part of the section is on screen,
+   not just during entry. */
+function initWaitlistClouds() {
+  const section = document.getElementById('waitlist-signup');
+  if (!section) return;
+
+  const setProgress = () => {
+    const rect = section.getBoundingClientRect();
+    const sectionHeight = section.offsetHeight || 1;
+    const total = window.innerHeight + sectionHeight;
+    const progress = Math.min(Math.max((window.innerHeight - rect.top) / total, 0), 1);
+    section.style.setProperty('--scroll-progress', progress.toFixed(4));
+  };
+
+  setProgress();
+  window.addEventListener('scroll', setProgress, { passive: true });
+  window.addEventListener('resize', setProgress);
 }

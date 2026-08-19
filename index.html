@@ -400,11 +400,226 @@
       </div>
     </section>
 
-    <!-- NEXT-PHASE-INSERT-POINT
-         Phase 4's Wait-list Signup section should carry id="waitlist-signup"
-         so the Desired State CTA above (href="#waitlist-signup") resolves
-         once that section exists; it currently scroll-links to a target
-         that doesn't exist yet, which is expected mid-phase. -->
+    <!-- ============================= FAQ SECTION =============================
+         Standard vertically-unfolding layout: questions are always
+         visible, each answer expands/collapses independently via an
+         arrow-icon trigger. Went with MULTIPLE-OPEN (not a single-open
+         accordion-radio) — nothing about this content implies answers
+         are mutually exclusive, and forcing single-open would just
+         re-collapse an answer a parent is still reading if they tap a
+         second question. Flagging the choice per instructions rather
+         than assuming it's obviously right.
+         Expand state: JS toggles `.is-open` on `.faq__item` (mirrored
+         onto the trigger's `aria-expanded`) — see initFaqAccordion() in
+         script.js, added as its own function alongside
+         initRevealOnScroll()/initBraveCardScrollPulse(), same
+         one-function-per-behavior organization already used there.
+         The collapse/expand animation itself is CSS-only (grid-template-
+         rows 0fr/1fr on .faq__answer, see style.css) — JS only ever
+         toggles the class, consistent with how .reveal/.is-visible and
+         .is-pulsing already split "JS decides state, CSS animates it"
+         elsewhere in this file.
+         Note: the "На какво учи играта?" question was intentionally
+         dropped from this set — it duplicated the standalone "What It
+         Teaches" section above, so 7 questions ship here, not 8. -->
+    <section class="faq" id="faq" aria-labelledby="faq-heading">
+      <div class="faq__inner">
+        <h2 class="faq__heading reveal" id="faq-heading">Въпроси и отговори</h2>
+
+        <ul class="faq__list">
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
+                <span class="faq__question-text">Кой може да играе?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
+              <div class="faq__answer-inner">
+                <p>„Смелчовци в беда“ е игра с карти за деца на възраст от 5 до 9 години и техните близки — родители, баби и дядовци и приятели. Подходяща е за 2 до 5(6) играча. Една игра трае около 10 минути.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
+                <span class="faq__question-text">А ако детето ми е на 4 или на 10 години?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
+              <div class="faq__answer-inner">
+                <p>На 4 години играта може да работи в опростен вариант с активното участие на родител.</p>
+                <p>На 10 — детето вероятно ще търси по-голямо предизвикателство. Подготвяме версия за по-големи деца — запиши се в списъка и ще те уведомим първи.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
+                <span class="faq__question-text">Как учат децата чрез играта?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
+              <div class="faq__answer-inner">
+                <p>Играта учи чрез различни ситуации и изиграване на глас. Всяко правилно действие се избира, казва, и обсъжда.</p>
+                <p>Една игра на седмица в продължение на месец — децата изиграват десетки сценария.</p>
+                <p>Наградата в края прави победата обща, семейна цел, не индивидуално постижение.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
+                <span class="faq__question-text">Могат ли децата да играят сами?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
+              <div class="faq__answer-inner">
+                <p>След като са запознати с играта — да. Но препоръчваме поне първите няколко игри да са с родител. Разговорът след това е също толкова важен, колкото и самата игра, затова препоръчваме да се играе с поне един възрастен.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
+                <span class="faq__question-text">Ситуациите страшни ли са?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
+              <div class="faq__answer-inner">
+                <p>Не. Фокусът е върху това което детето прави — не върху опасността. Всяка ситуация показва правилната реакция.</p>
+                <p>Илюстрациите са топли и меки и не създават тревожност и страх.</p>
+                <p>Играта не показва какво се случва, ако не отговориш правилно — просто семейството не споделя заедно наградата.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
+                <span class="faq__question-text">Няма ли да омръзне след няколко пъти?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6">
+              <div class="faq__answer-inner">
+                <p>Всяка игра е различна.</p>
+                <p>Картите се разпределят по различен начин всяка игра — сценариите се появяват в различен ред, различни играчи получават различни карти. Препоръчваме кратки сесии от ~10 минути, редовно — рефлексът се изгражда с повторение.</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="faq__item reveal">
+            <h3 class="faq__question-heading">
+              <button type="button" class="faq__question" aria-expanded="false" aria-controls="faq-answer-7" id="faq-question-7">
+                <span class="faq__question-text">Кога ще е готова играта?</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="faq__answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7">
+              <div class="faq__answer-inner">
+                <p>Работим по финалните илюстрации и подготвяме първия тираж. Записалите се в списъка ще бъдат уведомени първи и ще имат възможност да закупят играта преди публичното обявяване.</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================= WAIT-LIST SIGNUP SECTION =============================
+         Reuses the hero form's exact markup pattern + `data-waitlist-form`
+         attribute. Verified against script.js before writing this: the
+         DOMContentLoaded handler already does
+           document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
+         — every `[data-waitlist-form]` element gets its own independent
+         handler automatically, so this section needed zero JS changes,
+         only matching markup.
+         `successEl` in initWaitlistForm() is found via
+         `form.parentElement.querySelector('.success-message')`, so the
+         form and its success message must be SIBLINGS under the same
+         wrapper here too, same as `.hero__content` — see
+         `.waitlist-signup__inner` below.
+         Background is Neda's yellow (--color-neda). Heading is forced
+         white + single-line (see style.css) since the section's own
+         dark-text default (used elsewhere on light sections) read weak
+         against saturated yellow at H2 size. Button uses Zaki's purple
+         (--color-zaki) + white text per direct request — this reads
+         clearly on yellow without needing the earlier dark-inverse
+         workaround.
+         Clouds: same four PNGs as the hero (`cloud-1.png`..`cloud-4.png`),
+         reused as two overlapping pairs — top-left and bottom-right —
+         with their own independent scroll-linked parallax (see
+         initWaitlistClouds() in script.js), kept separate from the
+         hero's initHeroClouds() since this section can sit anywhere on
+         the page, not just at the very top, so its progress needs to be
+         computed from the section's own position, not page scrollY. -->
+    <section class="waitlist-signup" id="waitlist-signup" aria-labelledby="waitlist-signup-heading">
+      <div class="waitlist-signup__clouds" aria-hidden="true">
+        <div class="cloud cloud--wl-1"></div>
+        <div class="cloud cloud--wl-2"></div>
+        <div class="cloud cloud--wl-3"></div>
+        <div class="cloud cloud--wl-4"></div>
+      </div>
+
+      <div class="waitlist-signup__inner">
+        <h2 class="waitlist-signup__heading reveal" id="waitlist-signup-heading">Записването е отворено</h2>
+
+        <form class="waitlist-form waitlist-form--on-neda reveal" id="bottom-form" data-waitlist-form novalidate>
+          <div class="waitlist-form__row">
+            <label for="bottom-email" class="sr-only">Твоят имейл адрес</label>
+            <input
+              type="email"
+              id="bottom-email"
+              name="email"
+              class="waitlist-form__input"
+              placeholder="твоя@имейл.бг"
+              autocomplete="email"
+              inputmode="email"
+              required
+            />
+            <button type="submit" class="waitlist-form__button">
+              <span class="waitlist-form__button-label">Запиши се за първите 100</span>
+              <span class="waitlist-form__spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <p class="waitlist-form__error" role="alert" aria-live="assertive"></p>
+        </form>
+
+        <!-- --on-light: default success-message styling assumes a dark
+             section (white text) — see style.css; needed a light-bg
+             variant now that a second, bright-background instance
+             exists. -->
+        <div class="success-message success-message--on-light" role="status" aria-live="polite" hidden>
+          <svg class="success-message__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="success-message__text">Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!</p>
+        </div>
+      </div>
+    </section>
 
   </main>
 

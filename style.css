@@ -268,7 +268,10 @@ input:focus-visible {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  transform: translateX(calc(var(--scroll-progress, 0) * var(--cloud-distance) * var(--cloud-dir)));
+  transform: translate(
+    calc(var(--scroll-progress, 0) * var(--cloud-distance) * var(--cloud-dir)),
+    var(--cloud-y-offset, 0%)
+  );
 }
 
 .cloud--1 {
@@ -404,6 +407,33 @@ input:focus-visible {
 }
 .waitlist-form--on-light .waitlist-form__input::placeholder { color: var(--color-text-muted); }
 
+/* Neda-yellow variant (Phase 4: Wait-list Signup section). Distinct
+   from --on-light above because the problem here isn't just "light
+   background" — the section background IS --color-neda, the exact same
+   yellow the button's OLD default used as its own background, so a
+   plain default button would've blended straight into the section.
+   Input gets a slightly stronger tint than --on-light's (0.08 vs 0.04)
+   since pale text-dark-on-white assumptions read weaker against
+   saturated yellow than against a white surface. Button uses Zaki's
+   purple + white text (direct request) rather than the earlier
+   dark-inverse treatment — purple-on-yellow already reads clearly
+   without needing an inverse workaround. */
+.waitlist-form--on-neda .waitlist-form__input {
+  border-color: rgba(30, 36, 51, 0.35);
+  background: rgba(30, 36, 51, 0.08);
+  color: var(--color-text-dark);
+}
+.waitlist-form--on-neda .waitlist-form__input::placeholder { color: var(--color-text-muted); }
+.waitlist-form--on-neda .waitlist-form__button {
+  background: var(--color-zaki);
+  color: var(--color-surface-white);
+}
+.waitlist-form--on-neda .waitlist-form__button:hover { background: #5f4680; } /* --color-zaki, darkened ~15% */
+.waitlist-form--on-neda .waitlist-form__spinner {
+  border-color: rgba(248, 250, 252, 0.35);
+  border-top-color: var(--color-surface-white);
+}
+
 .waitlist-form__button {
   position: relative;
   display: flex;
@@ -475,9 +505,33 @@ input:focus-visible {
   transform: translateY(8px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
+/* Bug fix: `.success-message`'s own `display: flex` (needed once visible)
+   was outranking the browser's built-in `[hidden] { display: none }`
+   rule in specificity (a class beats a bare attribute selector), so the
+   element stayed in the layout — full height reserved — even while
+   `hidden` was set. Invisible (opacity: 0) but still taking up space.
+   This was hard to notice on the hero (enough surrounding whitespace
+   to hide it) but became obvious as unexplained extra height on the
+   shorter Wait-list Signup section. `[hidden]` here has higher
+   specificity than the plain class above, so it correctly wins and
+   collapses the element out of flow until script.js removes the
+   attribute. Fixes both instances (hero + Wait-list Signup) at once. */
+.success-message[hidden] { display: none; }
 .success-message.is-visible { opacity: 1; transform: translateY(0); }
 .success-message__icon { width: 22px; height: 22px; flex-shrink: 0; color: #6EE7B7; }
 .success-message__text { font-weight: 700; text-align: left; }
+
+/* Light-background variant (Phase 4: Wait-list Signup, on Neda's
+   yellow). The default above assumes a dark section — white text
+   (--color-hero-text) and a pale mint icon (#6EE7B7) both nearly
+   vanish against a bright yellow surface, so both are swapped for
+   dark-on-tint equivalents here rather than reusing the default as-is. */
+.success-message--on-light {
+  color: var(--color-text-dark);
+  background: rgba(39, 140, 93, 0.15);
+  border-color: rgba(39, 140, 93, 0.55);
+}
+.success-message--on-light .success-message__icon { color: var(--color-vesta); }
 
 /* =====================================================================
    4. BRAVIES INTRO SECTION
@@ -1536,3 +1590,296 @@ input:focus-visible {
   width: 100%;
 }
 
+/* ---------------------------------------------------------------------
+   FAQ SECTION
+   Background: white (--color-surface-white) — continues the
+   alternation after Desired State's orange.
+--------------------------------------------------------------------- */
+.faq {
+  padding: var(--space-5) var(--space-2);
+  background: var(--color-surface-white);
+  color: var(--color-text-dark);
+}
+
+.faq__inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.faq__heading {
+  font-size: var(--font-size-h2);
+  font-weight: 400; /* Dela Gothic One has one real weight */
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.faq__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq__item {
+  border-bottom: 1px solid rgba(30, 36, 51, 0.14);
+}
+.faq__item:first-child { border-top: 1px solid rgba(30, 36, 51, 0.14); }
+
+.faq__question-heading { margin: 0; font-size: 1em; font-weight: 400; }
+
+.faq__question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) 0.25rem;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-align: left;
+  color: var(--color-text-dark);
+  cursor: pointer;
+}
+.faq__question:hover .faq__question-text { color: var(--color-zaki); }
+/* Reuses --color-zaki, the same purple already used for the sitewide
+   focus outline (see :focus-visible near the top of this file) — the
+   established "interactive accent" color, rather than introducing a
+   new one just for this section. */
+.faq__question:focus-visible { outline: 3px solid var(--color-zaki); outline-offset: 2px; }
+
+.faq__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-zaki);
+}
+.faq__icon svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.25s ease;
+}
+.faq__item.is-open .faq__icon svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) {
+  .faq__icon svg { transition: none; }
+}
+
+/* Expand/collapse via animatable grid-template-rows (0fr collapsed,
+   1fr open) rather than a JS-measured max-height: no scrollHeight
+   calculation needed, and it naturally handles answers of any length
+   (including the long, list-containing answer #2) without a fixed cap.
+   The child (.faq__answer-inner) needs its own `overflow: hidden` for
+   the 0fr state to actually clip it — grid items default to
+   min-height: auto (content-based), so without that the item would
+   refuse to shrink below its content size even inside a 0fr track. This
+   is a different mechanism than the flex `min-height: 0` issue
+   documented elsewhere in this file (that one's about flex children on
+   a MAIN axis; this is a grid ROW track + `overflow: hidden`), but
+   checked deliberately given how many times that class of bug has
+   already shown up in this project. */
+.faq__answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+.faq__item.is-open .faq__answer { grid-template-rows: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .faq__answer { transition: none; }
+}
+
+.faq__answer-inner {
+  overflow: hidden;
+}
+
+.faq__answer-inner p,
+.faq__answer-inner ul {
+  margin: 0 0 var(--space-2);
+  line-height: 1.6;
+  color: var(--color-text-dark);
+}
+.faq__answer-inner p:last-child,
+.faq__answer-inner ul:last-child { margin-bottom: 0; }
+.faq__answer-inner p:first-child { padding-top: 0.1rem; } /* small optical gap under the question when first opened */
+
+.faq__answer-list {
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.faq__answer-list li { list-style: disc; }
+
+/* ---------------------------------------------------------------------
+   WAIT-LIST SIGNUP SECTION
+   Background: --color-neda (Неда's yellow) — continues the alternation
+   after FAQ's white. `position: relative` + `overflow: hidden` here
+   (same pattern as .hero) so the cloud artwork below can bleed past
+   the section edges without creating a horizontal scrollbar.
+--------------------------------------------------------------------- */
+.waitlist-signup {
+  position: relative;
+  overflow: hidden;
+  /* Was var(--space-5) top / var(--space-6) bottom (64px/96px = 160px
+     total) — combined with a layout bug where the hidden success
+     message was still reserving its full height (fixed above) and a
+     redundant double gap on the form (fixed below), the section came
+     out roughly 2x taller than its actual content needed. Trimmed to
+     ~half the original padding here; the other half of the height
+     reduction came from those two fixes, not from padding alone. */
+  padding: var(--space-3) var(--space-2) var(--space-4);
+  background: var(--color-neda);
+  color: var(--color-text-dark);
+}
+
+.waitlist-signup__inner {
+  position: relative; /* sits above .waitlist-signup__clouds (z-index 0) */
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+/* White + forced single-line per direct request — the section's own
+   dark-text default (used elsewhere on light/pale sections) read weak
+   at H2 size against this saturated a yellow, and the heading wrapping
+   to two lines looked cramped against the short form beneath it.
+   `clamp()` here (rather than reusing --font-size-h2 as-is) leaves
+   enough room to shrink on narrow phones so "Записването е отворено"
+   fits on one line without the wrapping min-width fighting it — check
+   this doesn't need a further shrink on very narrow (<340px) devices. */
+.waitlist-signup__heading {
+  font-size: clamp(1.35rem, 6vw, 2.5rem);
+  font-weight: 400; /* Dela Gothic One has one real weight */
+  color: var(--color-surface-white);
+  white-space: nowrap;
+}
+
+/* .waitlist-form carries its own margin-top (see shared rule above),
+   sized for the hero's plain-block layout where it's the only thing
+   separating the form from the subtitle above it. Here it's a flex
+   child of .waitlist-signup__inner, which already spaces every child
+   via `gap` — the form's own margin-top was stacking on top of that
+   gap and adding a redundant ~16px. Zeroed out so spacing between the
+   heading and form matches the section's single gap value. */
+.waitlist-signup__inner .waitlist-form { margin-top: 0; }
+
+/* ---------------------------------------------------------------------
+   WAIT-LIST SIGNUP — CLOUDS
+   Reuses the hero's four cloud PNGs (not new artwork) as two
+   overlapping pairs: --wl-1/--wl-2 stacked top-left, --wl-3/--wl-4
+   stacked bottom-right. Each pair uses a different --cloud-distance so
+   the two layers drift at different rates on scroll — the classic
+   parallax depth cue (the "nearer" cloud in front moves more than the
+   "farther" one behind it), same var-driven transform mechanism as
+   .cloud in the hero section, just with this section's OWN
+   --scroll-progress (see initWaitlistClouds() in script.js — this
+   section isn't pinned to the top of the page like the hero, so its
+   progress has to come from the section's own position, not
+   window.scrollY directly). Reuses the base `.cloud` class as-is
+   (generic position/background/transform rules) — only per-instance
+   placement and parallax speed are new here. */
+.waitlist-signup__clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /* No --scroll-progress default here, same reasoning as
+     .hero__clouds: must inherit the live value set on the parent
+     .waitlist-signup by JS, not shadow it with a locally-declared
+     fallback. */
+}
+
+/* Sizes bumped up (~1.4×) from the first pass per direct request — CSS
+   alone can display these bigger with the current image files, no new
+   assets required to see this change. Whether they stay crisp at this
+   larger size depends on the PNGs' own native pixel dimensions, which
+   this project (no cloud assets in this file set) can't check — these
+   are `background-size: contain` boxes, so the browser will happily
+   upscale a low-res source and it'll look soft. Rule of thumb: for a
+   sharp render at up to ~460px CSS width on a retina (2x) screen, the
+   source PNG should be at least ~920px wide natively. If the current
+   files were exported around the old, smaller sizes (e.g. ~400–500px
+   wide, as a rough guess), it's worth re-exporting them larger before
+   judging final sharpness here — flagging rather than guaranteeing.
+
+   Vertical positioning: `top`/`bottom` are just anchor points (0) —
+   actual placement comes from `--cloud-y-offset`, read by the shared
+   `.cloud` transform (see above). This went through two worse
+   attempts first: percentage `top`/`bottom` (broke once the section
+   got shorter — the same % landed much closer to the heading) and
+   then fixed-px `top`/`bottom` (worked at the exact widths tested, but
+   the *width* clamps scale continuously with vw while the heading
+   text also widens with viewport, so the two collided again across
+   most of the tablet/small-desktop range — confirmed by testing
+   768/900/1000/1200px, not just the usual three breakpoints). A pure
+   percentage `translateY` (e.g. -88%) fixed the collision — it hides a
+   constant PROPORTION of the cloud regardless of resolved size — but
+   that left the visible sliver tiny on mobile and only marginally
+   bigger on desktop (12% of a much taller cloud lands right at the
+   edge of the safe zone, not meaningfully more visible). Mixing % and
+   px inside calc() fixes both: `calc(-100% + 28px)` moves the cloud up
+   by its own full height, then back down by a flat 28px — so exactly
+   28px of cloud shows at the section edge at EVERY breakpoint,
+   independent of how tall the resolved cloud is. 28–34px sits
+   comfortably inside the section's 24px top/bottom padding plus a
+   couple px of margin before text starts, at any viewport. */
+.cloud--wl-1 {
+  background-image: url('assets/clouds/cloud-3.png');
+  width: clamp(280px, 42vw, 460px);
+  aspect-ratio: 2.25 / 1;
+  top: 0;
+  left: -6%;
+  --cloud-dir: -1;
+  --cloud-distance: 50px; /* back layer: slower drift */
+  --cloud-y-offset: calc(-100% + 28px);
+}
+.cloud--wl-2 {
+  background-image: url('assets/clouds/cloud-1.png');
+  width: clamp(230px, 36vw, 400px);
+  aspect-ratio: 2.84 / 1;
+  top: 0;
+  left: 2%;
+  --cloud-dir: -1;
+  --cloud-distance: 120px; /* front layer: faster drift, overlaps --wl-1 */
+  --cloud-y-offset: calc(-100% + 34px);
+}
+.cloud--wl-3 {
+  background-image: url('assets/clouds/cloud-4.png');
+  width: clamp(320px, 46vw, 560px);
+  aspect-ratio: 3.01 / 1;
+  bottom: 0;
+  right: -6%;
+  --cloud-dir: 1;
+  --cloud-distance: 55px; /* back layer: slower drift */
+  --cloud-y-offset: calc(100% - 28px);
+}
+.cloud--wl-4 {
+  background-image: url('assets/clouds/cloud-2.png');
+  width: clamp(190px, 28vw, 310px);
+  aspect-ratio: 2.31 / 1;
+  bottom: 0;
+  right: 2%;
+  --cloud-dir: 1;
+  --cloud-distance: 130px; /* front layer: faster drift, overlaps --wl-3 */
+  --cloud-y-offset: calc(100% - 34px);
+}
+
+/* Smaller viewport: shrink a bit further — the y-offset trick above
+   already keeps these clear of the heading/button text at every width
+   tested (375 through 1440px+), this is purely a density/taste call so
+   the corner accents don't feel oversized relative to a narrow phone
+   screen. */
+@media (max-width: 767px) {
+  .cloud--wl-1 { width: clamp(170px, 46vw, 260px); }
+  .cloud--wl-2 { width: clamp(140px, 38vw, 220px); }
+  .cloud--wl-3 { width: clamp(190px, 50vw, 300px); }
+  .cloud--wl-4 { width: clamp(150px, 40vw, 230px); }
+}
