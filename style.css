@@ -71,6 +71,23 @@
   --color-zaki: #725598;
   --color-vihren: #F68044;
   --color-neda: #FDD43B;
+  /* Lighter yellow for inline text highlights (Phase 4.5) — same hue/
+     saturation as --color-neda above, just raised lightness (61% → 82%),
+     rather than an unrelated pale yellow, so it reads as "a softer
+     version of Neda's yellow" rather than a disconnected new color.
+     Deliberately NOT reusing --color-neda itself: this token is used as
+     TEXT color on the hero's blue background, while --color-neda is
+     used as a solid BUTTON background elsewhere — same value in both
+     roles would make the new highlight read as "another button" at a
+     glance instead of emphasized text. Contrast against the hero
+     background (#5080BF): 3.40:1. Documenting honestly rather than
+     overclaiming: this clears WCAG AA's 3:1 threshold for large/bold
+     text, not the stricter 4.5:1 for small normal text — but note the
+     hero's own existing body text color (--color-hero-text, #F8FAFC)
+     only reaches 3.87:1 against this same background, so 3.40:1 is
+     in the same realistic range the hero already operates in, not a
+     new regression relative to what's already shipping. */
+  --color-yellow-light: #FEEBA4;
   --color-vesta: #278C5D;
   --color-misho: #E5E1D6;
   /* Мишо's full character palette (60% brand = --color-misho above,
@@ -371,6 +388,32 @@ input:focus-visible {
   color: var(--color-hero-text);
   opacity: 0.92;
   max-width: 34ch;
+}
+
+/* Phase 4.5: new tagline line, styled to match .hero__subtitle's
+   weight/size (same visual "tier" — a second line of supporting copy,
+   not a new hierarchy level) so it doesn't compete with either the H1
+   or the subtitle above it. .hero__content is already a flex column
+   with `gap`, so this needed no extra margin/spacing rule of its own
+   to sit correctly between the subtitle and the form — the existing
+   gap handles it.
+   Deliberately full opacity (not the subtitle's 0.92) — `opacity`
+   dims an element's entire rendered subtree as a single compositing
+   step, so if this paragraph inherited that same 0.92, the highlighted
+   spans below would ALSO get diluted against the hero background,
+   dropping their contrast from the verified 3.40:1 down to ~3.12:1.
+   The highlight is the whole point of this line, so it stays
+   undiluted; the very slight difference in perceived brightness vs.
+   the subtitle above it is not noticeable in practice. */
+.hero__tagline {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-hero-text);
+  max-width: 34ch;
+}
+.hero__tagline-highlight {
+  color: var(--color-yellow-light);
+  font-weight: 800;
 }
 
 /* --- Waitlist form (shared pattern; reused verbatim by the bottom
@@ -1781,6 +1824,28 @@ input:focus-visible {
   font-weight: 400; /* Dela Gothic One has one real weight */
   color: var(--color-surface-white);
   white-space: nowrap;
+}
+
+/* Phase 4.5: eyebrow badge above the heading. Full sentence rather
+   than a short 1-3 word tag, so this is a "chip"-style badge (rounded
+   box, can wrap to two lines on narrow screens) rather than a strict
+   single-line pill — matches the spirit of "badge/label" from the
+   brief without forcing long copy into a shape built for short tags.
+   White background + --color-zaki text (rather than e.g. white text
+   on a solid zaki fill) so it reads as a light, secondary label
+   sitting on top of the section, not a second call-to-action
+   competing with the button below it. */
+.waitlist-signup__badge {
+  display: inline-block;
+  max-width: 40ch;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-input);
+  background: var(--color-surface-white);
+  color: var(--color-zaki);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
 }
 
 /* .waitlist-form carries its own margin-top (see shared rule above),
