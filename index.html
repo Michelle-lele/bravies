@@ -605,16 +605,26 @@
       </div>
 
       <div class="waitlist-signup__inner">
-        <!-- Phase 4.5: new eyebrow badge, placed above the heading
-             (visual hierarchy: small label → heading → form). Reuses
-             the site's existing rounded-pill treatment (var(--radius-
-             input), the same radius used by inputs/buttons/the success
-             message) rather than inventing a new shape, and
-             --color-zaki — already this exact section's accent color
-             since Phase 4 (the form's submit button), so the badge
-             reads as "part of this section's established palette"
-             instead of a new, unrelated color choice. -->
-        <p class="waitlist-signup__badge reveal">Ексклузивен достъп преди всички и специална цена за първите записали се.</p>
+        <!-- Phase 4.5 (revised): two separate short labels instead of
+             one long pill — "Ексклузивен достъп" and "Специална цена"
+             each get their own tight white chip; the connecting words
+             ("преди всички и" / "за първите записали се.") are plain
+             white text on the yellow background, not inside a chip.
+             The two chip+text clauses are each wrapped in their own
+             .waitlist-signup__badge-line span. That span is `display:
+             inline` by default, so both clauses just flow together
+             as one line at desktop/landscape-tablet widths — no
+             special "one line" rule needed there, it falls out
+             naturally. At narrower widths (mobile / portrait tablet)
+             that span switches to `display: block` (see style.css),
+             which forces a line break right after "и" without an
+             explicit <br> — the break location is exactly the
+             boundary between the two spans, which is exactly where
+             the copy wants it. -->
+        <p class="waitlist-signup__badge-wrap reveal">
+          <span class="waitlist-signup__badge-line"><span class="waitlist-signup__badge">Ексклузивен достъп</span> преди всички и</span>
+          <span class="waitlist-signup__badge-line"><span class="waitlist-signup__badge">Специална цена</span> за първите записали се.</span>
+        </p>
 
         <h2 class="waitlist-signup__heading reveal" id="waitlist-signup-heading">Записването е отворено</h2>
 

@@ -387,7 +387,7 @@ input:focus-visible {
   font-weight: 600;
   color: var(--color-hero-text);
   opacity: 0.92;
-  max-width: 34ch;
+  max-width: 34ch; /* mobile only — widened back up at ≥768px below */
 }
 
 /* Phase 4.5: new tagline line, styled to match .hero__subtitle's
@@ -409,11 +409,28 @@ input:focus-visible {
   font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-hero-text);
-  max-width: 34ch;
+  max-width: 34ch; /* mobile only — widened back up at ≥768px below */
 }
 .hero__tagline-highlight {
   color: var(--color-yellow-light);
   font-weight: 800;
+}
+
+/* Same fix, same reasoning as .bravies__intro above (search this file
+   for that comment): from tablet width upward there's enough room for
+   each line to read as one line rather than wrap mid-sentence, so the
+   mobile-only 34ch cap is lifted and the line is allowed its natural
+   width. Orientation-agnostic on purpose — unlike some of the other
+   breakpoint blocks in this file, this needs to apply to BOTH portrait
+   and landscape tablet, not just one, so it uses the plain
+   `min-width: 768px` query rather than one of the orientation-specific
+   ones. */
+@media (min-width: 768px) {
+  .hero__subtitle,
+  .hero__tagline {
+    max-width: none;
+    white-space: nowrap;
+  }
 }
 
 /* --- Waitlist form (shared pattern; reused verbatim by the bottom
@@ -462,18 +479,57 @@ input:focus-visible {
    background" — the section background IS --color-neda, the exact same
    yellow the button's OLD default used as its own background, so a
    plain default button would've blended straight into the section.
-   Input gets a slightly stronger tint than --on-light's (0.08 vs 0.04)
-   since pale text-dark-on-white assumptions read weaker against
-   saturated yellow than against a white surface. Button uses Zaki's
-   purple + white text (direct request) rather than the earlier
-   dark-inverse treatment — purple-on-yellow already reads clearly
-   without needing an inverse workaround. */
+   Button uses Zaki's purple + white text (direct request) rather than
+   the earlier dark-inverse treatment — purple-on-yellow already reads
+   clearly without needing an inverse workaround.
+   Input: solid white background + Zaki-purple text (direct request,
+   replacing the earlier translucent dark-tinted version) — echoes the
+   badge chips above (also white bg / zaki text), tying the input
+   visually to that same "light label on yellow" language rather than
+   introducing a third treatment on this one section. */
 .waitlist-form--on-neda .waitlist-form__input {
-  border-color: rgba(30, 36, 51, 0.35);
-  background: rgba(30, 36, 51, 0.08);
-  color: var(--color-text-dark);
+  border-color: transparent;
+  background: var(--color-surface-white);
+  color: var(--color-zaki);
+}
+/* Without this, the sitewide `.waitlist-form__input.is-invalid` rule
+   (border-color: var(--color-error)) and the `border-color:
+   transparent` rule right above it end up at EQUAL specificity (two
+   classes each) — meaning it'd come down to source order, and this
+   block sits later in the file, so the invalid-state red border would
+   silently lose and never show up in this section. Matching both
+   classes together here (three, not two) guarantees this wins
+   regardless of where either rule sits in the file. */
+.waitlist-form--on-neda .waitlist-form__input.is-invalid {
+  border-color: var(--color-error);
 }
 .waitlist-form--on-neda .waitlist-form__input::placeholder { color: var(--color-text-muted); }
+.waitlist-form--on-neda .waitlist-form__input:focus {
+  border-color: var(--color-zaki);
+  /* Without this, the sitewide base `.waitlist-form__input:focus` rule
+     (background: rgba(255,255,255,0.22), tuned for the hero's dark
+     blue background) would still apply on focus — same specificity
+     tier as border-color above, just not overridden by it — and the
+     input would visibly shift from solid white to translucent the
+     moment someone clicks into it. Keeping it pinned to solid white
+     here so the focus state matches the resting state. */
+  background: var(--color-surface-white);
+}
+/* Real bug, caught by testing the actual invalid-submit flow rather
+   than just the resting/focus states in isolation: script.js calls
+   `input.focus()` right after adding `is-invalid` on a failed submit
+   (see initWaitlistForm), so BOTH `.is-invalid` and `:focus` are
+   active on the input at the same moment a validation error shows.
+   The two rules above (`.is-invalid` and `:focus`) tie at equal
+   specificity, and `:focus` sits later in the file, so it was silently
+   winning — the border rendered Zaki purple instead of the error red
+   right when the person most needed to see something was wrong.
+   Matching all three together (class + class + pseudo-class) outranks
+   both, so the error color correctly takes priority over the focus
+   color whenever both apply. */
+.waitlist-form--on-neda .waitlist-form__input.is-invalid:focus {
+  border-color: var(--color-error);
+}
 .waitlist-form--on-neda .waitlist-form__button {
   background: var(--color-zaki);
   color: var(--color-surface-white);
@@ -482,6 +538,29 @@ input:focus-visible {
 .waitlist-form--on-neda .waitlist-form__spinner {
   border-color: rgba(248, 250, 252, 0.35);
   border-top-color: var(--color-surface-white);
+}
+
+/* Minimum input width relative to the button, direct request — "at
+   least 60–70% of the CTA button's width," scoped to this section's
+   row layout only (≥1024px, or ≥768px landscape — same breakpoint
+   `.waitlist-form__row` itself switches to a row at, below). Only
+   applies there because mobile/portrait-tablet already stacks the
+   input at 100% width (which is wider than the button, not narrower —
+   already satisfies the intent without any extra rule), so this isn't
+   needed below that breakpoint and was confirmed fine to leave as-is.
+   CSS has no way to size an element as a literal percentage of a
+   SIBLING's rendered width (only of its own containing block), so
+   this is a concrete min-width in px instead, calibrated against the
+   button's actual current rendered width at this breakpoint (~273px)
+   — 190px sits right in the middle of the requested 60–70% band
+   (~70% of 273px). If the button's label text changes enough to
+   meaningfully change its own width later, re-check this value
+   against the new rendered button width rather than assuming it still
+   holds. */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .waitlist-form--on-neda .waitlist-form__input {
+    min-width: 190px;
+  }
 }
 
 .waitlist-form__button {
@@ -1826,26 +1905,79 @@ input:focus-visible {
   white-space: nowrap;
 }
 
-/* Phase 4.5: eyebrow badge above the heading. Full sentence rather
-   than a short 1-3 word tag, so this is a "chip"-style badge (rounded
-   box, can wrap to two lines on narrow screens) rather than a strict
-   single-line pill — matches the spirit of "badge/label" from the
-   brief without forcing long copy into a shape built for short tags.
-   White background + --color-zaki text (rather than e.g. white text
-   on a solid zaki fill) so it reads as a light, secondary label
-   sitting on top of the section, not a second call-to-action
-   competing with the button below it. */
+/* Phase 4.5 (revised): two tight chips ("Ексклузивен достъп" /
+   "Специална цена") instead of one long pill wrapping a full
+   sentence — each chip now fits its short phrase snugly, which reads
+   much more like a real badge/label than a chip stretched around an
+   entire sentence did. White background + --color-zaki text (rather
+   than e.g. white text on a solid zaki fill) so it reads as a light,
+   secondary label sitting on top of the section, not a second
+   call-to-action competing with the button below it. */
+.waitlist-signup__badge-wrap {
+  color: var(--color-surface-white);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  line-height: 1.6; /* extra line-height so the two rows on mobile don't feel cramped against each other */
+}
+
+/* At the row-layout breakpoint, force this onto one line even though
+   its natural width (~570px, both chips plus all the connecting text)
+   exceeds .waitlist-signup__inner's own 480px max-width. The `display:
+   inline` on .waitlist-signup__badge-line (below) only stops the two
+   clauses from stacking — it does nothing to stop the browser wrapping
+   at any OTHER space in the sentence once available width runs out,
+   which is exactly what was happening here (the badge was still
+   wrapping, just at a different point, not staying on one line as
+   asked). `white-space: nowrap` removes every line-break opportunity
+   in the whole paragraph, and since this element has no `overflow`
+   rule (nor does its parent), it's allowed to render wider than the
+   480px column around it rather than being clipped — the heading and
+   form below stay at their existing 480px-constrained width; only
+   this line intentionally spans wider. */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .waitlist-signup__badge-wrap {
+    white-space: nowrap;
+  }
+}
+/* `inline` by default: at desktop/landscape-tablet widths, both
+   clauses just flow together as normal inline content, which is what
+   makes the whole thing read as one line with no extra rule needed —
+   see the width-based override below for the narrower-viewport case. */
+.waitlist-signup__badge-line {
+  display: inline;
+}
 .waitlist-signup__badge {
   display: inline-block;
-  max-width: 40ch;
-  padding: 0.5rem 1.1rem;
+  padding: 0.3rem 0.7rem;
+  margin: 0 0.15rem;
   border-radius: var(--radius-input);
   background: var(--color-surface-white);
   color: var(--color-zaki);
-  font-size: var(--font-size-small);
   font-weight: 700;
   line-height: 1.35;
-  text-align: center;
+}
+
+/* Below tablet-landscape/desktop width, force each clause onto its
+   own row — this is what makes the two white chips stack one under
+   the other instead of running into each other on a narrow phone,
+   and is also where the copy's natural break point (right after "и")
+   was requested. `display: block` on an inline-by-default span is
+   enough to achieve this without an explicit <br>: the browser starts
+   a new line at the point the block-level box begins, i.e. exactly at
+   the boundary between the two spans.
+   Written as the direct "narrow" condition (mobile of any orientation,
+   OR portrait tablet) rather than negating the row-layout breakpoint
+   with `not` — content-negating a comma-separated (OR) media query
+   with compound AND clauses needs De Morgan's-style unpacking to stay
+   correct across browsers, and writing the two "narrow" cases out
+   directly is both simpler to read and less fragile than getting that
+   negation exactly right. Kept in sync with the same underlying
+   threshold as `.waitlist-form__row`'s row/column switch below (the
+   two are meant to change shape at the same point). */
+@media (max-width: 767px), (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .waitlist-signup__badge-line {
+    display: block;
+  }
 }
 
 /* .waitlist-form carries its own margin-top (see shared rule above),
