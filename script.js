@@ -303,26 +303,32 @@ function initFaqAccordion() {
    further down the page, so progress instead has to be derived from
    the section's own position relative to the viewport (via
    getBoundingClientRect()) — a different formula, not just a different
-   element reference — so folding it into initHeroClouds() would mean
-   branching that function's internals rather than actually sharing
-   logic. Same output contract either way: writes --scroll-progress
-   (0–1) onto the section element, which .cloud's shared transform rule
-   already reads via var(--scroll-progress, 0), so no CSS-side special
-   casing was needed.
-   Progress reaches 0 when the section's top is at the bottom edge of
-   the viewport (about to enter) and 1 once its bottom has scrolled
-   past the top of the viewport (about to leave) — i.e. it animates
-   continuously for as long as any part of the section is on screen,
-   not just during entry. */
+   element reference. Same output contract either way: writes
+   --scroll-progress (0–1) onto the section element, which .cloud's
+   shared transform rule already reads via var(--scroll-progress, 0),
+   so no CSS-side special casing was needed.
+   Progress reaches 1 once the section's top has scrolled up to meet
+   the top of the viewport (i.e. the section has fully "entered").
+   This is deliberately NOT the same formula as "entered AND then
+   fully exited past the top" (which would divide by
+   `window.innerHeight + sectionHeight` instead of just
+   `window.innerHeight`) — that version was tried first and had a real
+   problem: this section is always the LAST thing on the page, so
+   there's no more content below it to keep scrolling through once it
+   arrives. On a tall page with a comparatively short section (the
+   common case here) and a tall mobile viewport, the page simply runs
+   out of scrollable distance before the "fully exited" version could
+   ever reach much past ~0.3–0.5, which read as "the clouds barely
+   move" even though the code was working exactly as written. Ending
+   the range at "fully entered" instead reaches 1.0 reliably regardless
+   of how much (or little) scroll room exists past that point. */
 function initWaitlistClouds() {
   const section = document.getElementById('waitlist-signup');
   if (!section) return;
 
   const setProgress = () => {
     const rect = section.getBoundingClientRect();
-    const sectionHeight = section.offsetHeight || 1;
-    const total = window.innerHeight + sectionHeight;
-    const progress = Math.min(Math.max((window.innerHeight - rect.top) / total, 0), 1);
+    const progress = Math.min(Math.max((window.innerHeight - rect.top) / window.innerHeight, 0), 1);
     section.style.setProperty('--scroll-progress', progress.toFixed(4));
   };
 

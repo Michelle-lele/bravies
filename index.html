@@ -605,28 +605,32 @@
       </div>
 
       <div class="waitlist-signup__inner">
+        <h2 class="waitlist-signup__heading reveal" id="waitlist-signup-heading">Записването е отворено</h2>
+
         <!-- Phase 4.5 (revised): two separate short labels instead of
              one long pill — "Ексклузивен достъп" and "Специална цена"
              each get their own tight white chip; the connecting words
-             ("преди всички и" / "за първите записали се.") are plain
-             white text on the yellow background, not inside a chip.
+             ("преди всички и" / "за първите 100") are plain white text
+             on the yellow background, not inside a chip. Second phrase
+             shortened from "за първите записали се." to "за първите
+             100" per direct request — also now matches the button's
+             own "Запиши се за първите 100" wording, and the shorter
+             text helped the mobile-layout overlap fix below (less text
+             per row = less chance of an awkward mid-row wrap).
              The two chip+text clauses are each wrapped in their own
              .waitlist-signup__badge-line span. That span is `display:
              inline` by default, so both clauses just flow together
              as one line at desktop/landscape-tablet widths — no
              special "one line" rule needed there, it falls out
              naturally. At narrower widths (mobile / portrait tablet)
-             that span switches to `display: block` (see style.css),
-             which forces a line break right after "и" without an
-             explicit <br> — the break location is exactly the
-             boundary between the two spans, which is exactly where
-             the copy wants it. -->
+             that span switches to a flex row (see style.css) so the
+             two rows stack one under the other, left-aligned, without
+             the inline/wrapping overlap bug the plain `display: block`
+             version had. -->
         <p class="waitlist-signup__badge-wrap reveal">
           <span class="waitlist-signup__badge-line"><span class="waitlist-signup__badge">Ексклузивен достъп</span> преди всички и</span>
-          <span class="waitlist-signup__badge-line"><span class="waitlist-signup__badge">Специална цена</span> за първите записали се.</span>
+          <span class="waitlist-signup__badge-line"><span class="waitlist-signup__badge">Специална цена</span> за първите 100</span>
         </p>
-
-        <h2 class="waitlist-signup__heading reveal" id="waitlist-signup-heading">Записването е отворено</h2>
 
         <form class="waitlist-form waitlist-form--on-neda reveal" id="bottom-form" data-waitlist-form novalidate>
           <div class="waitlist-form__row">

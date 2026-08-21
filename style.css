@@ -1879,7 +1879,13 @@ input:focus-visible {
 }
 
 .waitlist-signup__inner {
-  position: relative; /* sits above .waitlist-signup__clouds (z-index 0) */
+  position: relative; /* sits above .waitlist-signup__clouds (z-index 0) —
+    same stacking pattern as .hero__content / .hero__clouds; verified via
+    computed z-index (not just assumed) that this correctly keeps the
+    form above the clouds at every breakpoint tested. See the
+    max-height media query near the cloud definitions below for the
+    separate, genuinely limited-space concern (how much of the cloud
+    is visible, not which one paints on top). */
   z-index: 1;
   max-width: 480px;
   margin: 0 auto;
@@ -1913,70 +1919,72 @@ input:focus-visible {
    than e.g. white text on a solid zaki fill) so it reads as a light,
    secondary label sitting on top of the section, not a second
    call-to-action competing with the button below it. */
+/* Mobile-first base: each clause is its own flex row (chip + trailing
+   text), and the two rows stack in a flex column, left-aligned. This
+   replaced an earlier plain-text/`display: block` version that had a
+   real bug — when the trailing text was long enough to wrap onto a
+   second sub-line within its own row, the wrapped line could visually
+   collide with the chip above it (the chip's own padding makes it
+   taller than a plain text line, and inline/block text flow doesn't
+   reliably reserve room for that), and centered `text-align`
+   inheritance made the two rows sit at inconsistent left edges since
+   each row has a different natural width. Flex sidesteps both: each
+   row's items are properly measured and vertically centered against
+   each other regardless of wrapping, and `align-items: flex-start`
+   gives a clean, consistent left edge. Reset back to plain inline text
+   at the row-layout breakpoint below, where this is meant to read as
+   one ordinary centered line instead. */
 .waitlist-signup__badge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
   color: var(--color-surface-white);
   font-size: var(--font-size-small);
   font-weight: 600;
-  line-height: 1.6; /* extra line-height so the two rows on mobile don't feel cramped against each other */
+  text-align: left;
 }
-
-/* At the row-layout breakpoint, force this onto one line even though
-   its natural width (~570px, both chips plus all the connecting text)
-   exceeds .waitlist-signup__inner's own 480px max-width. The `display:
-   inline` on .waitlist-signup__badge-line (below) only stops the two
-   clauses from stacking — it does nothing to stop the browser wrapping
-   at any OTHER space in the sentence once available width runs out,
-   which is exactly what was happening here (the badge was still
-   wrapping, just at a different point, not staying on one line as
-   asked). `white-space: nowrap` removes every line-break opportunity
-   in the whole paragraph, and since this element has no `overflow`
-   rule (nor does its parent), it's allowed to render wider than the
-   480px column around it rather than being clipped — the heading and
-   form below stay at their existing 480px-constrained width; only
-   this line intentionally spans wider. */
-@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
-  .waitlist-signup__badge-wrap {
-    white-space: nowrap;
-  }
-}
-/* `inline` by default: at desktop/landscape-tablet widths, both
-   clauses just flow together as normal inline content, which is what
-   makes the whole thing read as one line with no extra rule needed —
-   see the width-based override below for the narrower-viewport case. */
 .waitlist-signup__badge-line {
-  display: inline;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  line-height: 1.3;
 }
 .waitlist-signup__badge {
-  display: inline-block;
   padding: 0.3rem 0.7rem;
-  margin: 0 0.15rem;
   border-radius: var(--radius-input);
   background: var(--color-surface-white);
   color: var(--color-zaki);
   font-weight: 700;
   line-height: 1.35;
+  flex-shrink: 0; /* keep the chip itself from ever being squeezed/wrapped internally */
 }
 
-/* Below tablet-landscape/desktop width, force each clause onto its
-   own row — this is what makes the two white chips stack one under
-   the other instead of running into each other on a narrow phone,
-   and is also where the copy's natural break point (right after "и")
-   was requested. `display: block` on an inline-by-default span is
-   enough to achieve this without an explicit <br>: the browser starts
-   a new line at the point the block-level box begins, i.e. exactly at
-   the boundary between the two spans.
-   Written as the direct "narrow" condition (mobile of any orientation,
-   OR portrait tablet) rather than negating the row-layout breakpoint
-   with `not` — content-negating a comma-separated (OR) media query
-   with compound AND clauses needs De Morgan's-style unpacking to stay
-   correct across browsers, and writing the two "narrow" cases out
-   directly is both simpler to read and less fragile than getting that
-   negation exactly right. Kept in sync with the same underlying
-   threshold as `.waitlist-form__row`'s row/column switch below (the
-   two are meant to change shape at the same point). */
-@media (max-width: 767px), (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
-  .waitlist-signup__badge-line {
+/* At the row-layout breakpoint, revert to plain centered inline text:
+   both clauses flow together as one line (`display: inline` below),
+   and `white-space: nowrap` forces that even though the combined
+   natural width (~570px, both chips plus all connecting text) exceeds
+   `.waitlist-signup__inner`'s own 480px max-width — this element has
+   no `overflow` rule (nor does its parent), so it's allowed to render
+   wider than the 480px column around it rather than being clipped;
+   the heading and form below stay at their existing 480px-constrained
+   width, only this one line intentionally spans wider. The chip goes
+   back to `inline-block` + a small horizontal margin (instead of the
+   mobile version's flex `gap`) since it's now sitting inline among
+   plain text again, not inside a flex row. */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .waitlist-signup__badge-wrap {
     display: block;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .waitlist-signup__badge-line {
+    display: inline;
+  }
+  .waitlist-signup__badge {
+    display: inline-block;
+    margin: 0 0.15rem;
   }
 }
 
@@ -2153,3 +2161,25 @@ input:focus-visible {
   .cloud--wl-3 { width: clamp(190px, 50vw, 300px); }
   .cloud--wl-4 { width: clamp(150px, 40vw, 230px); }
 }
+
+/* Short/constrained-height viewports (mobile landscape, a shallow
+   browser window, etc.) — direct request to keep clouds visually
+   clear of the form specifically "when space is limited." Stacking
+   order was already correct here before this rule (`.waitlist-signup__
+   clouds` sits at z-index: 0, `.waitlist-signup__inner` — which
+   contains the form — sits at z-index: 1, exactly the same pattern
+   `.hero__clouds` / `.hero__content` already use; verified via
+   computed styles, not just assumed), so this isn't a stacking-order
+   fix. What DOES change with less vertical room is how much of the
+   bottom-right pair's height is visible at once — the same 60–65%
+   visible portion that looks fine in a tall section can end up
+   reaching much closer to the form when the section itself is
+   short. Cutting the visible portion back to ~25% here keeps a
+   comfortable gap regardless of stacking order. 500px covers common
+   phones in landscape (~375–430px tall) without affecting normal
+   portrait mobile, where height is rarely the constraint. */
+@media (max-height: 500px) {
+  .cloud--wl-3 { --cloud-y-offset: 75%; }
+  .cloud--wl-4 { --cloud-y-offset: 72%; }
+}
+
