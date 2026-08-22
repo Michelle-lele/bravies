@@ -810,7 +810,11 @@ input:focus-visible {
   100% { transform: translateY(0) scale(1); }
 }
 .brave-card__portrait-img.is-pulsing {
-  animation: brave-card-pulse-mobile 0.6s ease;
+  /* Was 0.6s — doubled per direct request ("pop out and back... twice
+     as slower"). Keyframe percentages are unchanged (still 0/50/100),
+     so the shape of the motion is identical, just stretched over twice
+     the time. */
+  animation: brave-card-pulse-mobile 1.2s ease;
 }
 @media (prefers-reduced-motion: reduce) {
   .brave-card__portrait-img.is-pulsing { animation: none; }
@@ -954,7 +958,9 @@ input:focus-visible {
   }
 
   .brave-card__trigger:hover .brave-card__portrait-img {
-    animation: brave-card-pulse 0.5s ease;
+    /* Was 0.5s — doubled per direct request, same reasoning as the
+       mobile pulse above (see that rule's comment). */
+    animation: brave-card-pulse 1s ease;
   }
   /* Desktop uses hover only — the scroll-triggered .is-pulsing class
      (mobile/portrait-tablet) is neutralized here so the two mechanisms
@@ -1037,7 +1043,23 @@ input:focus-visible {
 }
 
 .problem__inner {
-  max-width: 62ch;
+  /* Widened from 62ch, per direct request that the heading felt too
+     tightly wrapped. Deliberately NOT widening via a bigger `ch`
+     value — `ch` here is sized off THIS element's own font
+     (Nunito Sans, inherited from body), not the heading's actual
+     Dela Gothic One, which is a visibly wider/heavier face; a `ch`-based
+     width doesn't track the heading's real rendered width well. Using
+     a fixed px value instead, tuned directly against rendered
+     screenshots at 768/1024/1440px (this session's test environment
+     doesn't have the real self-hosted font files, so headings render
+     in a fallback font here — re-verify this wrap once the real Dela
+     Gothic One font is loading, since it's chunkier than most fallback
+     sans faces and may wrap slightly differently). Body paragraphs
+     widen along with the heading since they share this container —
+     checked that the prose still reads fine at this width, not just
+     the heading.
+  */
+  max-width: 800px;
   margin: 0 auto;
   text-align: center;
   display: flex;
@@ -1067,6 +1089,18 @@ input:focus-visible {
   font-size: var(--font-size-body);
   line-height: 1.6;
   opacity: 0.96;
+  /* Left-aligned, not inherited-center from .problem__inner — centered
+     multi-sentence prose has two real readability costs: the eye's
+     "return point" (where the next line starts) moves every line
+     instead of staying fixed at a left edge, and centered text doesn't
+     fill out to the container's width, so it wraps wherever a word
+     naturally breaks and looks choppier/shorter than the actual
+     measure. The block itself stays centered on the page (this is
+     still inside .problem__inner's `margin: 0 auto`) — only the text
+     inside it is left-aligned now. Heading/pull-quote above this stays
+     centered on purpose: short 1-2 line display text doesn't have the
+     same readability cost, and reads better as a centered pull-quote. */
+  text-align: left;
 }
 
 /* ---------------------------------------------------------------------
@@ -1102,7 +1136,10 @@ input:focus-visible {
   gap: var(--space-2);
   font-size: var(--font-size-body);
   line-height: 1.6;
-  text-align: center;
+  /* Left-aligned — same reasoning as .problem__body above (see that
+     comment for the full rationale). Block still centers on the page
+     via `margin: 0 auto`; only the text itself is left-aligned. */
+  text-align: left;
 }
 
 /* Point tiles: each echoes one Bravie's icon + brand color from the
@@ -1133,8 +1170,12 @@ input:focus-visible {
 
 .teaches__point {
   --point-color: var(--color-neda);
-  --icon-glyph-color: var(--color-icon-burnt-orange); /* per feedback:
-    colorful rather than plain dark on Неда's yellow */
+  /* White per direct request (Phase 4.6) — was --color-icon-burnt-orange.
+     The "colorful glyph" reasoning from the original feedback (see the
+     comment below) is superseded here for this specific tile by the
+     newer, more specific request; Вихрен and the Buddy/turquoise tile
+     got the same change, Веста/Заки/Мишо did not (not asked for). */
+  --icon-glyph-color: var(--color-surface-white);
   --icon-url: url('assets/icons/resist.png');
   position: relative;
   overflow: visible;
@@ -1151,13 +1192,16 @@ input:focus-visible {
   border: 3px solid var(--point-color);
 }
 
-/* Icon glyph colors below are chosen for a colorful result rather than
-   reusing the plain dark/white split from each Bravie's card caption
-   text (per feedback: "colorful would be better") — Веста's and
-   Заки's white glyphs were confirmed good as-is and left unchanged. */
+/* Icon glyph colors: originally chosen for a colorful result rather
+   than reusing the plain dark/white split from each Bravie's card
+   caption text (per earlier feedback: "colorful would be better").
+   Phase 4.6 direct request reversed that for three of these tiles
+   (Неда above, Вихрен + Buddy below) back to white — Веста's and
+   Заки's stayed untouched since they were already white and weren't
+   part of the request. */
 .teaches__point:nth-child(6n+2) {
   --point-color: var(--color-vihren);
-  --icon-glyph-color: var(--color-icon-deep-red);
+  --icon-glyph-color: var(--color-surface-white); /* was --color-icon-deep-red */
   --icon-url: url('assets/icons/running_away.png');
 }
 .teaches__point:nth-child(6n+3) {
@@ -1172,19 +1216,32 @@ input:focus-visible {
 }
 .teaches__point:nth-child(6n+5) {
   --point-color: var(--color-misho);
-  --icon-glyph-color: var(--color-text-dark); /* the person's original question — Мишо's beige is light, needs a dark glyph */
-  /* no --icon-url and no --icon-glyph-display override: no confirmed
-     icon asset yet — face.png was rejected (style/resolution mismatch,
-     see SDD.md) — so this tile's ::after stays suppressed via the
-     content:none default below, leaving a plain color-filled circle
-     rather than an unmasked solid square (an actual bug caught while
-     testing this: mask-image:none doesn't hide the layer, it just
-     removes the mask, which left a solid block showing instead). */
+  /* Phase 4.6: now uses --color-misho-trim (the same dark brown used
+     for How It Works' step titles — see .how-it-works__step-title),
+     per direct request, instead of the old --color-text-dark. */
+  --icon-glyph-color: var(--color-misho-trim);
+  /* ⚠️ PLACEHOLDER PATH — flagged, not a real asset: no icon file for
+     this tile was available in this session (the brief referenced "this
+     icon" but no image file for it was actually attached/found). This
+     points at a filename that doesn't exist yet on purpose, as a clear
+     marker of exactly what needs to be dropped in. Until a real file
+     lands at this path, a broken mask-image renders as nothing (same
+     "plain color-filled circle, no glyph" fallback this tile already
+     had before this change) — NOT a broken/red-X image, so this is
+     safe to ship as-is in the meantime, just incomplete. Swap the
+     filename below once the real asset exists; also add this
+     selector to the nth-child list in the ::after content-activation
+     rule further down (it's deliberately excluded from that list
+     right now, same as before this change, since there's still no
+     real icon to activate). */
+  --icon-url: url('assets/icons/misho-placeholder.png');
 }
 .teaches__point:nth-child(6n+6) {
   --point-color: var(--color-buddy);
-  --icon-glyph-color: var(--color-icon-deep-teal); /* per feedback: a
-    deep green/blue instead of plain dark on the turquoise circle */
+  /* White per direct request (Phase 4.6) — this is the "turquoise/
+     special cards" tile referenced in that request. Was
+     --color-icon-deep-teal. */
+  --icon-glyph-color: var(--color-surface-white);
   --icon-url: url('assets/icons/help.png');
 }
 
@@ -1476,7 +1533,16 @@ input:focus-visible {
 }
 
 .testimonials__inner {
-  max-width: 700px;
+  /* Widened from 700px so the heading fits on one line at desktop/
+     tablet-landscape, per direct request. Slider/quote content shares
+     this container (no independent narrower width of its own — see
+     .testimonials__slider), so it gets wider too; checked that the
+     quote block still reads fine at this width, not just the heading.
+     Tuned against rendered screenshots — see the same font-fallback
+     caveat noted on .problem__inner above (this session doesn't have
+     the real Dela Gothic One font files, so re-verify once those are
+     loading for real). */
+  max-width: 980px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1631,10 +1697,22 @@ input:focus-visible {
 --------------------------------------------------------------------- */
 .desired-state {
   padding: var(--space-5) var(--space-2);
-  background: var(--color-vihren);
-  color: var(--color-text-dark); /* orange is a mid-bright surface —
-    dark text reads better here than white (checked against the same
-    --color-text-dark used on Мишо's light beige in How It Works). */
+  /* Changed from --color-vihren (orange) to --color-vesta (green) —
+     direct request/discussion. Orange + dark text is the color pairing
+     used for hazard/warning signage (OSHA caution colors, construction
+     warning tape), which reads as "alert" at a pre-conscious level —
+     the opposite of what this section is saying ("you can exhale
+     now"). Green is the closer semantic match for calm/safe/reassurance,
+     and it's already present in this exact section via the checkmark
+     ticks below — using it for the background turns what used to be a
+     near-complementary (orange vs. green) color clash into one
+     coherent palette instead of introducing a second relationship to
+     manage. White text (not dark) — checked contrast both ways:
+     white reaches 4.02:1 against this green, dark text only 3.69:1 —
+     and it matches how the Problem section already handles its own
+     similarly mid-dark saturated background (purple + white text). */
+  background: var(--color-vesta);
+  color: var(--color-surface-white);
 }
 
 .desired-state__inner {
@@ -1643,7 +1721,12 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  /* Tightened from --space-4 (40px) to --space-3 (24px) — direct
+     request to reduce this section's overall height, "especially the
+     list." This alone saves 3 gaps × 16px = 48px before the list
+     layout change below adds further savings. Still enough room to
+     read as separate blocks, just less airy between them. */
+  gap: var(--space-3);
 }
 
 .desired-state__heading {
@@ -1660,19 +1743,50 @@ input:focus-visible {
   gap: var(--space-2);
   font-size: var(--font-size-body);
   line-height: 1.6;
-  text-align: center;
+  /* Left-aligned — same reasoning as .problem__body/.teaches__body
+     (see .problem__body's comment for the full rationale). Block still
+     centers on the page via `margin: 0 auto`; only the text itself is
+     left-aligned. Heading above stays centered — short display text
+     doesn't carry the same readability cost as multi-sentence prose. */
+  text-align: left;
 }
 
-/* Checkmark bullet list — replaces the earlier 2×2 icon-box grid.
-   Each item reveals individually (not as one block) via a per-item
-   transition-delay stagger on top of the shared .reveal mechanism, so
-   items cascade in one after another rather than popping together. */
+/* Checkmark bullet list. Each item still reveals individually (not as
+   one block) via a per-item transition-delay stagger on top of the
+   shared .reveal mechanism, so items cascade in rather than popping
+   together — unaffected by the layout change below, grid auto-flow
+   fills left-to-right/top-to-bottom in the same 1-2-3-4 order the
+   stagger delays already assume.
+   Mobile/tablet-portrait: single column, tightened gap (—space-3 →
+   —space-2) — direct request to reduce height, and this is the one
+   change that actually helps on mobile (the grid below only kicks in
+   at tablet-landscape+, since 2 columns of wrapped sentence-length
+   text has no room to work on a phone). */
 .desired-state__list {
   width: 100%;
   max-width: 640px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
+}
+
+/* Tablet-landscape/desktop: 2×2 grid instead of a 4-row stack — cuts
+   the list's vertical footprint roughly in half at the breakpoints
+   where the section was tallest. Deliberately NOT a card/box grid —
+   direct request to keep this as plain tick+text pairs, no borders or
+   background boxes per item, so it stays visually identical to the
+   single-column version, just arranged in 2 columns instead of 1.
+   Widened both the list and its parent .desired-state__inner (900px,
+   above) since two columns of full-sentence bullets need more
+   horizontal room than the single-column 640px measure did. */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .desired-state__list {
+    max-width: 820px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-5);
+    row-gap: var(--space-3);
+  }
 }
 
 .desired-state__item {
@@ -1697,8 +1811,14 @@ input:focus-visible {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--color-vesta);
-  color: var(--color-surface-white);
+  /* Inverted from the old green-circle-on-orange (green bg, white
+     check) to white-circle-on-green (white bg, green check) — the
+     section background is now --color-vesta too (see .desired-state
+     above), so the old scheme would have made these circles
+     invisible, blending straight into the background they used to
+     stand out against. */
+  background: var(--color-surface-white);
+  color: var(--color-vesta);
   margin-top: 0.15em; /* optical alignment with the first text line */
 }
 .desired-state__tick svg { width: 1.1rem; height: 1.1rem; }
@@ -1710,7 +1830,12 @@ input:focus-visible {
     of the section, not fine print */
   font-size: 1.15rem;
   line-height: 1.5;
-  color: var(--color-text-dark);
+  /* White, not --color-text-dark — matches the rest of the section
+     now that the background is green (see .desired-state above);
+     dark text here would read at a noticeably lower contrast (~3.7:1
+     vs. white's ~4.0:1) and would look inconsistent against the
+     already-white heading/body text above it. */
+  color: var(--color-surface-white);
 }
 
 .desired-state__cta {
@@ -1721,8 +1846,13 @@ input:focus-visible {
 
 /* ---------------------------------------------------------------------
    FAQ SECTION
-   Background: white (--color-surface-white) — continues the
-   alternation after Desired State's orange.
+   Background: white (--color-surface-white). Phase 4.6: the section
+   immediately before this one changed from Desired State (orange) to
+   Testimonials (already white) once Desired State moved earlier in
+   the page — see that section's own comments — so this is now white
+   directly following white, not continuing a strict alternation.
+   Left as-is; flagged in SDD.md as a side-effect of the reorder
+   rather than something silently patched here.
 --------------------------------------------------------------------- */
 .faq {
   padding: var(--space-5) var(--space-2);
