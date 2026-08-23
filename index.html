@@ -271,7 +271,7 @@
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div class="how-it-works__inner">
         <h2 class="how-it-works__heading reveal" id="how-it-works-heading">Как работи играта?</h2>
-        <p class="how-it-works__meta reveal">2 - 5 играча, 10 минути, 2 - 9 години</p>
+        <p class="how-it-works__meta reveal">2 - 5 играча, 10 минути, 5 - 9 години</p>
 
         <ol class="how-it-works__steps">
           <li class="how-it-works__step how-it-works__step--1">
@@ -303,22 +303,11 @@
               <p class="how-it-works__step-line">Всички отговарят правилно - всички споделят наградата.</p>
             </div>
             <div class="how-it-works__card-wrap reveal">
-              <!-- ⚠️ Still a text placeholder, not a real card image —
-                   flagged, not guessed. Direct request: this card is
-                   Заки's card, not a reward card (the old placeholder
-                   label — "Карта: награда" — was wrong and has been
-                   corrected below), but the actual card artwork/photo
-                   that was meant to go here didn't make it into this
-                   session (only an unrelated confused-face icon was
-                   attached, now used for the Мишо glyph elsewhere in
-                   this file — see .teaches__point:nth-child(6n+5) in
-                   style.css). Once the real image exists, swap this
-                   whole placeholder <div> for an <img> the same way
-                   steps 1–2 already work
-                   (how-it-works__card--img, assets/cards/*.png). -->
-              <div class="how-it-works__card" aria-hidden="true">
-                <span>Карта: Заки</span>
-              </div>
+              <!-- Real Zaki card art, supplied directly — replaces the
+                   earlier text placeholder, same pattern as steps 1–2
+                   (how-it-works__card--img, real <img> not a styled
+                   <div>). -->
+              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/zaki.png" alt="" aria-hidden="true" loading="lazy" />
             </div>
           </li>
         </ol>
@@ -369,8 +358,18 @@
                   <span class="testimonials__mark testimonials__mark--close" aria-hidden="true">&rdquo;</span>
                 </blockquote>
               </li>
+              <li class="testimonials__slide" style="--slide-accent: var(--color-vihren);" aria-hidden="true">
+                <blockquote class="testimonials__quote">
+                  <span class="testimonials__mark testimonials__mark--open" aria-hidden="true">&ldquo;</span>
+                  <div class="testimonials__quote-body">
+                    <p>Още същия ден малкият искаше да играем отново. Играхме пак на следващата сутрин и оттогава не спира да говори за играта и наградите.</p>
+                    <cite class="testimonials__cite">— Христина И., майка на Анди</cite>
+                  </div>
+                  <span class="testimonials__mark testimonials__mark--close" aria-hidden="true">&rdquo;</span>
+                </blockquote>
+              </li>
               <!-- Future testimonials: append another <li class="testimonials__slide"
-                   style="--slide-accent: var(--color-vihren);"> (next color in the
+                   style="--slide-accent: var(--color-neda);"> (next color in the
                    cycle) here — no JS/CSS changes needed. -->
             </ul>
           </div>

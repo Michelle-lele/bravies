@@ -1374,7 +1374,16 @@ input:focus-visible {
 .how-it-works__meta {
   margin: 0 0 var(--space-4);
   text-align: center;
-  font-size: 0.95rem;
+  /* Was 0.95rem — direct request to match the size of the rest of the
+     section's black body text (the step-line paragraphs below, which
+     use --font-size-body, the same clamp() every other body-copy
+     paragraph on the page uses). Weight (600) and the slight opacity
+     dimming (0.75) are left as-is — those weren't part of this
+     request, only size — so this line still reads as a distinct,
+     slightly muted metadata row rather than becoming visually
+     identical to the step descriptions; flag if those should also be
+     unified now that the size matches. */
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-text-dark);
   opacity: 0.75;
