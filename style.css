@@ -1059,7 +1059,7 @@ input:focus-visible {
      checked that the prose still reads fine at this width, not just
      the heading.
   */
-  max-width: 800px;
+  max-width: 920px;
   margin: 0 auto;
   text-align: center;
   display: flex;
@@ -1129,7 +1129,15 @@ input:focus-visible {
 }
 
 .teaches__body {
-  max-width: 62ch;
+  /* Fixed px, not `ch` — measured actual line CAPACITY (via canvas
+     text measurement of the real font/size, not just counting
+     characters in whatever a particular paragraph's word-wrap happened
+     to produce) to hit the requested 75-character minimum precisely.
+     75ch measured out to ~73 characters of real capacity in testing —
+     close, but short — so this uses the same fixed-px approach as
+     .problem__inner instead, tuned to the same target. Verified ≥75
+     char capacity at 1440px viewport before finalizing this value. */
+  max-width: 920px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1216,25 +1224,25 @@ input:focus-visible {
 }
 .teaches__point:nth-child(6n+5) {
   --point-color: var(--color-misho);
-  /* Phase 4.6: now uses --color-misho-trim (the same dark brown used
-     for How It Works' step titles — see .how-it-works__step-title),
-     per direct request, instead of the old --color-text-dark. */
+  /* Phase 4.6: uses --color-misho-trim (the same dark brown used for
+     How It Works' step titles/numbers — see .how-it-works__step-title
+     and .how-it-works__number), per direct request. */
   --icon-glyph-color: var(--color-misho-trim);
-  /* ⚠️ PLACEHOLDER PATH — flagged, not a real asset: no icon file for
-     this tile was available in this session (the brief referenced "this
-     icon" but no image file for it was actually attached/found). This
-     points at a filename that doesn't exist yet on purpose, as a clear
-     marker of exactly what needs to be dropped in. Until a real file
-     lands at this path, a broken mask-image renders as nothing (same
-     "plain color-filled circle, no glyph" fallback this tile already
-     had before this change) — NOT a broken/red-X image, so this is
-     safe to ship as-is in the meantime, just incomplete. Swap the
-     filename below once the real asset exists; also add this
-     selector to the nth-child list in the ::after content-activation
-     rule further down (it's deliberately excluded from that list
-     right now, same as before this change, since there's still no
-     real icon to activate). */
-  --icon-url: url('assets/icons/misho-placeholder.png');
+  /* Real asset, supplied directly: a confused/questioning face icon
+     (question mark + worried expression). Solid black line art on a
+     transparent background (verified: real alpha channel, not a white
+     matte — confirmed via the image's alpha extrema before using it),
+     so it works correctly with mask-image tinting like the other 5
+     icons. Now added to the nth-child list in the ::after
+     content-activation rule below, since there's a real icon to
+     activate. One honest flag: this source image is a much more
+     detailed illustration (multiple strokes, a full facial expression)
+     than the other 5 icons' simple flat single-shape glyphs (a hand, a
+     running figure, a megaphone, a key, a shield+heart) — worth a look
+     at actual render size (this badge is a small 84px circle) to
+     confirm the extra detail stays legible rather than turning into
+     visual noise once tinted solid brown and scaled down. */
+  --icon-url: url('assets/icons/misho-confused.png');
 }
 .teaches__point:nth-child(6n+6) {
   --point-color: var(--color-buddy);
@@ -1288,6 +1296,7 @@ input:focus-visible {
 .teaches__point:nth-child(6n+2) .teaches__point-icon::after,
 .teaches__point:nth-child(6n+3) .teaches__point-icon::after,
 .teaches__point:nth-child(6n+4) .teaches__point-icon::after,
+.teaches__point:nth-child(6n+5) .teaches__point-icon::after,
 .teaches__point:nth-child(6n+6) .teaches__point-icon::after {
   content: '';
 }
@@ -1348,7 +1357,27 @@ input:focus-visible {
   font-size: var(--font-size-h2);
   font-weight: 400; /* Dela Gothic One has one real weight */
   text-align: center;
-  margin-bottom: var(--space-4);
+  /* Direct request: match the numbered step badges' color
+     (--color-misho-trim, the same brown used for .how-it-works__number
+     and .how-it-works__step-title below — see those rules). Was the
+     inherited default text color; margin-bottom moved to the new
+     .how-it-works__meta line below it so the heading/subtitle pair
+     reads as one tight unit. */
+  color: var(--color-misho-trim);
+}
+
+/* New subtitle line under the heading — plain, quiet metadata (player
+   count / time / age range), not trying to compete with the heading
+   for attention. Small, muted weight, tight margin to the heading
+   above and the extra space to the steps below via
+   .how-it-works__heading no longer carrying margin-bottom itself. */
+.how-it-works__meta {
+  margin: 0 0 var(--space-4);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  opacity: 0.75;
 }
 
 .how-it-works__steps {
@@ -1420,8 +1449,9 @@ input:focus-visible {
   color: var(--color-misho-trim); /* was --color-zaki purple — clashed
     against Мишо-colored card art in this section. Мишо's own trim/shoe
     brown reads as part of the same character instead of an unrelated
-    accent. Step-number badges (below) are still purple; flag if you'd
-    like those switched to Мишо's sky-blue accent too for full consistency. */
+    accent. Step-number badges (above, .how-it-works__number) also use
+    this same brown now — this comment previously said they were still
+    purple, which had gone stale; fixed to match the actual CSS. */
 }
 
 .how-it-works__step-line {
@@ -1716,7 +1746,12 @@ input:focus-visible {
 }
 
 .desired-state__inner {
-  max-width: 900px;
+  /* Widened from 900px to 940px — the child .desired-state__body was
+     being bottlenecked by this parent's max-width (900px < the
+     child's own 920px), pulling its real capacity just barely under
+     the 75-character target (~75.09, cutting it too close). 940px
+     gives .desired-state__body's 920px enough room to actually apply. */
+  max-width: 940px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1736,7 +1771,11 @@ input:focus-visible {
 }
 
 .desired-state__body {
-  max-width: 62ch;
+  /* Fixed px, not `ch` — same reasoning/measurement approach as
+     .teaches__body above (75ch under-measured to ~73 characters of
+     real capacity; this value was verified via canvas text
+     measurement against the actual rendered font/size). */
+  max-width: 920px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -2049,13 +2088,15 @@ input:focus-visible {
    than e.g. white text on a solid zaki fill) so it reads as a light,
    secondary label sitting on top of the section, not a second
    call-to-action competing with the button below it. */
-/* Redesigned per direct request: each clause is now ONE pill (not a
-   small chip plus bare text beside it) — the connector text moves
-   inside the same rounded, colored box as the highlighted phrase, all
-   text white, highlighted phrase bold via the <strong> in the markup.
-   Solid --color-zaki background (this section's established accent
-   since Phase 4's submit button) rather than white, since white text
-   needs a background it can actually contrast against.
+/* Redesigned per an earlier direct request: each clause is now ONE
+   pill (not a small chip plus bare text beside it) — the connector
+   text moves inside the same rounded, colored box as the highlighted
+   phrase, highlighted phrase bold via the <strong> in the markup.
+   Colors flipped back to white background + --color-zaki text (see
+   .waitlist-signup__badge-line below for the current values and the
+   reasoning for this latest change) — closer to this pill's original
+   Phase 4.5 treatment than the solid-purple version that briefly
+   replaced it.
    Layout: `.waitlist-signup__badge-wrap` is a flex container in BOTH
    directions — column (stacked, centered) on mobile/portrait-tablet,
    row (side by side, centered) at the row-layout breakpoint — rather
@@ -2082,8 +2123,17 @@ input:focus-visible {
   gap: 0.35em;
   padding: 0.45rem 1rem;
   border-radius: var(--radius-input);
-  background: var(--color-zaki);
-  color: var(--color-surface-white);
+  /* Flipped per direct request: white background, purple text — was
+     solid --color-zaki background + white text. Keeps the submit
+     button below as the one saturated-purple element in this section
+     (see .waitlist-form--on-neda .waitlist-form__button) rather than
+     flipping that too — these two pills are informational/decorative,
+     the button is the actual call to action, so keeping it visually
+     distinct (still solid purple) rather than matching these now-white
+     pills preserves a clear "which thing do I click" hierarchy. Flag
+     if the button was meant to flip too. */
+  background: var(--color-surface-white);
+  color: var(--color-zaki);
   line-height: 1.3;
   text-align: center;
 }
