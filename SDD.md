@@ -15,10 +15,13 @@ minimum line length sitewide, the real Мишо icon, a How It Works
 subtitle + heading recolor, a corrected card-3 label, and a
 Wait-list Signup badge color flip — see relevant sections below), and
 Phase 4.10 (second Testimonials slide added, real submitted quote —
-see Testimonials Section below) also complete, ahead of Phase 5
-(integration pass) next. This document reflects current, as-built
-behavior — not a change history. Tech stack decision: vanilla JS (no
-framework needed).*
+see Testimonials Section below), and Phase 5.1 (real MailerLite email
+collection, replacing the mock console.log/setTimeout submission —
+see "Wait-list Signup Section" and "Hero Section" below for the shared
+`initWaitlistForm()`/`mailerliteSubscribe()` pattern) also complete,
+ahead of Phase 5 (integration pass) next. This document reflects
+current, as-built behavior — not a change history. Tech stack
+decision: vanilla JS (no framework needed).*
 
 *⚠️ Phase 3 note: the actual Phase 1–2 `script.js` was not included in
 the file set handed to the assistant for that phase (only
@@ -195,7 +198,7 @@ H2: "Въпроси и отговори". Standard vertically-unfolding layout �
 
 ### Wait-list Signup Section
 
-H2: "Записването е отворено". Reuses the hero form's exact markup pattern (`waitlist-form` structure + `data-waitlist-form` attribute) — `script.js`'s `document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm)` binds every matching element automatically, so this needed **zero JS changes**, confirmed against the real `script.js` before building. Form and success-message markup are siblings under a shared wrapper (`.waitlist-signup__inner`), same structural requirement as `.hero__content`, since `initWaitlistForm()` finds the success element via `form.parentElement.querySelector('.success-message')`.
+H2: "Записването е отворено". Reuses the hero form's exact markup pattern (`waitlist-form` structure + `data-waitlist-form` attribute) — `script.js`'s `document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm)` binds every matching element automatically, so this needed **zero JS changes**, confirmed against the real `script.js` before building. Form and success-message markup are siblings under a shared wrapper (`.waitlist-signup__inner`), same structural requirement as `.hero__content`, since `initWaitlistForm()` finds the success element via `form.parentElement.querySelector('.success-message')`. **Phase 5.1**: this shared binding is also why real MailerLite submission (see §4 "Real submission — Phase 5.1") needed zero changes here either — both forms already funnel through the one `initWaitlistForm()`/`mailerliteSubscribe()` path.
 
 - Background `--color-neda` (Неда's yellow).
 - **Heading now sits first** (order is heading → badge → form), per direct request — was previously badge → heading → form.
@@ -250,9 +253,14 @@ H2: "Записването е отворено". Reuses the hero form's exact m
 ## 4. Functional Requirements (JS)
 
 - Validate email format before submission; show an inline error message if invalid (see error message styling above).
-- On valid submission: hide the form, fade in "Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!"
-- Validation applies identically to both waitlist forms (hero + bottom signup) via the shared `[data-waitlist-form]` pattern.
-- Storage: log the collected email to the console (mock API POST).
+- On valid client-side format, submit to MailerLite (see "Real submission — Phase 5.1" below). On a real success response, hide the form, fade in "Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!" On a server-side rejection or a network/timeout failure, the form stays visible and the inline error message shows a generic Bulgarian retry message instead — the person's typed email isn't lost.
+- Validation and submission apply identically to both waitlist forms (hero + bottom signup) via the shared `[data-waitlist-form]` pattern and the shared `mailerliteSubscribe()` helper.
+- **Real submission — Phase 5.1**: `mailerliteSubscribe(email)` in `script.js` sends the email to MailerLite via hand-rolled JSONP (not MailerLite's bundled `webforms.min.js`) — a `<script>` tag injected pointing at `https://assets.mailerlite.com/jsonp/2598792/forms/196895404753684115/subscribe?callback=...&fields[email]=...&ml-submit=1&anticsrf=true`, with a uniquely-named temporary global callback per call and an 8s timeout fallback in case the callback never fires.
+  - **Why hand-rolled instead of MailerLite's own script — investigated, not assumed**: fetched and read the actual `webforms.min.js` source before deciding. It only binds to forms matching the selector `.ml-subscribe-form form, .ml-contact-form form, .ml-preferences-form form`, and once bound, depends on finding its own `.ml-block-success`/`.ml-block-form` pair and `data-id`/`data-code` attributes *inside that specific wrapper* — none of which key off the form's `action` URL, field names, or the two documented hidden fields. This project's forms are custom-styled and don't use MailerLite's wrapper markup at all, so the bundled script would simply never bind to them — including it would be dead weight, not a working integration. The hand-rolled JSONP request shape mirrors exactly what that script sends internally (`dataType: "jsonp"`, same `ml-submit`/`anticsrf` params), so this is the same request, just triggered directly.
+  - **Per-request callback naming, not MailerLite's own `ml_webform_success_{id}` convention**: that convention bakes in one numeric form ID per page, which assumes a single embed. This page has two independent forms (hero + bottom) posting to the same list; a fixed/shared callback name risked one submission's response resolving (or clobbering) the other's in-flight promise. Each call generates its own callback name (`mlWaitlistCallback_{timestamp}_{counter}`), so this is a non-issue once hand-rolled — not something that needed a workaround.
+  - **The unconditional `.../takel` tracking-beacon request** seen in MailerLite's own embed snippet (fired on page load, appears to be a form-impression counter) is **deliberately not replicated** — see Open Decisions.
+  - **Double opt-in**: confirmed as already enabled on MailerLite's side (dashboard/group setting) for GDPR consent-evidence reasons. Nothing in this HTML/JS integration implements or touches it — the confirmation-email flow is entirely MailerLite's.
+  - **What's actually verified vs. not**: client-side validation, loading state, and the success-message swap (now firing off a real callback invocation rather than the old fake `setTimeout`) were verified via Playwright against a local HTTP server, with the MailerLite request intercepted and mocked (`page.route`) to return success/field-error/network-failure responses — the real `assets.mailerlite.com` endpoint isn't reachable from this environment's network allowlist. This confirms the integration is *wired correctly*, not that a real subscriber has landed in the MailerLite dashboard — that end-to-end proof can only happen after deployment, against the live site.
 
 ## 5. Constraints
 
@@ -260,6 +268,8 @@ H2: "Записването е отворено". Reuses the hero form's exact m
 
 ## Open Decisions
 
+- **New, Phase 5.1, flagged rather than decided unilaterally**: MailerLite's own embed fires an unconditional tracking-beacon `fetch()` to `.../takel` on page load, seemingly a form-impression counter for their dashboard. Not replicated — it's a third, always-on third-party network call this page didn't previously make, and (unlike the actual subscribe action, which only fires on a person's own explicit submit) it would run for every visitor regardless of intent, which sits awkwardly next to this project's existing GDPR-conscious choices (self-hosted fonts specifically to avoid an unconsented third-party request on load). If MailerLite's own "form views" dashboard metric turns out to matter, this can be added later as a deliberate, consent-aware decision rather than a byproduct of copying their snippet.
+- **New, Phase 5.1**: real end-to-end proof of this integration (an actual subscriber landing in the MailerLite dashboard, double opt-in email arriving) hasn't happened yet — couldn't happen from this environment (network allowlist doesn't reach `assets.mailerlite.com`, and Playwright verification used a mocked response). Worth a real live submit against the deployed site as the first post-deploy check.
 - **Resolved, Phase 4.9**: Мишо's "What It Teaches" icon now has a real asset (a confused/questioning face, supplied directly) — see What It Teaches Section above. **New concern from this same change, worth a look**: this icon is visibly more detailed than the other 5 tiles' simple flat glyphs, and reads fainter against Мишо's beige than the other 5 read against their saturated colors — flagged as a real inconsistency, not silently accepted, in case a simpler/bolder replacement icon is preferred later.
 - Buddy tile copy (What It Teaches) — first draft, not yet reviewed.
 - **Resolved, Phase 4.9**: How It Works' step 3 card now has real artwork (`assets/cards/zaki.png`, supplied directly) — all three step cards use real images now, none are placeholders. See How It Works Section above.

@@ -101,6 +101,97 @@ function initBraveCardScrollPulse() {
 }
 
 
+/* ---------------------------------------------------------------------
+   PHASE 5.1 — MailerLite email collection (real submission)
+
+   Hand-rolled JSONP rather than MailerLite's own bundled
+   webforms.min.js. This was a real fork, investigated before choosing
+   a side (see SDD.md "Wait-list Signup Section" for the full
+   reasoning): that script only binds to forms matching the selector
+   `.ml-subscribe-form form, .ml-contact-form form,
+   .ml-preferences-form form`, then locates its own
+   `.ml-block-success` / `.ml-block-form` pair and `data-id`/`data-code`
+   attributes *inside that specific wrapper* to do anything at all — it
+   doesn't key off the form's `action` URL or field names. Since this
+   project's forms are custom-styled and don't use MailerLite's wrapper
+   markup, the bundled script would simply never bind to them; loading
+   it would be dead weight, not a working integration. The JSONP
+   request format below (action URL + querystring, `ml-submit`/
+   `anticsrf` params, `callback=` param invoking a temporary global
+   function) mirrors exactly what that script does internally
+   (`window.ml_jQuery.ajax({..., dataType: "jsonp", ...})`), so this is
+   the same request MailerLite's own script would have sent — just
+   triggered directly instead of through their DOM-detection layer. */
+
+const MAILERLITE_FORM_ACTION =
+  'https://assets.mailerlite.com/jsonp/2598792/forms/196895404753684115/subscribe';
+
+/* One JSONP request = one uniquely-named temporary global callback.
+   Deliberately NOT reusing MailerLite's own `ml_webform_success_{id}`
+   naming convention — that convention bakes in a single numeric form
+   ID because MailerLite's own embeds assume one wrapper per page. This
+   page has two independent forms (hero + bottom) submitting to the
+   same MailerLite list; a shared/fixed callback name would let a
+   second submission racing the first overwrite or prematurely resolve
+   it. A fresh name per call sidesteps that entirely — this is a
+   non-issue once hand-rolled, not something that needed a workaround. */
+let mlCallbackCounter = 0;
+
+function mailerliteSubscribe(email) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `mlWaitlistCallback_${Date.now()}_${mlCallbackCounter++}`;
+    let settled = false;
+
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+
+    // MailerLite's JSONP endpoint has no built-in delivery guarantee we
+    // can observe from here (no XHR, so no onerror for e.g. a CORS-free
+    // 4xx/5xx — the browser just loads whatever the endpoint returns as
+    // executable JS). A timeout is the only way to avoid hanging the
+    // button forever if the callback never fires (dropped request, ad
+    // blocker, MailerLite outage, etc.).
+    const timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('timeout'));
+    }, 8000);
+
+    window[callbackName] = (response) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(response);
+    };
+
+    const params = new URLSearchParams({
+      callback: callbackName,
+      'fields[email]': email,
+      'ml-submit': '1',
+      anticsrf: 'true',
+    });
+
+    const script = document.createElement('script');
+    script.src = `${MAILERLITE_FORM_ACTION}?${params.toString()}`;
+    script.async = true;
+    // Covers script-tag-level failures (network down, domain blocked,
+    // etc.) — a real HTTP error from MailerLite's endpoint that still
+    // returns valid JS would instead resolve via the callback above
+    // with whatever payload they sent, not hit this path.
+    script.onerror = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('network'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
 /* Reusable waitlist form handler — bound to every [data-waitlist-form]
    element (hero instance now; bottom Wait-list Signup instance in
    Phase 4 reuses this unchanged, per SDD.md). */
@@ -137,17 +228,30 @@ function initWaitlistForm(form) {
     clearError();
     if (submitBtn) submitBtn.classList.add('is-loading');
 
-    // Mock API POST — real submission endpoint TBD.
-    console.log('[waitlist] collected email:', email);
+    mailerliteSubscribe(email)
+      .then((response) => {
+        if (submitBtn) submitBtn.classList.remove('is-loading');
 
-    window.setTimeout(() => {
-      if (submitBtn) submitBtn.classList.remove('is-loading');
-      form.hidden = true;
-      if (successEl) {
-        successEl.hidden = false;
-        successEl.classList.add('is-visible');
-      }
-    }, 400);
+        // MailerLite's own success handler treats `response.success`
+        // as the actual pass/fail signal (see webforms.min.js) — a
+        // 200-shaped JSONP payload can still carry field-level errors,
+        // e.g. their own server-side email re-validation. Mirror that
+        // check rather than assuming "the callback fired" means "it
+        // worked".
+        if (response && response.success) {
+          form.hidden = true;
+          if (successEl) {
+            successEl.hidden = false;
+            successEl.classList.add('is-visible');
+          }
+        } else {
+          showError('Нещо се обърка. Моля, опитайте отново.');
+        }
+      })
+      .catch(() => {
+        if (submitBtn) submitBtn.classList.remove('is-loading');
+        showError('Нещо се обърка. Моля, проверете връзката си и опитайте отново.');
+      });
   });
 
   input.addEventListener('input', () => {
