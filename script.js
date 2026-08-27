@@ -166,72 +166,111 @@ function getOrCreateMlGuid() {
   return generate();
 }
 
-/* One JSONP request = one uniquely-named temporary global callback.
-   Deliberately NOT reusing MailerLite's own `ml_webform_success_{id}`
-   naming convention — that convention bakes in a single numeric form
-   ID because MailerLite's own embeds assume one wrapper per page. This
-   page has two independent forms (hero + bottom) submitting to the
-   same MailerLite list; a shared/fixed callback name would let a
-   second submission racing the first overwrite or prematurely resolve
-   it. A fresh name per call sidesteps that entirely — this is a
-   non-issue once hand-rolled, not something that needed a workaround. */
-let mlCallbackCounter = 0;
+/* One JSONP request needs one global callback that MailerLite's
+   response invokes by name.
+
+   IMPORTANT CORRECTION (this took a live-debugging round to find):
+   the first version of this function generated a fresh random callback
+   name per request, on the assumption that MailerLite's backend was a
+   generic JSONP endpoint that would happily echo back whatever name we
+   sent — reasonable for textbook JSONP, but not what actually happens
+   here. Reading the *complete* unminified `webforms.min.js` (an
+   earlier read only surfaced a fragment) shows their real ajax call is:
+   `window.ml_jQuery.ajax({..., jsonpCallback: "mlWebformSubmitted",
+   dataType: "jsonp", ...})` — every real MailerLite embed anywhere
+   uses that one exact, hardcoded, literal callback name. Nothing
+   randomly generated.
+
+   That's almost certainly why the earlier `ajax=1`/`guid` fix alone
+   didn't resolve the empty-response symptom: this backend's JSONP
+   wrapping appears to depend on the callback name it was actually
+   built and tested against, not an arbitrary caller-supplied one.
+   Switching to the same fixed name is the direct fix for that.
+
+   The trade-off this reintroduces: a single shared global callback
+   name across two independent forms on one page. MailerLite's own
+   script has this exact same property — it's how every site with
+   multiple MailerLite forms already works, not a design flaw. We
+   handle it the same pragmatic way real usage does: guard against two
+   submissions genuinely overlapping by serializing requests through a
+   small queue below, rather than trying to invent per-request callback
+   identity their backend doesn't actually support. */
+const MAILERLITE_JSONP_CALLBACK = 'mlWebformSubmitted';
+
+// Serializes mailerliteSubscribe() calls so two near-simultaneous
+// submissions (hero + bottom form) never have two in-flight requests
+// racing to define/overwrite the one shared MAILERLITE_JSONP_CALLBACK
+// at once. Each call waits for the previous one to fully settle
+// (success, server error, or timeout) before its own request goes out.
+let mlSubscribeQueue = Promise.resolve();
 
 function mailerliteSubscribe(email) {
-  return new Promise((resolve, reject) => {
-    const callbackName = `mlWaitlistCallback_${Date.now()}_${mlCallbackCounter++}`;
-    let settled = false;
+  const runRequest = () =>
+    new Promise((resolve, reject) => {
+      let settled = false;
 
-    const cleanup = () => {
-      clearTimeout(timeoutId);
-      delete window[callbackName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    };
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        delete window[MAILERLITE_JSONP_CALLBACK];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
 
-    // MailerLite's JSONP endpoint has no built-in delivery guarantee we
-    // can observe from here (no XHR, so no onerror for e.g. a CORS-free
-    // 4xx/5xx — the browser just loads whatever the endpoint returns as
-    // executable JS). A timeout is the only way to avoid hanging the
-    // button forever if the callback never fires (dropped request, ad
-    // blocker, MailerLite outage, etc.).
-    const timeoutId = window.setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(new Error('timeout'));
-    }, 8000);
+      // MailerLite's JSONP endpoint has no built-in delivery guarantee we
+      // can observe from here (no XHR, so no onerror for e.g. a CORS-free
+      // 4xx/5xx — the browser just loads whatever the endpoint returns as
+      // executable JS). A timeout is the only way to avoid hanging the
+      // button forever if the callback never fires (dropped request, ad
+      // blocker, MailerLite outage, etc.).
+      const timeoutId = window.setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('timeout'));
+      }, 8000);
 
-    window[callbackName] = (response) => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve(response);
-    };
+      window[MAILERLITE_JSONP_CALLBACK] = (response) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(response);
+      };
 
-    const params = new URLSearchParams({
-      callback: callbackName,
-      'fields[email]': email,
-      'ml-submit': '1',
-      anticsrf: 'true',
-      ajax: '1',
-      guid: getOrCreateMlGuid(),
+      const params = new URLSearchParams({
+        callback: MAILERLITE_JSONP_CALLBACK,
+        'fields[email]': email,
+        'ml-submit': '1',
+        anticsrf: 'true',
+        ajax: '1',
+        guid: getOrCreateMlGuid(),
+      });
+
+      const script = document.createElement('script');
+      script.src = `${MAILERLITE_FORM_ACTION}?${params.toString()}`;
+      script.async = true;
+      // Covers script-tag-level failures (network down, domain blocked,
+      // etc.) — a real HTTP error from MailerLite's endpoint that still
+      // returns valid JS would instead resolve via the callback above
+      // with whatever payload they sent, not hit this path.
+      script.onerror = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('network'));
+      };
+      document.head.appendChild(script);
     });
 
-    const script = document.createElement('script');
-    script.src = `${MAILERLITE_FORM_ACTION}?${params.toString()}`;
-    script.async = true;
-    // Covers script-tag-level failures (network down, domain blocked,
-    // etc.) — a real HTTP error from MailerLite's endpoint that still
-    // returns valid JS would instead resolve via the callback above
-    // with whatever payload they sent, not hit this path.
-    script.onerror = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(new Error('network'));
-    };
-    document.head.appendChild(script);
-  });
+  // Chain onto the queue regardless of how the previous request settled
+  // (.then(fn, fn), not just .then(fn)) so one server error or timeout
+  // doesn't permanently wedge every submission after it. The queue
+  // variable itself is swallowed to "always resolves" so it never
+  // becomes a rejected promise that later .then() calls skip over.
+  const result = mlSubscribeQueue.then(runRequest, runRequest);
+  mlSubscribeQueue = result.then(
+    () => {},
+    () => {}
+  );
+  return result;
 }
 
 /* Reusable waitlist form handler — bound to every [data-waitlist-form]
