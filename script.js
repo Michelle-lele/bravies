@@ -242,6 +242,19 @@ function mailerliteSubscribe(email) {
         anticsrf: 'true',
         ajax: '1',
         guid: getOrCreateMlGuid(),
+        // Cache-buster. `assets.mailerlite.com` is a CDN domain, and once
+        // the callback name became a fixed literal (see the comment on
+        // MAILERLITE_JSONP_CALLBACK above), a repeat submission with the
+        // same email + persisted guid produces an identical URL — which
+        // browsers are free to serve from cache instead of re-requesting.
+        // Diagnosed live: an early empty-body response got cached, and
+        // every identical retest after that was silently served the
+        // stale cached copy rather than hitting MailerLite again at all
+        // — explaining why changing the request params earlier didn't
+        // seem to change the outcome, and why disabling browser
+        // extensions "fixed" it (forced a fresh, uncached reload) even
+        // though the extensions themselves were never the actual cause.
+        _: `${Date.now()}${Math.floor(Math.random() * 1e6)}`,
       });
 
       const script = document.createElement('script');
