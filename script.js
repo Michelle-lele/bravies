@@ -126,6 +126,46 @@ function initBraveCardScrollPulse() {
 const MAILERLITE_FORM_ACTION =
   'https://assets.mailerlite.com/jsonp/2598792/forms/196895404753684115/subscribe';
 
+/* MailerLite's own webforms.min.js appends two params to every request
+   beyond the documented form fields — `ajax=1` and a per-browser
+   `guid`, generated once and cached in localStorage (see the fetched
+   source: `e=(e=l.serialize())+"&ajax=1&guid="+w`). We initially left
+   both out, going only off the documented hidden-field snippet.
+
+   Real-world symptom this caused, diagnosed via live DevTools: the
+   subscribe request returned 200 in ~160ms with an EMPTY body — no
+   `callbackName(...)` call, so our JSONP promise had nothing to
+   resolve against and eventually hit its own timeout — while the
+   subscriber was still created server-side. That pattern (accepted +
+   processed, but nothing handed back to render) fits a server that,
+   without `ajax=1`, falls back to a legacy plain-form-submit path
+   expecting a real page redirect rather than a JSONP-wrapped response.
+   Adding both params to match their own script's request shape
+   exactly, rather than only the documented field list, is the fix. */
+function getOrCreateMlGuid() {
+  const randomSegment = () =>
+    Math.floor(65536 * (1 + Math.random()))
+      .toString(16)
+      .substring(1);
+  const generate = () =>
+    `${randomSegment()}${randomSegment()}-${randomSegment()}-${randomSegment()}-${randomSegment()}-${randomSegment()}${randomSegment()}${randomSegment()}`;
+
+  try {
+    if (window.localStorage) {
+      const existing = window.localStorage.getItem('ml_guid');
+      if (existing) return existing;
+      const fresh = generate();
+      window.localStorage.setItem('ml_guid', fresh);
+      return fresh;
+    }
+  } catch (e) {
+    // localStorage can throw in private-browsing/blocked-storage modes —
+    // fall through to a session-only value rather than failing the
+    // submission over a non-essential identifier.
+  }
+  return generate();
+}
+
 /* One JSONP request = one uniquely-named temporary global callback.
    Deliberately NOT reusing MailerLite's own `ml_webform_success_{id}`
    naming convention — that convention bakes in a single numeric form
@@ -173,6 +213,8 @@ function mailerliteSubscribe(email) {
       'fields[email]': email,
       'ml-submit': '1',
       anticsrf: 'true',
+      ajax: '1',
+      guid: getOrCreateMlGuid(),
     });
 
     const script = document.createElement('script');
