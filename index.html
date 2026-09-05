@@ -676,6 +676,89 @@
           <p class="success-message__text">Благодарим! Вече си записан. Ще се свържем с теб за първия тираж!</p>
         </div>
       </div>
+
+      <!-- Footer link row. Lives INSIDE this section on purpose, not as
+           a separate element after </main>: this section's roomier
+           padding-bottom was reserved for exactly this row (see the
+           padding comment on .waitlist-signup in style.css), and the
+           bottom-right cloud pair is anchored to this section's own
+           bottom edge with `overflow: hidden` — a separate footer
+           element below the section would push those clouds up off the
+           page's bottom edge and undo the verified "0px of extra
+           trailing scroll" fix. That space is now IN USE, so it's no
+           longer spare padding to trim.
+
+           <nav>, not <footer>: a <footer> nested inside a <section>
+           scopes to that section, which is wrong for a site-wide
+           privacy-policy link. A labelled <nav> is accurate for a small
+           group of navigational links and doesn't misstate the
+           document outline. Class naming follows this section's own BEM
+           prefix rather than a new global `.site-footer` namespace,
+           since the row is structurally part of this section.
+
+           Icons are plain <img>, NOT the mask-image tinting used by the
+           What It Teaches icons — see style.css for the reasoning
+           (these are multi-color brand marks; masking would destroy
+           them). -->
+      <nav class="waitlist-signup__footer" aria-label="Социални мрежи и правила">
+        <ul class="waitlist-signup__footer-list">
+          <li>
+            <a
+              class="waitlist-signup__footer-link"
+              href="https://www.facebook.com/smelcho"
+              target="_blank"
+              rel="noopener"
+            >
+              <img
+                class="waitlist-signup__footer-icon"
+                src="assets/social/facebook.png"
+                alt="Facebook"
+                width="28"
+                height="28"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </li>
+          <li>
+            <a
+              class="waitlist-signup__footer-link"
+              href="https://www.instagram.com/smelcho.bg/"
+              target="_blank"
+              rel="noopener"
+            >
+              <!-- data-optical-trim: this source PNG has ~6% transparent
+                   padding on every side that facebook.png doesn't have,
+                   so it needs a small scale correction to read the same
+                   size. See style.css. -->
+              <img
+                class="waitlist-signup__footer-icon waitlist-signup__footer-icon--inset"
+                src="assets/social/instagram.png"
+                alt="Instagram"
+                width="28"
+                height="28"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </li>
+          <li>
+            <!-- PLACEHOLDER URL — the privacy policy page does not exist
+                 yet. Deliberately pointed at an obviously-fake path that
+                 will 404 loudly rather than a real-looking one (e.g.
+                 "privacy-policy.html" or "/поверителност") that could
+                 ship unnoticed. Replace both the href and remove
+                 data-placeholder-href once the real page is live. -->
+            <a
+              class="waitlist-signup__footer-link waitlist-signup__footer-link--text"
+              href="PLACEHOLDER-privacy-policy"
+              data-placeholder-href="true"
+              target="_blank"
+              rel="noopener"
+            >Политика за поверителност</a>
+          </li>
+        </ul>
+      </nav>
     </section>
 
   </main>

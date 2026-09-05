@@ -2046,12 +2046,21 @@ input:focus-visible {
      covers the modest left/right bleed these clouds use. */
   /* Padding bumped back up a bit from the previous pass — that pass
      went further than intended (too short), per direct follow-up.
-     This also intentionally leaves the bottom noticeably roomier than
-     the top: that's reserved space for a future footer row (social
-     links / policy links), not padding to be trimmed later — don't
-     shrink padding-bottom without checking whether that content has
-     landed yet. */
-  padding: var(--space-4) var(--space-2) var(--space-6);
+     The bottom used to be a much roomier var(--space-6) (96px) of
+     EMPTY space, deliberately reserved for a future footer row
+     (social links / policy links).
+     THAT ROW HAS NOW LANDED — see .waitlist-signup__footer at the end
+     of this file — so this is no longer reserved space, it's occupied
+     space. padding-bottom dropped from var(--space-6) (96px) to
+     var(--space-3) (24px) because the footer row now supplies the
+     height that padding was holding open: 40px margin-top + ~44px row
+     height + 24px padding ≈ 108px, against the previous 96px of pure
+     padding. Net section height change is ~+12px, i.e. this row was
+     absorbed into the space already budgeted for it rather than
+     appended on top of it — which matters here specifically, because
+     the bottom-right cloud pair is anchored to this section's bottom
+     edge and a large height change would move it. */
+  padding: var(--space-4) var(--space-2) var(--space-3);
   background: var(--color-neda);
   color: var(--color-text-dark);
 }
@@ -2378,3 +2387,184 @@ input:focus-visible {
   .cloud--wl-4 { --cloud-y-offset: 72%; }
 }
 
+/* ---------------------------------------------------------------------
+   WAIT-LIST SIGNUP — FOOTER LINK ROW
+   Three links (Facebook, Instagram, privacy policy), bottom-left of the
+   section, occupying the padding-bottom that was reserved for exactly
+   this (see the padding comment on .waitlist-signup above — that space
+   is now IN USE, not spare).
+
+   PLACEMENT — "bottom left" read as the section's own bottom-left
+   CORNER, not "left-aligned inside the 480px content column." Reasoning
+   rather than a coin flip: `.waitlist-signup__inner` is a 480px column
+   centred in the viewport, so left-aligning inside it would put these
+   links ~480px from the left edge at 1440px — that reads as "under the
+   form," not "bottom left." The request also framed this against the
+   existing bottom-RIGHT cloud pair, which is a section-corner frame of
+   reference. So this row is a sibling of `__inner` (not a child),
+   spanning the section's content box and starting at the section's own
+   `var(--space-2)` horizontal padding edge — the same gutter the
+   section already uses, so no new spacing value is introduced. Flagged
+   in SDD.md in case the narrower, column-aligned reading was meant.
+
+   STACKING: `position: relative` + `z-index: 1` matches
+   `.waitlist-signup__inner`'s own pattern against
+   `.waitlist-signup__clouds` (z-index: 0). The bottom cloud pair sits
+   bottom-RIGHT so there's no horizontal overlap at any tested width,
+   but this makes the row robust to future cloud repositioning rather
+   than depending on it.
+--------------------------------------------------------------------- */
+.waitlist-signup__footer {
+  position: relative;
+  z-index: 1;
+  /* Same gap the section's own flex `gap` uses between blocks, stepped
+     up one notch so the row reads as a separate footer band rather
+     than a fourth item in the form stack. */
+  margin-top: var(--space-4);
+  /* Block-scoped, NOT a new :root design token — this size is only
+     meaningful inside this one row, so it stays local rather than
+     joining the global scale. */
+  --social-icon-size: 28px;
+}
+
+.waitlist-signup__footer-list {
+  /* `ul` is already reset globally (list-style/margin/padding) near the
+     top of this file — nothing to re-declare here. */
+  display: flex;
+  align-items: center;
+  /* `wrap` is a safety valve, not the expected layout: measured, all
+     three items fit on one line down to 375px with room to spare, so
+     this only engages on very narrow devices or large text settings.
+     Deliberately NOT a `flex-direction: column` breakpoint — see
+     SDD.md; a column would have needed an arbitrary width to switch at
+     when the row simply fits. Row gap (--space-1) is smaller than
+     column gap (--space-2) so a wrapped state stays compact. */
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  /* Cancels the links' own 0.5rem padding (below) so the FIRST icon's
+     visible left edge lines up with the section's padding edge, rather
+     than sitting 8px inside it. The padding exists purely to grow the
+     tap target; it shouldn't push the row visually off its gutter. */
+  margin-inline-start: -0.5rem;
+}
+
+.waitlist-signup__footer-link {
+  display: inline-flex;
+  align-items: center;
+  /* 28px icon + 8px padding on each side = a 44px hit area, the usual
+     minimum touch target, without making the icon itself look oversized
+     next to the 0.875rem text link. */
+  padding: 0.5rem;
+  border-radius: var(--radius-input);
+  text-decoration: none;
+  /* Focus is handled by the sitewide `a:focus-visible` rule near the
+     top of this file (3px --color-zaki outline, 3px offset) — no
+     per-component focus style needed, and none added, so these match
+     every other focusable element on the page. */
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.waitlist-signup__footer-link:hover { opacity: 0.78; }
+.waitlist-signup__footer-link:active { transform: scale(0.96); }
+
+/* ICON TREATMENT — plain <img>, deliberately NOT the CSS `mask-image`
+   tinting used by the What It Teaches badge icons (.teaches__point-icon).
+   That pattern exists to recolour SINGLE-COLOUR source glyphs to
+   whatever contrast each tile needs. These two assets are multi-colour
+   brand marks: facebook.png is a solid #1877F2 disc with a white "f"
+   (264 distinct colours), instagram.png is a full magenta→purple→amber
+   gradient disc with a white outline glyph (2631 distinct colours).
+   Masking either one would flatten it to a single flat silhouette —
+   destroying Instagram's gradient outright and turning Facebook's mark
+   into a featureless blob — and both marks have brand-usage rules that
+   assume their real colours. So: no mask, no tint, rendered as-is. */
+.waitlist-signup__footer-icon {
+  display: block;
+  width: var(--social-icon-size);
+  height: var(--social-icon-size);
+}
+
+/* Optical size correction, measured not guessed: facebook.png's artwork
+   fills its 512×512 canvas edge to edge (opaque bounding box 0,0→512,512)
+   while instagram.png's is inset by 31px on every side (bounding box
+   31,31→481,481, i.e. 450px of 512). Rendered at the same CSS box, the
+   Instagram mark would sit ~12% smaller than the Facebook one — visible
+   side by side. Scaling by the exact measured ratio equalises the two
+   marks' rendered diameter. `transform: scale()` rather than a larger
+   width/height so the LAYOUT box stays identical for both, keeping the
+   flex gaps and the 44px tap target even. Source is 512px rendered at
+   28px, so there's ample resolution headroom for the upscale. Applied
+   in CSS rather than by trimming the supplied PNG so the original,
+   unmodified asset files keep working as-is. */
+.waitlist-signup__footer-icon--inset {
+  transform: scale(calc(512 / 450));
+}
+
+/* Text link: white per direct request, matching this section's H2
+   treatment (.waitlist-signup__heading is also white on this yellow).
+   ⚠️ Contrast is 1.37:1 against --color-neda — measured, not estimated.
+   That's below every WCAG threshold including the 3:1 one for
+   non-text, and it is materially worse here than on the H2, which at
+   least carries it at up to 40px of heavy Dela Gothic One; this is
+   0.875rem body type. --color-zaki would give 4.23:1 and
+   --color-text-dark 10.81:1, either as a one-line swap. Implemented as
+   asked and flagged in SDD.md rather than silently substituted.
+   The underline is a small addition beyond "plain white text": this is
+   the only bare-text link on the page (the two .cta-buttons are filled
+   pills with their own affordance), so with no colour contrast to
+   distinguish it, the underline is the only cue that it's clickable.
+   Also flagged — one line to remove if unwanted. */
+.waitlist-signup__footer-link--text {
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--color-surface-white);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Narrow-viewport clearance over the bottom-right cloud pair.
+   MEASURED, not assumed: swept every viewport width from 320px to
+   767px in 20px steps and compared the links' right edge against each
+   cloud's rendered left edge. The two overlap horizontally from 320px
+   up to ~695px (at 375px the overlap is 164px — most of the privacy
+   link sits over cloud art), and are clear from ~700px up (at 768px
+   the nearest cloud starts 154px to the right of the last link, and
+   that clearance only grows with viewport width). z-index already
+   paints the links above the clouds, but that isn't a fix here: the
+   text link is white, and so are the clouds — white-on-white is worse
+   than the 1.37:1 it already has against the yellow.
+
+   Fix is vertical, not horizontal, and deliberately does NOT touch the
+   clouds' size or position — those are the result of several rounds of
+   direct requests ("barely showing" on mobile, "at least 50% visible")
+   and shrinking or shoving them aside to make room would undo that.
+   Instead this raises the section's padding-bottom at these widths, so
+   the footer row sits above the clouds' top edge rather than across
+   them. The clouds are anchored to the section's bottom edge, so they
+   don't move — only the row lifts.
+
+   The value is the LINKS' BOTTOM edge clearance, which is what
+   padding-bottom directly controls — an earlier pass here measured the
+   links' TOP edge instead and landed on 96px, which still left a
+   7–18px vertical overlap between 540px and 699px; caught by
+   re-running the sweep, not by eye. Worst case across the swept range
+   is the bottom-right pair's top edge sitting 113.6px above the
+   section's bottom (620–699px, where those clouds' vw-driven width
+   hits its 320px clamp and so their height plateaus at its maximum).
+   calc(--space-6 + --space-4) = 136px clears that by 22.4px at the
+   tightest point, and by more at phone widths — composed from two
+   existing spacing tokens rather than a new 136px value, and applied
+   as one uniform rule across the whole range rather than adding a
+   third breakpoint for the 540–699px band alone. Cost, stated plainly:
+   this makes the section ~105px taller on a phone than before the
+   footer existed. That extra strip isn't empty — it's the band the
+   clouds occupy. The margin-top drops one step (--space-4 →
+   --space-3) to claw back a little of it. */
+@media (max-width: 767px) {
+  .waitlist-signup {
+    padding-bottom: calc(var(--space-6) + var(--space-4));
+  }
+  .waitlist-signup__footer {
+    margin-top: var(--space-3);
+  }
+}
