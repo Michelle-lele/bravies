@@ -1,219 +1,278 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-*Status: Phase 1 (Hero + Bravies Intro), Phase 2 (Problem + What It
-Teaches + How It Works), Phase 3 (Testimonials + Desired State), and
-Phase 4 (FAQ + Wait-list Signup) complete. Phase 4.5 (interim copy +
-minor styling additions to the Hero and Wait-list Signup sections —
-no new components, no structural changes), Phase 4.6 (animation
-timing, title-wrap fixes, What It Teaches icon colors, and a Desired
-State reorder + recolor), Phase 4.7 (reverted the Phase 4.6 Desired
-State reorder/recolor after review, left-aligned long-form paragraph
-body text sitewide, renamed the Testimonials heading), Phase 4.8
-(Desired State background changed from orange to green, plus a
-height/density pass on that section), and Phase 4.9 (75-character
-minimum line length sitewide, the real Мишо icon, a How It Works
-subtitle + heading recolor, a corrected card-3 label, and a
-Wait-list Signup badge color flip — see relevant sections below), and
-Phase 4.10 (second Testimonials slide added, real submitted quote —
-see Testimonials Section below), and Phase 5.1 (real MailerLite email
-collection, replacing the mock console.log/setTimeout submission —
-see "Wait-list Signup Section" and "Hero Section" below for the shared
-`initWaitlistForm()`/`mailerliteSubscribe()` pattern) also complete,
-and Phase 5.2 (site-wide copy refresh against a supplied polished-copy
-document — Hero/Wait-list Signup success message switched from formal
-"Вие" to informal "ти" voice, Problem/How It Works/FAQ wording and
-grammar tightened, Desired State rewritten into informal, specifically
-feminine-addressed ("Изградила си", "дала") voice — see the Hero,
-Problem, How It Works, Desired State, FAQ, and Wait-list Signup
-Sections below for exact diffs; What It Teaches was intentionally
-**not** touched this phase, see Open Decisions) also complete, and
-Phase 5.3 (footer link row — Facebook / Instagram / privacy policy —
-added to the bottom-left of the Wait-list Signup section, occupying the
-padding that had been reserved for it; see "Wait-list Signup Section"
-below) also complete, and Phase 5.4 (three follow-up fixes to Phase
-5.3's row — footer centred on tablet/mobile with the policy link on its
-own mobile row; the Wait-list Signup top-left cloud pair restored on
-mobile, which puts the FAQ's reserved bottom padding back to work; and
-a real bug fix to the Bravies mobile scroll-pulse, which was letting the
-character art escape below the card's bottom edge — see the Bravies
-Intro, FAQs, and Wait-list Signup Sections below), and Phase 5.5 (fix
-for a regression 5.4 introduced at desktop, where the pulse fix leaked
-onto the desktop portraits and pushed them over the section heading;
-plus the footer row centred at desktop too, so it is now centred at
-every width), and Phase 5.6 (SEO/AEO foundations — canonical, Open
-Graph/Twitter cards, theme-color, favicon link tags, JSON-LD structured
-data, `robots.txt`, `sitemap.xml`, font preloads, dead preconnect
-removal; see the new "SEO / AEO" section below), and Phase 5.7 (title +
-meta description + hero subtitle copy, `how-it-works` card alt text, the
-real favicon set and OG image replacing their placeholders, and a hero
-background darkened for contrast) also complete, ahead
-of Phase 5 (integration pass) next. This document reflects current,
-as-built behavior — not a change history. Tech stack decision: vanilla
-JS (no framework needed).*
-
-*⚠️ Phase 3 note: the actual Phase 1–2 `script.js` was not included in
-the file set handed to the assistant for that phase (only
-`index.html`, `style.css`, `SDD.md` were attached). The Hero-cloud
-scroll-progress, reveal-on-scroll, and `initWaitlistForm()` logic
-described below were reconstructed from this document's own
-description of their behavior, not copied from a verified source file.
-**Resolved in Phase 4**: the real `script.js` was supplied this phase
-and diffed against the reconstruction — behavior matched, no
-corrections needed. The open item under "Open Decisions" asking for
-this verification is now closed.*
+*Status: Phases 1–5.9 complete; Phase 5 (integration pass) next. Phase 5.9
+compressed this document: constraints and current state kept, history and
+rationale cut. It reflects current, as-built behaviour — not a change history.
+Tech stack: vanilla JS, no framework.*
 
 ## 1. Goal
 
-A high-converting, single-page landing page in Bulgarian to collect user emails for a waitlist for kids' board game.
+A high-converting, single-page Bulgarian landing page collecting waitlist
+emails for a kids' board game.
 
 ## 2. Tech Stack
 
 - HTML5 (semantic layout)
-- CSS3 (Responsive, Flexbox/Grid, pure CSS)
+- CSS3 (responsive, Flexbox/Grid, pure CSS)
 - Vanilla JavaScript (form handling, UI interactions, scroll-driven animation)
 
 ## 3. UI/UX Requirements
 
 ### Hero Section
 
-H1 "Смелчовци в беда", subheadline "Игра за безопасни действия в ситуации с (не)познати." (**Phase 5.7**: `умни` → `безопасни`; 47→52 chars, line count unchanged at every breakpoint — 2 lines ≤414px, 1 line at 768px+ where the element is `nowrap`, tightest fit 154.2px of slack at 920px), email input + "Запиши се за първите 100" button.
+H1 "Смелчовци в беда"; subheadline "Игра за безопасни действия в ситуации с
+(не)познати."; tagline "**Спокойствие** за теб. **Увереност** за детето.";
+email input + "Запиши се за първите 100" button.
 
-- Background `#436BA0`, text white `#F8FAFC`. **Phase 5.7**: darkened from `#5080BF` for contrast — `--color-yellow-light` 3.40→4.58:1, `--color-hero-text` 3.87→5.21:1, both now clearing AA for normal text. The token is used once (`.hero`).
-- Email input capped at `max-width: 320px` and centered alongside the button on desktop (was stretching to fill the whole hero-content width); text/placeholder centered on mobile.
-- Mobile has extra top padding so the H1 isn't flush against the viewport edge.
-- **Hero height is reduced at every breakpoint** (not `100vh`) so the top of the Bravies section peeks above the fold everywhere, not just desktop: mobile `230px` peek, portrait tablet `260px`, landscape tablet/desktop `300px`, ≥1440px `340px`.
-- **Clouds**: 5 real supplied PNGs (not CSS shapes), varied sizes/placement so they read as scattered rather than uniform. Movement is a direct function of scroll position within the hero (one `--scroll-progress` CSS variable, 0–1) — scrolling up naturally reverses the drift. On mobile, only 2 of the 5 are shown (bottom-left and bottom-right, both small); the rest are hidden to avoid crowding the text column on a tightened mobile hero.
-  - **Bug fixed**: the clouds weren't moving at all. `.hero__clouds` had `--scroll-progress: 0` declared directly on it as a "default" — but a custom property declared on an element always wins over an inherited value from a parent, regardless of specificity, even when the local declaration is meant only as a fallback. Since script.js sets the live value on `#hero` (the parent), `.hero__clouds` was permanently shadowing it with 0. Fixed by removing the local declaration and moving the fallback into the `var()` calls in `.cloud`'s transform instead (`var(--scroll-progress, 0)`), which only applies when nothing has been inherited at all. General lesson: never redeclare a custom property "just as a default" on an element that's also supposed to inherit a live value for that same property from a JS-controlled ancestor.
-- Error message (shared by both waitlist forms on the page): solid white pill background with dark red (`#7F1D1D`) text — guarantees contrast regardless of the section background behind it. Only rendered when non-empty.
-- **Phase 4.5**: a second tagline line, `.hero__tagline`, sits between the subtitle and the form: "**Спокойствие** за теб. **Увереност** за детето." — its own paragraph (not merged into `.hero__subtitle`), same font-size/weight as the subtitle so it reads as the same visual tier rather than a new hierarchy level. The two highlighted words use the new `--color-yellow-light` token (see Design System below) rather than full opacity inheriting from a dimmed parent — `.hero__tagline` is deliberately NOT given the subtitle's `opacity: 0.92`, since opacity dims an element's whole rendered subtree as one compositing step, which would have diluted the highlight's contrast too (verified: would drop from 3.40:1 to ~3.12:1 against the hero background). No layout/spacing rule needed beyond the new paragraph itself — `.hero__content` is already a flex column with `gap`, so it slots in with the same spacing as every other child.
-  - **Follow-up fix (interim round)**: both this line and `.hero__subtitle` were wrapping to two lines at tablet and desktop, not just mobile — a mobile-only `max-width: 34ch` was still capping them at wider viewports where there was clearly room for one line. Same fix already used elsewhere in this file for `.bravies__intro` (see that comment): lift the cap from `768px` up via `max-width: none; white-space: nowrap`, using the plain orientation-agnostic `@media (min-width: 768px)` block since this needed to apply to portrait AND landscape tablet, not just one. Verified one line at portrait-tablet, landscape-tablet, and desktop; mobile still wraps as before (unaffected, still under the 768px threshold).
-- **Phase 5.2**: the shared success-message text (`.success-message__text`, rendered identically in both the hero form and the Wait-list Signup form) switched from formal "Вие" voice — "Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!" — to informal "ти" voice — "Благодарим! Вече си записан. Ще се свържем с теб за първия тираж!" — per the supplied copy document, which uses "ти" throughout. Pure text swap, no markup change; see Wait-list Signup Section below for the second instance.
+- Background `#436BA0`, text white `#F8FAFC`. `--color-yellow-light` reaches
+  4.58:1 and `--color-hero-text` 5.21:1 against it — both clear AA for normal
+  text. Do not lighten the background without re-measuring both.
+- Subtitle and tagline are `nowrap` from 768px up (plain `min-width`, so it
+  applies in both tablet orientations); they wrap on mobile. The subtitle is
+  52 chars and has 154.2px of slack at its tightest fit (920px).
+- `.hero__tagline` is deliberately NOT given the subtitle's `opacity: 0.92` —
+  opacity dims the whole subtree in one compositing step and would dilute the
+  highlight spans' contrast along with the text.
+- Email input capped at `max-width: 320px`, centred beside the button on
+  desktop; text/placeholder centred on mobile. Extra top padding on mobile.
+- **Hero height is reduced at every breakpoint** (not `100vh`) so the top of
+  the Bravies section peeks above the fold: mobile `230px`, portrait tablet
+  `260px`, landscape tablet/desktop `300px`, ≥1440px `340px`.
+- **Clouds**: real supplied PNGs, varied sizes/placement. Movement is a direct
+  function of scroll position within the hero — one `--scroll-progress`
+  variable (0–1) set by JS on `#hero`, so scrolling up reverses the drift
+  naturally. Only the two small bottom-corner clouds show on mobile.
+  - **Never redeclare `--scroll-progress` on `.hero__clouds`**, even as a
+    "default": a custom property declared on an element always beats an
+    inherited value regardless of specificity, which permanently pins every
+    cloud to 0. The fallback lives in `var(--scroll-progress, 0)` inside
+    `.cloud`'s transform instead.
+- Error message (shared by both waitlist forms): solid white pill, dark red
+  (`#7F1D1D`) text, so contrast holds on any section background. Rendered only
+  when non-empty.
+- Success text (shared, both forms): "Благодарим! Вече си записан. Ще се
+  свържем с теб за първия тираж!" — informal "ти" voice, as sitewide.
 
 ### Bravies Intro Section
 
-Intro text: "Твоето дете играе и учи със Смелчовците как да:" — sized down and set to `white-space: nowrap` from 768px up so it reads as one line; wraps normally on mobile.
+Intro: "Твоето дете играе и учи със Смелчовците как да:" — `nowrap` from 768px
+up, wraps on mobile.
 
-5 cards, `border-radius: 15px`, **3:5 aspect ratio** (physical cards are 6×10cm), uniform thick colorful border on all sides. Character portrait is real artwork (not a placeholder), filling the entire card; the caption is a bottom overlay panel with a **solid** brand-color background (not a literal CSS border — a border can only ever be a thin stripe, not a panel that holds text) containing the name (uppercase) and bio. **All text is always fully visible, at every breakpoint** — there is no hover/tap-to-expand text state.
+5 cards, `border-radius: 15px`, **3:5 aspect ratio** (physical cards 6×10cm),
+uniform thick colourful border. Real character portrait fills the whole card;
+the caption is a bottom overlay panel with a **solid** brand-colour background
+— not a CSS border, which can only be a thin stripe, not a panel holding text.
+Name (uppercase) + bio are always fully visible at every breakpoint; there is
+no expand/collapse state.
 
 Portrait size:
-- **Desktop / landscape tablet only** (`min-width: 1024px`, or `min-width: 768px` + landscape): portraits render enlarged by default for every card (not just on hover), `scale(1.16) / translateY(-14%)`. Hovering adds a brief "pulse" (grows slightly further and settles back via `@keyframes`, not a persistent size change). **Phase 4.6: pulse duration doubled** (0.5s → 1s), per direct request ("twice as slower") — only the duration changed, the keyframe percentages/shape of the motion are untouched.
-- **Mobile / portrait tablet**: portraits stay at the small, contained size. **Each card now pulses individually, once, the first time it scrolls into view** — added because hover isn't a real interaction on touch devices. Same one-shot IntersectionObserver pattern as the sitewide `.reveal` system (`initBraveCardScrollPulse()` in script.js), but its own class (`.is-pulsing`) and animation, since it's a different element/effect than a simple fade-in. The CSS rule is explicitly neutralized inside the desktop breakpoint so it can never layer with the hover pulse there. **Phase 4.6: this pulse's duration also doubled** (0.6s → 1.2s), same request/reasoning as the desktop pulse above — both the mobile and desktop "pop" animations were slowed together since the request referred to the section as a whole, not one specific interaction mode.
-  - **Real bug fixed, Phase 5.4 — the character art leaked below the card during this pulse.** Reported as "if you scroll fast enough you can see the characters' shoes peek below the card at the bottom," and reproduced by measurement: with the default `50% 50%` transform-origin, `scale(1.08)` pushes the image's bottom edge down by 4% of its own height (~18px at a 375px viewport) against only ~8px of bottom padding to absorb it. The caption panel hides the image's lower portion *inside* the card, but nothing clips below the card's bottom edge — `.brave-card` and `.brave-card__portrait` are both deliberately `overflow: visible` so the art can pop out of the frame — so ~9px of the character rendered below the card for the animation's duration. Fixed by pinning `transform-origin: 50% 100%` on `.is-pulsing` only, so the pulse grows upward from the character's feet instead of outward from its middle. Deliberately structural rather than a tuned number: the bottom edge then does not move **at all** during the pulse, so this holds for any character artwork regardless of its proportions or transparent padding — which matters, since this was measured against placeholder art, not the real files. Verified by sampling 142 mid-animation frames at 375px and 138 at 768px while scrolling: worst overshoot is −8.1px (i.e. still inside the card) at the bottom and −10.8px at the top, versus +9px of leak before. The origin is scoped to `.is-pulsing` so it applies only while the animation runs; at rest the transform is identity and the origin is irrelevant. Desktop was NOT untouched, which caused a regression — see next.
-  - **Regression from the above, fixed in Phase 5.5: the desktop portraits rode up over the section heading.** Reported as "on the characters section the images go over the title... on wider resolutions desktop and probably tablet landscape." Cause: the JS still ADDS `.is-pulsing` at desktop widths — `initBraveCardScrollPulse()`'s IntersectionObserver isn't breakpoint-aware, it's CSS that decides what the class *does* — and the desktop breakpoint's neutralization rule only reset `animation`, not the newly-added `transform-origin`. So Phase 5.4's `50% 100%` origin applied at desktop as well, where the portrait's **resting** transform is `translateY(-14%) scale(1.16)`. Scaling 1.16 about the bottom edge sends all of that growth upward, lifting the art into the heading — at rest, not just mid-animation, which is why it was visible without interacting. Fixed by adding `transform-origin: 50% 50%` alongside `animation: none` in that same desktop rule. **Standing lesson: that rule is a full neutralization point — any property added to the mobile `.is-pulsing` rule needs a matching reset there**, or it silently applies at desktop.
-    - Verified after the fix from 320px to 2560px: the gap between the nearest portrait's top and the heading's bottom is positive at every width, narrowing from ~56px at 320px to 11.8px at 2560px at rest. Also checked with the desktop hover pulse actually running (hovering each of the five cards in turn and sampling through the animation): worst gap is 28.7px at 1024px, 19.9px at 1440px, 6.1px at 1920px, 2.2px at 2560px. All positive, and this is the original pre-5.4 behaviour restored rather than anything new — but 2.2px at 2560px is thin enough to be worth knowing about, and it's measured against placeholder art whose proportions differ from the real files. Flagged in Open Decisions.
-  - **Bug fixed**: Неда's card pulsed once on page load and then never again on hover, while every other card's hover worked fine. Root cause: Неда's `<li>` carries a static `is-active` class from page load (see `index.html`), and the pulse animation used to be wired to fire on *either* `.is-active` *or* `:hover`. Because `is-active` never toggles, the browser had no "fresh" trigger to replay the animation on subsequent hovers — the computed animation value never actually changed, since the `is-active` rule was already supplying the exact same animation continuously. Fixed by dropping the `.is-active` half of that selector; the pulse is hover-only now, consistent across all 5 cards. `is-active`/`aria-expanded="true"` stay on Неда's markup for their original (unrelated) purpose — only the animation coupling was removed.
+- **Desktop / landscape tablet** (`≥1024px`, or `≥768px` landscape): portraits
+  render enlarged by default, `scale(1.16) / translateY(-14%)`. Hover adds a
+  1s pulse (grows and settles back), not a persistent size change.
+- **Mobile / portrait tablet**: portraits stay small and contained. Each card
+  pulses once, 1.2s, the first time it scrolls into view — hover isn't a real
+  interaction on touch. One-shot IntersectionObserver
+  (`initBraveCardScrollPulse()`), own class `.is-pulsing`.
+  - `.is-pulsing` sets `transform-origin: 50% 100%` so the pulse grows upward
+    from the character's feet. With the default `50% 50%` origin, `scale(1.08)`
+    pushes the bottom edge down ~4% of its own height (~18px at 375px) against
+    ~8px of padding, and nothing clips below the card — `.brave-card` and
+    `.brave-card__portrait` are both deliberately `overflow: visible`. A bottom
+    origin means the bottom edge does not move at all, which holds for any
+    artwork proportions.
+  - **The desktop breakpoint neutralises `.is-pulsing` entirely, and that rule
+    is a full neutralisation point.** The IntersectionObserver is not
+    breakpoint-aware — JS still adds the class at desktop widths; CSS decides
+    what it does. Any property added to the mobile `.is-pulsing` rule needs a
+    matching reset there, or it silently applies at desktop, where the resting
+    transform is `translateY(-14%) scale(1.16)`.
+  - The hover pulse is keyed to `:hover` only, **not** `.is-active` — Неда's
+    card carries `is-active` statically from page load, so coupling the
+    animation to it meant the computed value never changed and the pulse fired
+    once on load and never again.
 
-Each card has a small individual tilt (1.5°–2.5°, alternating direction per character) at every breakpoint, so the row reads like playing cards set down on a table rather than a stiff grid.
+Each card has a 1.5°–2.5° tilt, alternating direction, at every breakpoint.
 
-Card order: DOM order matches the mobile/portrait-tablet reading order (Неда, Вихрен, Веста, Заки, Мишо — Неда is default-active). Desktop/landscape-tablet reorders **visually only** via CSS `order` to Заки, Вихрен, Неда, Веста, Мишо. *(Known accessibility trade-off, not yet resolved: desktop tab/keyboard order still follows DOM order, not the visual left-to-right order.)*
+Card order: DOM order is the mobile/portrait reading order (Неда, Вихрен,
+Веста, Заки, Мишо; Неда default-active). Desktop/landscape tablet reorders
+**visually only** via CSS `order` to Заки, Вихрен, Неда, Веста, Мишо. *(Known
+accessibility trade-off: desktop tab order still follows DOM order.)*
 
-Layout:
-- Desktop / landscape tablet: single row.
-- Portrait tablet (`≥768px` + portrait orientation): 3 rows — Неда alone, Вихрен + Веста, Заки + Мишо.
-- Mobile: 1 card per row.
-
-Brand colors (corrected from early spec typos): Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`.
+Layout: desktop/landscape tablet single row; portrait tablet 3 rows (Неда
+alone, Вихрен+Веста, Заки+Мишо); mobile 1 per row.
 
 ### The Problem Section
 
-H2: "Обяснявам хиляди пъти, но тя е толкова доверчива…" + 3 unchanged paragraphs.
+H2: "Обяснявам хиляди пъти, но тя е толкова доверчива…" + 3 paragraphs.
 
-- Background: solid `#725598` (Заки's purple), white text.
-- Single centered *block* at every breakpoint — the container (`.problem__inner`) is still centered on the page via `margin: 0 auto`. **Phase 4.9: widened again, from `800px` to `920px`** — direct request for a 75-character *minimum* line length. This needed real measurement, not a guess: the previous 800px value, when actually measured via canvas text-measurement against the real rendered font (not just counting characters in whatever a particular paragraph's word-wrap happened to produce), only reached ~66.7 characters of true capacity. 920px verified at ~76.8 characters capacity at 1440px. **Phase 4.6: widened from `62ch` to a fixed px value in the first place** — the heading was wrapping too tightly (needed to read as a clean 2-line break on desktop/tablet-landscape). Switched from a `ch`-based value to fixed px deliberately: `ch` is sized off *this container's own* font (Nunito Sans, inherited from body), not the heading's actual Dela Gothic One — a visibly wider/heavier face — so a `ch` value doesn't track the heading's real rendered width well. **Caveat, still open**: this session's test environment doesn't have the real self-hosted Dela Gothic One font files (only fallback fonts render here) — re-verify the heading's line break once the real font is loading, since it's chunkier than typical fallback sans faces and may wrap slightly differently (this doesn't affect the 75-char body-text measurement above, which uses Nunito Sans — the real font for that text is already loading correctly in this environment).
-- **Phase 4.7: body paragraphs (`.problem__body`) switched from centered to left-aligned text**, per direct request/discussion — the block itself still centers on the page, only the text inside is now left-aligned. Reasoning: centered multi-sentence prose has two real readability costs — the eye's "return point" (where the next line starts) moves every line instead of staying fixed at a left edge, and centered text doesn't fill out to the container's width, so it wraps wherever a word naturally breaks and often looks shorter/choppier than the actual measure would suggest. The heading/pull-quote above stays centered — short 1-2 line display text doesn't carry that same cost, and reads better as a centered pull-quote. Same change applied to `.teaches__body` and `.desired-state__body` — see those sections below.
-- Heading is wrapped in large, yellow (`--color-neda`)-accented quotation marks (`„...“`), styled as a visible pull-quote rather than plain unmarked text.
-- **Phase 5.2**: second body paragraph had a duplicated "когато" ("...когато е само и объркано, когато (не)познатият е усмихнат...") — the copy document drops the second one ("...когато е само и объркано, (не)познатият е усмихнат..."). Applied as a straight text correction; no other wording in this section changed.
+- Background solid `#725598` (Заки purple), white text.
+- Heading is wrapped in large `--color-neda` quotation marks („…“), styled as a
+  visible pull-quote.
+- `.problem__inner` is a fixed `920px`, **not a `ch` value** — `ch` resolves
+  against this container's Nunito Sans, not the heading's much wider Dela
+  Gothic One, so it doesn't track the heading's real rendered width. 920px
+  measures ~76.8 characters of capacity at 1440px, meeting the 75-character
+  minimum.
+- Body paragraphs are left-aligned; the block still centres via `margin: 0
+  auto`. The heading stays centred.
 
 ### What It Teaches Section
 
-H2: "На какво учи играта?" + intro paragraph (unchanged). Closing paragraph ("Всичко това не се преподава - изиграва се...") was **replaced with a CTA button**: "Хайде да играем!", scroll-links to the How It Works section (`#how-it-works`). Uses the reusable `.cta-button` component (yellow, same color as the hero form's submit button — the Desired State section's later CTA should reuse this same component rather than a new one-off style).
+H2: "На какво учи играта?" + intro paragraph. Closes with a `.cta-button`
+"Хайде да играем!" linking to `#how-it-works`.
 
-- Background white `#F8FAFC`, black/dark text (`--color-text-dark`) — **confirmed as of Phase 4.6** (a direct request re-specified this section as "white background, black texts"; it already matched, no code change was needed here — flagging that it was verified rather than silently assumed).
-- Middle content is **6 icon+color point tiles** (not a bulleted list) — 5 tied to a Bravie's brand color, plus a 6th turquoise (`--color-buddy: #2FB6B0`) tile for the Help/Buddy "joker" cards, which aren't tied to any single Bravie. **No Bravie names are shown here** — only the color/icon pairing calls back to the Bravies Intro section above.
-- Tile style: white interior, solid full-strength brand-color border (3px). Icon badge: 84px circle, solid brand-color fill, straddling the tile's top edge (2/3 above, 1/3 inside).
-- Icons: real assets wired for all 6 now, tinted per-tile via CSS `mask-image` (source PNGs with real alpha transparency, recolored via `background-color` per tile — works because `mask-image` is blocked under `file://` by a Chromium CORS quirk that doesn't affect `<img>`, so always verify icon changes over a local HTTP server, not by opening the file directly). **Glyph colors, Phase 4.6**: Неда's, Вихрен's, and Buddy's glyphs all changed to **white** (`--color-surface-white`) per direct request — was burnt orange / deep red / deep teal respectively (the original "colorful glyph" feedback this project started with). Веста's and Заки's glyphs were already white and weren't part of this request, so they're untouched.
-- **Мишо's icon, Phase 4.9**: real asset now in place — a confused/questioning face (question mark + worried expression), supplied directly. Verified before use that it has genuine alpha transparency (not a white matte), so it masks/tints correctly like the other 5. Colored `--color-misho-trim` (`#8B5E3C` — the same brown used for How It Works' step titles/numbers, unchanged from the Phase 4.6 color decision). Added to the nth-child list in the `::after` content-activation rule, which it had been excluded from while there was no real icon. **One honest flag, worth a look at actual render size**: this source image is a noticeably more detailed illustration (multiple strokes, a full facial expression) than the other 5 icons' simple flat single-shape glyphs (a hand, a running figure, a megaphone, a key, a shield+heart) — at the actual 84px badge size, tinted solid brown against Мишо's beige (a lower-contrast pairing than the other 5's white-on-saturated-color glyphs), it reads noticeably fainter/softer than its neighbors rather than matching their crisp, bold look. Implemented as requested; flagging the visual inconsistency rather than silently smoothing it over.
-- Grid: 3 columns on desktop (settles into a 3+3 layout for 6 tiles), reflows to 2 columns on tablet, 1 on mobile. Each tile scroll-reveals independently (not all at once).
-- **Phase 4.7**: the intro paragraph (`.teaches__body`) switched from centered to left-aligned text, same change and same reasoning as `.problem__body` in The Problem Section above. The individual tile copy (inside `.teaches__point`) stays centered — that's compact card UI, not a long-form reading column, and short centered copy inside a bordered card is a different, more defensible case than a full-width paragraph block.
-- **Phase 4.9**: intro paragraph widened from `62ch` to a fixed `920px` for the same 75-character-minimum request covered in The Problem Section above — `62ch` measured to only ~73 characters of real capacity (canvas-measured against the actual font), so this switched to the same fixed-px approach as `.problem__inner` rather than pushing the `ch` value higher and hoping. Verified ~76.8 characters capacity at 1440px. The parent `.teaches__inner` (1100px) was already wide enough to not bottleneck this — confirmed before finalizing, unlike Desired State below where the parent needed widening too.
+- Background white `#F8FAFC`, dark text.
+- **6 icon+colour point tiles**, not a bulleted list — 5 tied to a Bravie's
+  brand colour, plus a 6th turquoise (`--color-buddy: #2FB6B0`) for the
+  Help/Buddy "joker" cards. **No Bravie names appear here**; the colour/icon
+  pairing alone is the callback to the Bravies Intro.
+- Tile: white interior, 3px solid brand-colour border. Icon badge: 84px circle,
+  solid brand-colour fill, straddling the top edge (2/3 above, 1/3 inside).
+- Icons are single-colour PNGs with real alpha, tinted per tile via CSS
+  `mask-image`. **`mask-image` is blocked under `file://` by a Chromium CORS
+  quirk that doesn't affect `<img>` — always verify icon changes over a local
+  HTTP server.** Glyph colours: Неда, Вихрен and Buddy white; Веста and Заки
+  white; Мишо `--color-misho-trim` `#8B5E3C`.
+- Grid: 3 columns desktop, 2 tablet, 1 mobile. Each tile scroll-reveals
+  independently.
+- Intro paragraph is a fixed `920px` and left-aligned, same reasoning as
+  `.problem__inner`. Tile copy stays centred — compact card UI, not a reading
+  column.
 
-Point copy (final, except Buddy — see note):
+Tile copy, transcribed from the live markup (each tile is one or more `<p>`
+lines; the intro sentence above the grid is "Играта учи детето:"):
 
-1. **Неда**: Учи детето да се доверява на интуицията си, когато нещо не му се струва наред, да казва ясно и без вина „Не!“, и да пита родителите си преди да предприеме каквото и да е.
-2. **Вихрен**: Учи детето да разпознава безопасни места и безопасни възрастни, към които да се обърне при нужда - например униформен служител или продавач, не непременно познат човек. И че може просто да си тръгне от опасна ситуация, без да е длъжно да обяснява или да бъде учтиво.
-3. **Веста**: Учи детето да споделя с близките си всяка ситуация, която го е накарала да се почувства неудобно - без значение колко малка изглежда.
-4. **Заки**: Играта въвежда и конкретни принципи за безопасност - семейна парола, правилото „само възрастни помагат на възрастни“, и защо никой доверен човек никога не иска от дете да пази тайна.
-5. **Мишо**: Децата се запознават и с реакциите, които им пречат в реална ситуация - замръзване, прекалена учтивост, разсеяност. Не за да се срамуват, а за да се сещат навреме какво да направят и да ги преодоляват с практика.
-6. **Buddy** *(first draft, not yet reviewed by the person)*: Учи детето, че да поискаш помощ не е слабост, а разумен избор. И че когато сте заедно с приятел, е достатъчно поне един от двамата да познае правилната реакция - защото да си в екип също означава да се пазите взаимно.
+1. **Неда** — Да се доверява на интуицията си, когато нещо не му се струва наред. / Да казва ясно и без вина "Не!" / Да пита родителите си преди да предприеме каквото и да е.
+2. **Вихрен** — Да разпознава безопасни места и безопасни възрастни, към които да се обърне, когато близките му не са наблизо. / Че може просто да си тръгне от опасна ситуация, без да е длъжно да обяснява или да бъде учтиво.
+3. **Веста** — Да споделя с близките си всяка ситуация, която го е накарала да се почувства неудобно - без значение колко малка изглежда.
+4. **Заки** — Да познава конкретни принципи за безопасност - семейна парола, правилото "само възрастни помагат на възрастни" и защо никой доверен човек никога не иска от дете да пази тайна.
+5. **Мишо** — Да е осъзнато за реакциите, които му пречат в реална ситуация - замръзване, прекалена любезност, разсеяност. Не за да се срамува, а за да ги преодолява с практика.
+6. **Buddy** — Че да поиска помощ не е слабост, а разумен избор. / Че при беда е предимство да не e сам и че приятелите си помагат взаимно и се пазят.
 
-*Note: Вихрен's point is deliberately distinct from Веста's — Вихрен covers recognizing safe **unfamiliar** adults/places to turn to in the moment; Веста covers sharing **afterward** with people the child already knows.*
-
-**Phase 5.2 — intentionally NOT touched, flagged rather than guessed at**: the supplied copy document's "На какво учи играта?" content is a single flat, uncredited 10-item bullet list ("Играта учи детето: [10 items]"), structurally different from what's actually built here — 6 bespoke, individually-worded points, each tied to one Bravie's color/icon (5 characters + Buddy). The two don't line up 1:1 (the document's 10 items don't cleanly collapse into 6 without editorial judgment about which sentences merge into which tile, and in what words) — redistributing them would mean rewriting tile copy, not swapping text, which is outside a verbatim-replacement pass. Left the 6 existing tiles' copy exactly as-is this round. Did NOT apply the one clearly independent wording tweak in the document's intro sentence either ("е изградена върху" → "е вдъхновена от" съвременните препоръки) since that intro paragraph is the lead-in to this same list block and editing it in isolation risked leaving a half-updated section — bundling it with the larger open question instead. See Open Decisions for the question this needs an answer to before it can be resolved.
+*Вихрен's point is deliberately distinct from Веста's — Вихрен covers
+recognising safe **unfamiliar** adults/places in the moment; Веста covers
+sharing **afterward** with people the child already knows.*
 
 ### How It Works Section
 
-H2: "Как работи играта?" **Phase 4.9: new one-line subtitle added directly under it**, `.how-it-works__meta`: "2 - 5 играча, 10 минути, 5 - 9 години" — plain metadata (player count / time / age range; the age range was corrected from an initial "2 - 9" to "5 - 9" in a follow-up round). Font-size started at a smaller 0.95rem (muted, so it wouldn't compete with the heading) but was corrected in the same follow-up round to match `var(--font-size-body)` exactly — the same size used by the step-line paragraphs below, per direct request that it read as "the same font size as the rest of the black text in the section." Font-weight (600) and the slight opacity dimming (0.75) were deliberately left as-is — only size was requested — so this line still reads as a distinct, slightly muted metadata row rather than becoming visually identical to the step descriptions; flag if those should also be unified now that the size matches. The heading's own `margin-bottom` moved onto this new element so the heading+subtitle pair reads as one tight unit before the extra gap to the steps below. **Phase 5.2**: copy updated to "2 - 5 играчи, 10 минути, 5 - 9 години + семейство и приятели" per the supplied document — "играча" → "играчи" and a new trailing "+ семейство и приятели" clause. **Flagging, not verified**: this is meaningfully longer than the previous line, and this element's `white-space`/wrap behavior couldn't be checked this round — `style.css` wasn't in this file set, so whether the line still fits on one line (if that was ever an explicit requirement here, unlike the hero tagline/waitlist heading which do have documented nowrap rules) is unconfirmed. Re-check at narrow widths once `style.css` is available.
+H2: "Как работи играта?" with a one-line subtitle `.how-it-works__meta`:
+"2 - 5 играчи, 10 минути, 5 - 9 години + семейство и приятели" — at
+`--font-size-body`, weight 600, opacity 0.75. The heading's `margin-bottom`
+lives on this element so the pair reads as one unit.
 
-Step copy (spec's original step 2 had a duplicated clause — fixed, used once):
+Step copy:
 1. Изтегляте ситуация. (Не)познат иска помощ. Предлага изкушение. Кара те да пазиш тайна. Какво правиш?
 2. Всеки избира карта от ръката си. Кажи НЕ. Бягай. Кажи на близък. Правилната реакция, в точния момент.
 3. Играчите си помагат и обсъждат заедно. Всички отговарят правилно - всички споделят наградата.
 
-- Background: solid `#E5E1D6` (Мишо's beige — was Веста's green; changed per feedback). Being light rather than dark, this drove several follow-on color changes: body text is dark (`--color-text-dark`, was white). **Step titles AND step-number badges are `--color-misho-trim` (`#8B5E3C`, brown)** — both were purple (`--color-zaki`) until now, which clashed against the Мишо-colored card art in this section; the brown comes from Мишо's own character palette (her shoes/trim color) so both elements read as part of the same character instead of an unrelated accent color. **The H2 heading itself also uses this same brown as of Phase 4.9** — direct request to match the numbered step badges. (A stray code comment claiming the badges were "still purple" had gone stale after that color was already changed — fixed to match the actual CSS while making this change, so it doesn't mislead anyone reading the source later.)
-- Each step's **first sentence is its title** — uppercase, accent color, own line; the rest of that step's sentences follow as one normal paragraph below it.
-- Zigzag: step 1 text-left/card-right, step 2 text-right/card-left, step 3 text-left/card-right (via `row-reverse` on step 2 only — DOM/reading order is always text-before-card regardless of visual side).
-- Cards: small (`width: min(130px, 36vw)`), 3:5 ratio, individually tilted (same technique as the Bravies cards). **Card size was deliberately shrunk** to keep the whole section's height to ≤1.5 screens on desktop (was running 2+). Steps 1 and 2 now use real supplied card art (situation card → step 1, "Не!" reaction card → step 2); step 3 still has no real art, stays a dashed-border white placeholder box.
-  - **Step 3, Phase 4.9, in two parts**: first, the placeholder label was corrected — was "Карта: награда" (reward card, wrong), fixed to reflect that this is **Заки's card**, not a reward card. Second, in a follow-up round, the real card artwork was supplied directly (`assets/cards/zaki.png`) and the placeholder `<div>` was swapped for a real `<img class="how-it-works__card how-it-works__card--img">`, exactly the same pattern steps 1–2 already use — no CSS changes needed, since the existing tilt (`.how-it-works__step--3 .how-it-works__card`) and sizing (`.how-it-works__card--img`) rules target the class, not the element type, and applied automatically. All three step cards now use real supplied art; none of the three are placeholders anymore. **Phase 5.7**: these three images are now **content, not decoration** — `aria-hidden` removed and real alt text added (situation / Съпротива / Знание), resolving the Phase 5.6 a11y-vs-SEO question in favour of image search. Character portraits stay `alt=""`.
-  - Real card `<img>`s must NOT be sized with `width/height:100%` here — unlike the Bravies-portrait pattern, this element defines its own box directly (width + aspect-ratio from the base `.how-it-works__card` rule), so `100%` resolves against the flex parent instead and blows the image up far past its intended size. Only `object-fit` is needed on the image itself.
-  - On mobile, `.how-it-works__card-wrap` needs `min-height: auto` (not the `0` used for the desktop row layout) — in the mobile column layout, `flex:1 1 0` with `min-height:0` collapses the item toward zero height instead of sizing to the image's aspect ratio, since there's no automatic content minimum left to fall back on.
-- Mobile: each step's card stacks above its related text (visual-only reorder).
-- Scroll-triggered slide-in-up animation, per-element (each step's text block and card reveal independently, not the whole section at once), one-time (doesn't repeat), skipped under `prefers-reduced-motion`.
+- Background solid `#E5E1D6` (Мишо beige). Because it is light rather than
+  dark: body text is `--color-text-dark`, and the H2, step titles and
+  step-number badges are all `--color-misho-trim` (`#8B5E3C`) — brown from
+  Мишо's own palette, so they read as part of the character rather than an
+  unrelated accent.
+- Each step's **first sentence is its title** — uppercase, accent colour, own
+  line; remaining sentences follow as one paragraph.
+- Zigzag: step 1 text-left, step 2 flipped via `row-reverse`, step 3 text-left.
+  **Visual only — DOM order is always text-before-card.**
+- Cards: `width: min(130px, 36vw)`, 3:5, individually tilted. Size is
+  deliberately small: the 3:5 ratio turns every pixel of width into 1.67px of
+  height, making this the biggest lever on the section's total height. All
+  three use real supplied art.
+  - The three card images are **content, not decoration**: real alt text, and
+    **no `aria-hidden`** — card art is what image search surfaces. Character
+    portraits elsewhere stay `alt=""`.
+  - Card `<img>`s must NOT be sized `width/height: 100%`. Unlike the
+    Bravies-portrait pattern, this element defines its own box (width +
+    aspect-ratio from the base `.how-it-works__card` rule), so `100%` resolves
+    against the flex parent and blows the image far past its intended size.
+    Only `object-fit` is needed.
+  - On mobile, `.how-it-works__card-wrap` needs `min-height: auto`, not the `0`
+    used for the desktop row: in a column flex layout `flex: 1 1 0` with
+    `min-height: 0` collapses toward zero height instead of sizing to the
+    image's aspect ratio.
+- Mobile: each card stacks above its text (visual-only reorder).
+- Per-element scroll-triggered slide-in-up, one-time, skipped under
+  `prefers-reduced-motion`.
 
 ### Testimonials Section
 
-H2: "Какво казват семействата?" (**renamed in Phase 4.7** from "Какво казват децата и родителите?" — shorter, avoids the slightly redundant "children AND parents" framing since obviously both are implied, and fits the one-line requirement below with more margin regardless of viewport. No argument against it — it's a clean improvement.) **Two quotes live as of Phase 4.10**: slide 1 — "Това е най-яката игра, на която съм играл." — Анди на 5.5 години; slide 2 — "Още същия ден малкият искаше да играем отново. Играхме пак на следващата сутрин и оттогава не спира да говори за играта и наградите." — Христина И., майка на Анди.
+H2: "Какво казват семействата?" Two quotes: slide 1 — "Това е най-яката игра,
+на която съм играл." — Анди на 5.5 години; slide 2 — "Още същия ден малкият
+искаше да играем отново. Играхме пак на следващата сутрин и оттогава не спира
+да говори за играта и наградите." — Христина И., майка на Анди.
 
-- Placement: after How It Works, at the bottom of the page content (before FAQ/Wait-list in Phase 4). **Corrected in a follow-up pass** — the first Phase 3 build inserted this section right after Bravies by mistake (it was placed at the literal `NEXT-PHASE-INSERT-POINT` marker without checking that the marker itself sat before Phase 2's sections, not after them). Flagging so the same slip doesn't repeat: always confirm an insert-point marker's actual position in the file, not just its existence.
-- Background white `#F8FAFC`, same surface as Bravies/What It Teaches.
-- Built as a real left-right slider (track + `translateX`). **Phase 4.10 confirms the "markup-only" design held**: the second slide was added as a plain `.testimonials__slide` `<li>` with its own `--slide-accent` inline style (`var(--color-vihren)` — next color in the documented cycle), matching slide 1's markup structure exactly; no JS or CSS edits were needed. The dot for slide 2 picks up Вихрен orange automatically via the existing `--dot-accent`/`--slide-accent` mechanism — verified via rendered screenshot (dot background computed to `rgb(246, 128, 68)`, an exact match for the `--color-vihren` token), not just assumed from the code path.
-- **No card/border.** Quotation marks flank the quote **left/right** (not stacked above/below — stacking ate too much vertical height, per feedback); the open mark sits at the top of the block and the close mark at the bottom (`align-self: flex-start` / `flex-end` inside the centered flex row — not a true vertical center against the block's midpoint, despite how earlier notes here described it). Each slide carries a `--slide-accent` custom property that colors both its quotation marks and its dot; the palette cycles through the 5 brand colors in this order: Веста green (default/first) → Вихрен orange (slide 2, Phase 4.10) → НЕда yellow → Заки purple → Мишо beige. Мишо's beige will read faint against the white background once the cycle reaches it — flagged, not yet resolved.
-- **Phase 4.10, variable-height slide check**: slide 2's quote is noticeably longer than slide 1's (two sentences vs. one short line) and wraps to more lines at every breakpoint. No CSS change was needed to accommodate this — `.testimonials__track` is a flex row of `flex: 0 0 100%` slides with no fixed height set anywhere in the chain, so the row's rendered height is driven by its tallest child (ordinary flexbox behavior), meaning the viewport is always as tall as slide 2 regardless of which slide is currently shown via `translateX`. Verified via Playwright screenshots at mobile/tablet-landscape/desktop, cycling both slides via dot click, arrow keys, and touch swipe: no clipping, no layout jump when switching between the short and long slide, and the flanking quotation marks stay correctly positioned at the block's top/bottom edges on the taller slide too.
-- **Arrows removed — dots are the only nav control now**, per feedback. Dots stay visible with a single quote or multiple (colored per-slide, always shown — not hidden via an `.is-single` class like an earlier version did) so the mechanism reads as "alive" regardless of quote count.
-- Every interaction — dot click, `ArrowLeft`/`ArrowRight` (keyboard nav still works even without visible arrow buttons), touch swipe — replays the quote's fade/rise entrance animation, even when it loops back to the same single slide. This is a forced-reflow restart in JS (`initTestimonialsSlider()`; the CSS animation alone won't replay just by re-applying an unchanged class), not a CSS-only trick.
-- `prefers-reduced-motion` disables both the track's slide transition and the quote's entrance animation.
-- **Implementation note carried over from the first pass**: the dot-pagination wrapper (`[data-slider-dots]`) sits as a sibling of `.testimonials__slider` in the DOM, not nested inside it — the JS scopes its `querySelector` to the shared `.testimonials__inner` ancestor rather than to `slider` itself for this reason.
-- **Phase 4.6**: `.testimonials__inner` widened from `700px` to `980px` — the heading was wrapping to 2 lines and needed to fit on 1 at desktop/tablet-landscape, per direct request. The slider/quote block shares this same container (no independent narrower width of its own), so it's wider too now — checked the quote still reads fine at this width, not just the heading. Verified 1 line at 768/1024/1440px via rendered height ÷ line-height; same font-fallback caveat as the Problem section above applies here too.
+- Placed after How It Works, before Desired State. Background white `#F8FAFC`.
+- Real left-right slider (track + `translateX`), built for N ≥ 1 slides:
+  adding a `.testimonials__slide` `<li>` with its own inline `--slide-accent`
+  needs no JS or CSS change. No fixed height anywhere in the chain, so the
+  track sizes to its tallest slide and switching slides causes no layout jump.
+- **No card or border.** Quotation marks flank the quote left/right (stacking
+  ate too much vertical height), open mark at the top of the block, close mark
+  at the bottom. Each slide's `--slide-accent` colours both its marks and its
+  dot; the cycle is Веста green → Вихрен orange → Неда yellow → Заки purple →
+  Мишо beige.
+- **Dots are the only nav control**, always visible even with one quote, so the
+  mechanism reads as alive before quote #2 exists.
+- Every interaction — dot click, `ArrowLeft`/`ArrowRight`, touch swipe —
+  replays the quote's entrance animation, including when it loops back to the
+  same slide. This is a forced-reflow restart in `initTestimonialsSlider()`;
+  re-applying an unchanged class won't replay a CSS animation on its own.
+- The dot wrapper `[data-slider-dots]` is a **sibling** of
+  `.testimonials__slider`, not nested inside it — the JS scopes its
+  `querySelector` to the shared `.testimonials__inner` ancestor for this reason.
+- `.testimonials__inner` is `980px` so the heading fits one line; the slider
+  shares this container.
+- `prefers-reduced-motion` disables both the track transition and the entrance
+  animation.
 
 ### Desired State Section
 
-H2: "Представи си този момент…" (**Phase 5.2**: was "Представете си този момент…" — formal/plural "Вие" imperative switched to informal singular "ти" imperative, per the supplied copy document, which is written in "ти" voice throughout this section.)
+H2: "Представи си този момент…" Body is 3 short paragraphs walking through a
+reassurance scenario, ending on "Това е моментът, в който осъзнаваш, че:".
+Written in informal "ти" voice.
 
-Body (3 short paragraphs) walks through a specific reassurance scenario — child briefly out of sight at a playground, a stranger approaches, but instead of panic the parent feels calm because the child handles it correctly and reports back. Ends on "Това е моментът, в който осъзнаваш, че:" leading into the list. **Phase 5.2**: full body text switched from formal "Вие" ("Заговаряте се", "изпускате", "виждате", "Наблюдавате", "детето ви", "при вас") to informal "ти" ("Заговаряш се", "изпускаш", "виждаш", "Наблюдаваш", "детето ти", "при теб") to match the document. **Flagging a likely typo carried over verbatim from the source document, not silently corrected**: the body's opening clause reads "На площадката сте." — "сте" is the formal/plural form, inconsistent with every other verb in this section (all "ти"-form). This reads like it should be "На площадката си." Implemented exactly as the document has it, per the "verbatim" instruction, rather than guessing at a fix — worth a quick confirm before this ships.
+List copy (checkmark bullets):
+1. Детето ти знае как да се пази самостоятелно.
+2. Изградила си невидима броня от умения и инстинкти.
+3. Твоята тревожност е заменена с дълбоко вътрешно спокойствие.
+4. Най-накрая можеш да си отдъхнеш, знаейки, че си му дала ценен подарък.
 
-List copy (checkmark bullets, one line each) — **Phase 5.2, rewritten to informal/feminine-addressed voice per the supplied document**:
-1. Детето ти знае как да се пази самостоятелно. (was "Вашето дете знае...")
-2. Изградила си невидима броня от умения и инстинкти. (was "Изградили сте..." — note "Изградила" is the feminine singular past-tense form, i.e. this now specifically addresses a mother/female reader rather than either parent; **flagging as a judgment call carried over from the document as-is, not decided here** — worth confirming this is the intended audience shift before it ships, since the rest of the site's copy (badges, FAQ, etc.) stays gender-neutral.)
-3. Твоята тревожност е заменена с дълбоко вътрешно спокойствие. (was "Постоянната тревожност..." — this is a real wording change, not just a voice change: "constant" anxiety became "your" anxiety.)
-4. Най-накрая можеш да си отдъхнеш, знаейки, че си му дала ценен подарък. (was "Най-накрая можете да си отдъхнете... сте му дали най-ценния подарък." — besides the voice switch, "най-ценния" (the most precious) softened to "ценен" (a valuable) and "дали" (neutral) became "дала" (feminine), same audience-shift flag as item 2 above.)
+*Items 2 and 4 use feminine singular forms ("Изградила", "дала"), i.e. this
+section specifically addresses a mother, while the rest of the site stays
+gender-neutral. The body's opening "На площадката сте." is formal/plural,
+inconsistent with every other verb here — both carried over verbatim from the
+supplied copy document; see Open Decisions.*
 
-- **Position: moved in Phase 4.6, reverted in Phase 4.7 (see prior phase history if needed) — currently back after Testimonials, right before FAQ.**
-- **Background/text color, Phase 4.8**: changed from `--color-vihren` (orange) + dark text to `--color-vesta` (green) + white text, per direct request/discussion. Orange + dark text is the color pairing used for hazard/warning signage (OSHA caution colors, construction warning tape) — reads as "alert" at a pre-conscious level, which directly contradicts this section's content (the emotional payoff/reassurance beat of the page). Green is the closer semantic match for calm/safe/reassurance, and it was already present in this exact section via the checkmark ticks (see below) — using it for the background turns what was a near-complementary (orange vs. green) color clash into one coherent palette instead of a second relationship to manage. White text over dark: checked contrast both ways against this green — white reaches 4.02:1, dark text (`--color-text-dark`) only 3.69:1 — and it matches how the Problem section already handles its own similarly mid-dark saturated background (purple + white text), so the two "loud color block" sections on the page now follow the same white-on-saturated pattern.
-  - **Checkmark ticks inverted to match**: were green circle + white check (which would have gone invisible against a now-also-green section background); now white circle + green check (`stroke="currentColor"` in the SVG already picks up the color automatically, no markup change needed).
-- **Phase 4.7**: body paragraphs (`.desired-state__body`) switched from centered to left-aligned text, same change and same reasoning as `.problem__body`/`.teaches__body` above. Heading stays centered.
-- **Phase 4.9**: body paragraphs widened from `62ch` to a fixed `920px`, same 75-character-minimum request and same measurement approach as `.teaches__body`/`.problem__inner` above. This one needed an extra step the other two didn't: the parent `.desired-state__inner` was itself capped at `900px` — narrower than the child's new 920px — so it was silently bottlenecking the child down to ~75.09 characters of capacity, just barely over target with almost no margin. Widened the parent to `940px` so the child's 920px actually applies. Verified ~76.8 characters capacity at 1440px after the fix — worth remembering this parent/child bottleneck pattern if either width gets adjusted again later.
-- **Checkmark bullet list, not an icon-box grid** (a card/box-style 2×2 grid was tried earlier in the project and replaced with the current plain checkmark list per feedback — the boxes+icons read as too heavy/cluttered; that reasoning still applies). Each item: a solid white circular tick (green check, see above) + bold (weight 700) Nunito Sans text, left-aligned.
-- **Layout, Phase 4.8**: direct request to reduce this section's height, "especially the list." Two changes, deliberately different in scope:
-  - **Tightened spacing everywhere** (helps every breakpoint, including mobile): `.desired-state__inner`'s gap between heading/body/list/CTA cut from `--space-4` (40px) to `--space-3` (24px); `.desired-state__list`'s gap between stacked items cut from `--space-3` (24px) to `--space-2` (16px).
-  - **2×2 grid at tablet-landscape/desktop only** (`min-width: 1024px`, or `min-width: 768px` + landscape — same media query used elsewhere on the page, e.g. the Bravies Intro section, for consistency): the list becomes a 2-column CSS grid instead of a 4-row stack, roughly halving its vertical footprint at the breakpoints where the section was tallest. **Explicitly still just tick+text pairs, no boxes/borders/cards per item** — direct request — the only thing that changed is the parent's `display: flex; flex-direction: column` becoming `display: grid; grid-template-columns: 1fr 1fr` at this breakpoint; each item's own markup/styling is untouched. Stays single-column on mobile/portrait-tablet — two columns of full-sentence bullet text has no room to work on a phone, so mobile relies on the spacing tightening above instead. Grid auto-flow fills left-to-right/top-to-bottom (item 1 top-left, item 2 top-right, item 3 bottom-left, item 4 bottom-right), which still matches the existing per-item stagger-reveal order (0s/0.12s/0.24s/0.36s), so no changes were needed there.
-  - `.desired-state__inner` and `.desired-state__list` both widened (900px / 820px respectively) to give the 2-column grid enough horizontal room — full-sentence bullets need more width side-by-side than the old single-column 640px measure provided.
-- **Each bullet still animates in individually** — a per-item `transition-delay` stagger (0s / 0.12s / 0.24s / 0.36s via `:nth-child`) layered on top of the shared `.reveal` mechanism, so items cascade in one after another rather than popping in as one block. Disabled under `prefers-reduced-motion` (delay forced to 0s).
-- CTA: "Искам това спокойствие", reuses the `.cta-button` component (same yellow used sitewide; checked it still pops clearly against the new green background); links to `#waitlist-signup`.
+- Position: after Testimonials, before FAQ.
+- Background `--color-vesta` green + white text. White reaches 4.02:1 against
+  this green, dark text only 3.69:1. Green also matches the section's own
+  checkmark ticks and the white-on-saturated pattern the Problem section uses.
+  - Ticks are white circle + green check (`stroke="currentColor"`); a green
+    circle would be invisible on this background.
+- **Checkmark bullet list, not an icon-box grid** — a card/box grid was tried
+  and rejected as too heavy. Each item: solid white circular tick + bold
+  (700) Nunito Sans text, left-aligned.
+- Body paragraphs are `920px`, left-aligned; heading stays centred.
+  `.desired-state__inner` is `940px` — it must stay wider than the child's
+  920px or it silently bottlenecks the character-capacity measurement.
+- 2×2 grid at `≥1024px` or `≥768px` landscape (from a 4-row stack), roughly
+  halving the list's height. **Still plain tick+text pairs — no boxes, borders
+  or per-item backgrounds.** Single column below that: two columns of
+  full-sentence bullets have no room on a phone.
+- Each bullet animates in individually via a per-item `transition-delay`
+  stagger (0 / 0.12 / 0.24 / 0.36s) on top of `.reveal`. Grid auto-flow fills
+  in that same 1-2-3-4 order. Forced to 0s under `prefers-reduced-motion`.
+- CTA: "Искам това спокойствие", reuses `.cta-button`, links to
+  `#waitlist-signup`.
 
 ### FAQs Section
 
-H2: "Въпроси и отговори". Standard vertically-unfolding layout — questions always visible, arrow icon unfolds each answer. **Multiple items can be open at once** (not a single-open/accordion-radio) — no content-level reason found to force mutual exclusivity, and single-open would re-collapse an answer a parent is still reading if they open a second question; flagged as a judgment call, not re-litigated since.
+H2: "Въпроси и отговори". **Multiple items can be open at once** (not a
+single-open accordion) and all start closed — nothing here is mutually
+exclusive, and single-open would re-collapse an answer a parent is still
+reading.
 
-**7 real Q&As** (final copy, not dummy — a duplicate 8th question was cut, see below):
+**7 Q&As:**
 1. Кой може да играе?
 2. А ако детето ми е на 4 или на 10 години?
 3. Как учат децата чрез играта?
@@ -222,201 +281,416 @@ H2: "Въпроси и отговори". Standard vertically-unfolding layout �
 6. Няма ли да омръзне след няколко пъти?
 7. Кога ще е готова играта?
 
-- **"На какво учи играта?" was removed** — it duplicated the standalone "What It Teaches" section higher up the page (same content, including the bullet list of what the game teaches), so it's redundant here. IDs were renumbered sequentially 1–7 after the cut; no gaps.
-- **Phase 5.2, answer copy tightened per the supplied document** (questions themselves are unchanged):
-  - Q1 ("Кой може да играе?"): "2 до 5(6) играча" → "2 до 5 играча" — dropped the parenthetical "(6)".
-  - Q3 ("Как учат децата чрез играта?"): removed a stray comma ("избира, казва, и обсъжда" → "избира, казва и обсъжда"); second sentence reworded from "Една игра на седмица в продължение на месец — децата изиграват десетки сценария." to "Ако играете по една игра на седмица в продължение на месец, децата изиграват десетки сценарии." (also fixes "сценария" → the grammatically correct "сценарии"); third sentence gained a missing "а": "...семейна цел, не индивидуално постижение." → "...семейна цел, а не индивидуално постижение."
-  - Q4 ("Могат ли децата да играят сами?"): "Но препоръчваме поне първите няколко игри" → "Силно препоръчваме поне първите игри"; and, a real content change worth flagging — "Разговорът **след това**" (i.e. after playing) became "Разговорът **по време на играта**" (i.e. during play). Dash style kept as the sitewide em dash (—) rather than the document's plain hyphen, treating that as PDF-extraction flattening rather than an intentional style change, consistent with how this file already punctuates elsewhere.
-  - Q5 ("Ситуациите страшни ли са?"): added a missing comma — "върху това което детето прави" → "върху това, което детето прави".
-  - Q6 ("Няма ли да омръзне след няколко пъти?"): "редовно — рефлексът се изгражда" → "редовно, защото рефлексът се изгражда".
-  - Q7 ("Кога ще е готова играта?"): added "В момента" at the start, and added "на специална цена" before "преди публичното обявяване" — a real content addition (this now explicitly promises early-signup pricing, which the previous copy didn't state here).
-- Background white (`--color-surface-white`), dark text — continues the alternation after Desired State's orange.
-- Markup: `<h3>` wrapping the trigger `<button>` (WAI-ARIA accordion pattern), answer `<div>` as the `<h3>`'s sibling inside the `<li>`. Trigger carries `aria-expanded` + `aria-controls`; answer carries `role="region"` + `aria-labelledby` pointing back at the question.
-- **Expand/collapse is CSS-only** — animatable `grid-template-rows` (`0fr` collapsed → `1fr` open) on `.faq__answer`, with `overflow: hidden` on the inner wrapper so the row can actually clip to zero. JS (`initFaqAccordion()` in `script.js`) only toggles `.is-open` on `.faq__item` and mirrors it onto the trigger's `aria-expanded` — same "JS decides state, CSS animates it" split already used for `.reveal`/`.is-visible` and the Bravies-card `.is-pulsing` pulse. No JS height measurement needed.
-  - Note for future reference: this `grid-template-rows` + child-`overflow:hidden` technique is a *different* mechanism than the flex `min-height: 0` issue documented elsewhere in this file (that one's about a flex child's main-axis min-size; this is a grid row track collapsing) — don't conflate the two if debugging either.
-- Chevron icon rotates 180° on open (CSS transition off the same `.is-open` state), disabled under `prefers-reduced-motion` along with the row-height transition.
-- Icon/hover accent reuses `--color-zaki` (purple) — already the sitewide `:focus-visible` outline color, so it reads as the established "interactive" accent rather than introducing a new one.
-- `.faq__answer-list` (bullet-list styling inside an answer) is currently unused now that the only answer using it was cut — left in `style.css` rather than deleted, in case a future FAQ answer needs a list again.
+- Background white (`--color-surface-white`), dark text.
+- The FAQ copy is mirrored **verbatim** in the JSON-LD `FAQPage` block. If an
+  answer changes here, that block must change with it — Google treats a
+  visible-copy/markup mismatch as a structured-data violation.
+- Markup: `<h3>` wrapping the trigger `<button>` (WAI-ARIA accordion pattern),
+  answer `<div>` as its sibling inside the `<li>`. Trigger carries
+  `aria-expanded` + `aria-controls`; answer carries `role="region"` +
+  `aria-labelledby`.
+- **Expand/collapse is CSS-only** — animatable `grid-template-rows` (`0fr` →
+  `1fr`) on `.faq__answer`, with `overflow: hidden` on the inner wrapper so the
+  row can clip to zero. JS (`initFaqAccordion()`) only toggles `.is-open` and
+  mirrors `aria-expanded` — the same "JS decides state, CSS animates it" split
+  as `.reveal` and `.is-pulsing`. No JS height measurement.
+  - This `grid-template-rows` + child-`overflow: hidden` technique is a
+    *different* mechanism from the flex `min-height: 0` issue documented
+    elsewhere in this file; don't conflate them when debugging either.
+- Chevron rotates 180° on open; disabled under `prefers-reduced-motion` along
+  with the row-height transition.
+- Accent reuses `--color-zaki`, already the sitewide `:focus-visible` colour.
+- `.faq__answer-list` is currently unused; left in `style.css` in case a future
+  answer needs a list.
+- **`.faq` carries 148px of `padding-bottom`**, well beyond its shared
+  `var(--space-5)`. This is the room the Wait-list Signup section's top-left
+  clouds bleed up into. Do not reduce it: a fine-interval sweep found the cloud
+  edge grazing the last question's line box by 1px between 960 and 1280px.
 
 ### Wait-list Signup Section
 
-H2: "Записването е отворено". Reuses the hero form's exact markup pattern (`waitlist-form` structure + `data-waitlist-form` attribute) — `script.js`'s `document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm)` binds every matching element automatically, so this needed **zero JS changes**, confirmed against the real `script.js` before building. Form and success-message markup are siblings under a shared wrapper (`.waitlist-signup__inner`), same structural requirement as `.hero__content`, since `initWaitlistForm()` finds the success element via `form.parentElement.querySelector('.success-message')`. **Phase 5.1**: this shared binding is also why real MailerLite submission (see §4 "Real submission — Phase 5.1") needed zero changes here either — both forms already funnel through the one `initWaitlistForm()`/`mailerliteSubscribe()` path.
+H2: "Записването е отворено". Reuses the hero form's exact markup pattern
+(`waitlist-form` + `data-waitlist-form`); `script.js` binds every matching
+element automatically, so this needs zero JS changes. **Form and
+success-message markup must be siblings under a shared wrapper**
+(`.waitlist-signup__inner`), because `initWaitlistForm()` finds the success
+element via `form.parentElement.querySelector('.success-message')`.
 
-- Background `--color-neda` (Неда's yellow).
-- **Heading now sits first** (order is heading → badge → form), per direct request — was previously badge → heading → form.
-- **Badge — now on its fourth iteration, all documented since the failure modes are easy to reintroduce if this gets touched again**:
-  1. Shipped first as one long pill wrapping the entire sentence "Ексклузивен достъп преди всички и специална цена за първите записали се."
-  2. Revised into two separate short chips, `.waitlist-signup__badge` (one per highlighted phrase, "Ексклузивен достъп" / "Специална цена"), connecting words as plain white text on the yellow background rather than inside any chip — one line at desktop/landscape-tablet, two stacked rows at mobile/portrait-tablet, breaking after "и". Still reuses `var(--radius-input)` and `--color-zaki` (this section's own accent since Phase 4's submit button) rather than introducing a new component pattern.
-  3. On mobile the two rows were overlapping and inconsistently left-edged, screenshot-confirmed. Root cause: plain inline text with `display: block` per row didn't reliably reserve room for a wrapped second sub-line against the chip's own padding-driven height, and centered `text-align` inheritance gave each row a different left edge since their natural widths differ. Fixed by rebuilding the mobile layout with flexbox instead of inline text.
-  4. **This round, per direct request with a real device screenshot**: the connector text ("преди всички и" / "за първите 100") moves INSIDE the same pill as its highlighted phrase — no more small chip-plus-bare-text-beside-it. Each `.waitlist-signup__badge-line` is now the whole pill: solid `--color-zaki` background, all text white, highlighted phrase bold via a `<strong>` in the markup rather than a separate nested chip element. Also switched from left-aligned to **centered**, and the underlying layout mechanism changed again along with it — `.waitlist-signup__badge-wrap` is a flex container in both directions now (`flex-direction: column` on mobile, `row` at the row-layout breakpoint) instead of the previous inline-text-plus-`white-space: nowrap` trick. This is a genuine simplification, not just a re-skin: switching one CSS property (`flex-direction`) directly expresses "stacked vs. one line," so there's no longer a fragile dependency on plain-text wrap behavior to fake single-line layout.
-  - **Copy**: second phrase reads **"за първите 100"** (unchanged from the previous round) — echoes the button's own "Запиши се за първите 100" wording.
-  5. **Phase 4.9, colors flipped**: `.waitlist-signup__badge-line` changed from solid `--color-zaki` background + white text to **white background + `--color-zaki` text** — direct request ("the pills should be white with purple text instead of purple with white text"). The submit button (`.waitlist-form--on-neda .waitlist-form__button`, also purple bg/white text) was deliberately left as-is rather than flipped too — that's a judgment call, not an explicit instruction either way: keeping the button as the one still-saturated-purple element in the section preserves a visual hierarchy where the two badge pills read as light/secondary and the button still stands out as the actual call to action, rather than all three elements looking identical. Flag if the button should flip too.
-- **Heading**: white (`--color-surface-white`), forced to a single line via `white-space: nowrap` + a `clamp(1.35rem, 6vw, 2.5rem)` font-size tuned to still fit "Записването е отворено" on one line down to a 375px viewport — the section's shared dark-text default (used elsewhere on light/pale sections) read weak against this saturated a yellow at H2 size, and two-line wrap looked cramped over the short form beneath it. Verify this still holds at any width narrower than 340px if you test on a smaller device. Order relative to the badge flipped this round too — heading now comes first (heading → badge → form), was previously badge → heading → form.
-- **Button**: `--color-zaki` (Заки purple) background, white text — direct request, replacing an earlier dark-inverse (`--color-text-dark`) treatment from the first pass. Purple-on-yellow reads clearly without needing an inverse workaround; modifier stayed named `.waitlist-form--on-neda` (distinct from `.waitlist-form--on-light`, which assumes a white/pale surface) since the input's contrast tweak from the first pass is unchanged, only the button's fill color moved.
-- **Input**: solid white background + `--color-zaki` text, replacing the earlier translucent dark-tinted version — echoes the badge chips (also white bg / zaki text), so the input reads as part of the same "light label on yellow" language rather than a third treatment on this one section. Also given a `min-width: 190px` at the row-layout breakpoint (≥1024px, or ≥768px landscape) — "at least 60–70% of the CTA button's width," per direct request. CSS has no way to size an element as a literal percentage of a sibling's rendered width (only of its own containing block), so this is a concrete px value instead, calibrated against the button's actual measured width at that breakpoint (~273px) — 190px lands at ~70%, the upper end of the requested range. If the button's label text changes enough to meaningfully change its own rendered width later, re-measure and adjust this value rather than assuming it still holds. Not applied below the row-layout breakpoint — mobile/portrait-tablet already stack the input at 100% width, which is wider than the button, not narrower, so the request's intent was already satisfied there without any extra rule.
-  - **Two real bugs surfaced by testing the actual interactive states, not just the resting appearance**, both fixed:
-    1. The sitewide base `.waitlist-form__input:focus` rule sets a translucent background (tuned for the hero's dark blue) — without an explicit override, focusing the input in this section would have visibly shifted it from solid white to translucent. Fixed by pinning `background: var(--color-surface-white)` in this section's own `:focus` rule too.
-    2. **More subtle**: `script.js` calls `input.focus()` immediately after adding `.is-invalid` on a failed submit (see `initWaitlistForm`), so both states are active on the input at the same moment a validation error is shown. The `.is-invalid` and `:focus` rules for this section tied at equal specificity, and `:focus` happened to sit later in the file, so the error state's red border was silently losing to the focus state's purple border — right when the person most needed to see something was wrong. Only caught by testing the actual invalid-submit flow end-to-end (fill bad email → submit → inspect computed border color), not by checking the states in isolation. Fixed with a combined selector (`.is-invalid:focus`) that outranks both individually, restoring the red border in the case where both apply.
-- A `.success-message--on-light` modifier (dark text, `--color-vesta` green icon) is still in place from the first pass — the default success state assumes a dark section (white text, pale mint icon), unreadable on yellow.
-- **Phase 5.2**: this section's success-message text is the second instance of the shared copy change documented under Hero Section above — "Благодарим Ви! Вече сте записани..." → "Благодарим! Вече си записан...". Same text, same reasoning; not repeated in full here.
-- **Section height — went through two follow-up adjustments after the initial ~half cut** (original ~446px → cut to ~220px → that turned out too short → now ~290–350px depending on breakpoint, deliberately roomier again). What actually changed across all three states:
-  1. **Real bug fix, kept in all versions**: `.success-message`'s own `display: flex` was outranking the browser's built-in `[hidden] { display: none }` rule in CSS specificity, so the hidden success message was still reserving its full height in the layout. Fixed via `.success-message[hidden] { display: none; }` — quietly affects the hero form too, just harder to notice there.
-  2. **Real fix, kept in all versions**: removed a redundant double gap between the heading and form (`.waitlist-form`'s own `margin-top`, meant for the hero's non-gap layout, was stacking on top of `.waitlist-signup__inner`'s flex `gap`).
-  3. **Padding — the part that's moved twice, then resolved by Phase 5.3**: first cut from 64px/96px (top/bottom) to 24px/40px (too far, per follow-up). Then `var(--space-4) var(--space-2) var(--space-6)` — 40px top, 96px bottom — where the bottom was deliberately much roomier than the top because **that space was reserved for a future footer row (social links / policy links)**. **That row has now landed (Phase 5.3, see below), so this is no longer reserved space — it is occupied space**, and the padding was re-cut accordingly: `var(--space-4) var(--space-2) var(--space-3)` (40px top, 24px bottom) at ≥768px, with the bottom overridden to `calc(var(--space-6) + var(--space-4))` (136px) at ≤767px for cloud clearance. See the Footer Link Row subsection below for why the two breakpoints differ by so much.
-- **Clouds — bigger, per direct request, then further reworked twice more:**
-  - **Sizing**: bumped from the original pass, then reined back in slightly (max width for the back top-left cloud went 320px → 460px → 360px) once bumping *and* letting clouds bleed into the previous section (below) together caused a real text-overlap bug — see positioning below. Whether they stay crisp at this size depends on the source PNGs' own native pixel dimensions, which this project can't verify (no cloud assets in this file set — these are CSS boxes with `background-size: contain`, so a low-res source will visibly soften when upscaled). Rule of thumb: for a sharp render at up to ~360px CSS width on a retina (2×) screen, the source PNG should be at least ~720px wide natively.
-  - **Bleed over the FAQ section (new, per direct request — "lay clouds over the previous section too, and don't cut them")**: `.waitlist-signup` and `.waitlist-signup__clouds` both lost their `overflow: hidden`, so the top-left pair's cloud art — previously clipped at this section's own top edge — now renders visually over the bottom of the FAQ section above it (later-in-DOM elements paint over earlier siblings by default, so no z-index juggling was needed). This is what actually fixed "barely visible": most of each cloud was always being thrown away by clipping, not because the clouds were too small.
-    - **This surfaced two real bugs that needed separate fixes, not just the bleed itself:**
-      1. **Horizontal scrollbar appeared** — the actual browser scrolling root is `<html>`, not `<body>`, once `<body>` has its own `overflow-x` set. `<html>` was still `overflow-x: visible` by default; it only became load-bearing once nothing downstream (the now-unclipped section) caught the wide cloud content anymore. Fixed by adding `overflow-x: hidden` to `html` as well, not just `body`.
-      2. **The cloud actually bled far enough to overlap the last FAQ question's text** — confirmed by measuring real bounding-box overlap (not just eyeballing): 47–108px of overlap depending on viewport width, worse at wider viewports where the cloud's resolved height is taller. Fixed with two coordinated changes: reined in the cloud's max size (above) and added dedicated extra `padding-bottom` to `.faq` (beyond its shared `var(--space-5)`) so the bleed has verified, measured room to happen in without touching real content. Re-verified overlap is negative (i.e. clear, with margin) at 768/900/1200/1440px after the fix. **Phase 5.4: value raised 140px → 148px.** A finer-interval sweep found the top-left cloud's edge grazing the last question's line box by exactly 1px between 960px and 1280px — a band the original 768/900/1200/1440 spot-checks happened to step over. 1px against a line box (not glyph ink), with a PNG whose top row is transparent, is almost certainly invisible in practice; 8px was simply a cheap way to stop carrying it as a caveat. **Also Phase 5.4, and the more important point: on mobile this padding is no longer dead space.** It was reported as an awkward blank gap, because the top-left cloud pair it exists to accommodate had been hidden at ≤767px — the padding stayed while the thing it was reserving room for did not. With that pair restored (see Wait-list Signup Section), the padding is doing its job at every breakpoint again.
-      3. **The bottom-right pair bled past the actual end of the page** (real cloud art surfaced this — a screenshot with the real assets showed it clearly, plain-color placeholders hadn't made it obvious). This is the last section on the page, so letting it bleed downward the same way the top pair bleeds upward just stretched the page's real scrollable height into blank space with nothing in it, past the visible content — showed up as an unexpected "second slider"/extra empty scroll distance at the very end of the page. Fixed by splitting the single `.waitlist-signup__clouds` container into two — `.waitlist-signup__clouds--top` (unclipped, holds the pair that bleeds into the FAQ) and `.waitlist-signup__clouds--bottom` (`overflow: hidden`, holds the pair that has nothing below it to bleed into). Same box (`inset: 0`), opposite `overflow`, so each pair gets the behavior it actually needs instead of one shared setting doing the wrong thing for one of them. Verified: page's `scrollHeight` now matches the Wait-list Signup section's own bottom edge exactly (0px of extra trailing scroll) at 375/768/1440px, with the bottom cloud pair still fully intact and ≥50% visible per the requirement above.
-  - **Bottom-right pair — now ≥50% visible, per direct request**: switched from the top pair's fixed-pixel-sliver technique to a **plain percentage** `--cloud-y-offset` (`35%`/`40%`), since "at least 50% visible" is a proportion-of-itself ask, not a fixed-pixel one — a plain percentage is the more direct match and holds at any resolved cloud size. This section is the last one on the page, so the hidden ~35–40% simply extends past the page's bottom edge rather than needing to clear anything below it. Verified this pair also stays clear of the form/button row at every tested width.
-    - **This round, per direct feedback with a real device screenshot ("barely showing")**: bumped further specifically for mobile (≤767px) — width clamps increased (`--wl-3` up to 400px, `--wl-4` up to 320px, both from noticeably smaller ranges) AND `--cloud-y-offset` reduced further for mobile specifically (down to ~18–22%, i.e. ~78–82% visible, up from the 60–65% that was fine at tablet/desktop). The base 60–65% wasn't actually wrong on its own — it just read as visually thin on an actual tall phone, where a lot of empty yellow padding-bottom sits below the button before the cloud appears, so the same proportion carried less visual weight there than in a shorter section. Verified the `max-height: 500px` short-viewport rule (below) still correctly overrides this back down when height is genuinely constrained — the two rules compose in the right order (short-viewport rule sits later in the file, same specificity, so it wins when both conditions apply).
-  - **Top-left pair on mobile (≤767px): removed, then RESTORED in Phase 5.4 with a shorter sliver.** It was originally `display: none` for two reasons, both from direct requests: it sidestepped the heading-collision risk that a nowrap, near-full-width heading creates at narrow widths, regardless of how small the cloud is; and it was asked for independent of that risk ("remove the top left clouds from this section on mobile anyways"). It is back per a later direct request ("I'd prefer to have the clouds back there as long as they don't interfere"), which supersedes the second reason and re-opens the first as a question to actually answer rather than sidestep. Bottom-right pair stays on mobile, just smaller — unchanged throughout.
-    - **The answer, measured**: switched back on at its inherited sizes, the pair's slivers reached 42px (`--wl-1`) and 48px (`--wl-2`) into the section, against a heading whose top edge sits a constant 40px below the section's top (that's `.waitlist-signup`'s own `padding-top`, so it doesn't move with viewport width) — a real 2px and 8px vertical overlap across 112–167px of the heading's width. So they *did* interfere, but only just, and because of sliver depth rather than cloud size.
-    - **The sliver is a two-sided constraint, which a first pass at this got wrong**: pulling the clouds up to clear the heading pushes them further into the FAQ section above, and at 736–767px (where these clouds are widest, and so tallest, below the breakpoint) a 20px sliver left only 7.5px between the cloud's top edge and the last FAQ question's text. Settled at **26px/30px**, which satisfies both ends: 14px/10px of clearance below to the heading, and FAQ-side clearance back up to 13.5–36px across the range. Worth noting the measurement technique this needed — the `.faq__item` box carries 17px of padding below its text, so a box-level overlap check reports a collision when nothing visible is touching; the real check ran against a `Range` over the question's own text node.
-    - Net effect: 80–103px of each cloud bleeds up into the FAQ section, which is where most of a bled cloud lives at every other breakpoint anyway, and the FAQ's reserved bottom padding stops reading as a blank gap on mobile.
-  - **Stacking order vs. the form, this round**: direct request that clouds "go behind the form when space is limited," same as the hero already does. Checked via computed `z-index` (not just assumed): `.waitlist-signup__inner` (which contains the form) was already at `z-index: 1` against `.waitlist-signup__clouds`'s `z-index: 0` — the identical pattern `.hero__content`/`.hero__clouds` use — so there wasn't a stacking-order bug to find here. What genuinely changes with limited vertical space is how CLOSE the visible portion of a cloud gets to the form, not which one paints on top — addressed separately below.
-  - **New: `@media (max-height: 500px)`** — pulls the bottom-right pair's visible portion back from ~60–65% down to ~25–28% specifically when vertical space is constrained (phone landscape, a shallow browser window), so it can't visually crowd the form regardless of how short the section ends up. Doesn't affect normal portrait mobile, where height is rarely the limiting dimension.
-  - Parallax itself is still driven by a **separate** function, `initWaitlistClouds()` in `script.js` (not shared with `initHeroClouds()`) — the hero is always page-top (`window.scrollY / heroHeight`), this section's progress instead comes from `getBoundingClientRect()`. Unaffected by any of the above changes; hero clouds are also unaffected (they don't set `--cloud-y-offset`, so default to 0% / no vertical shift).
-    - **This round's real bug, reported as "no movement effect on mobile"**: the progress formula divided by `window.innerHeight + sectionHeight`, modeling a full "enters from the bottom, exits past the top" journey. Since this section is always the LAST thing on the page, there's no more content below it — on a tall page with a short section and a tall mobile viewport, the page runs out of scrollable distance before that journey could ever get far, capping progress at roughly `1 − sectionHeight/viewportHeight` (measured: ~0.34–0.50 depending on section height) instead of reaching 1.0. Worse, since the "entry" threshold is unchanged either way, this meant progress sat at exactly 0 for the first ~90% of the page's scroll distance and only started moving in the final stretch — reading as "nothing happens" even though the code was technically working. Fixed by changing the denominator to `window.innerHeight` alone, so progress reaches its ceiling as soon as the section's top meets the viewport's top (a complete "entrance," not entrance-plus-exit) — verified a clear ~56px shift in the front cloud's rendered transform between the section first entering view and the page's true scroll end, versus a barely perceptible shift before.
-- **Footer link row (Phase 5.3)** — three links at the section's bottom-left: Facebook (`https://www.facebook.com/smelcho`), Instagram (`https://www.instagram.com/smelcho.bg/`), and "Политика за поверителност". Markup is a `<nav class="waitlist-signup__footer" aria-label="Социални мрежи и правила">` holding a `<ul>`, added as a **sibling of `.waitlist-signup__inner`** (not a child of it) — this is the content the section's roomier `padding-bottom` was reserved for, so that space is now in use. `script.js` was not touched; this needed no JS.
-  - **Why it lives inside this section rather than as a page-level `<footer>` after `</main>`** — two independent reasons, both load-bearing. First, the spec had already reserved this exact space for it (see the padding item above). Second, and more concretely: the bottom-right cloud pair is anchored to *this section's* bottom edge inside a container with `overflow: hidden`, and the page's `scrollHeight` was previously verified to match that edge to 0px (see the third cloud bug below). A separate footer element beneath the section would have pushed those clouds up off the page's bottom edge and undone that fix. Re-verified after this change: trailing scroll is still within ±0.5px of 0 at every width from 320px to 1920px.
-  - **`<nav>`, not `<footer>`** — a `<footer>` nested inside a `<section>` scopes to that section in the document outline, which misstates a site-wide privacy-policy link as belonging to the signup block. A labelled `<nav>` is accurate for a small group of navigational links. Class naming follows this section's own BEM prefix rather than opening a global `.site-footer` namespace, since the row is structurally part of this section.
-  - **"Bottom left" read as the section's bottom-left CORNER, not left-aligned inside the content column** — flagged as a judgment call, see Open Decisions. `.waitlist-signup__inner` is a 480px column centred in the viewport, so left-aligning inside it would put the links ~480px from the left edge at 1440px, which reads as "under the form," not "bottom left." The request also framed this against the existing bottom-*right* cloud pair, which is a section-corner frame of reference. So the row spans the section's content box and starts at the section's own `var(--space-2)` gutter — measured at exactly 16px from the section's left edge at every width tested, i.e. the same gutter the section already uses, with no new spacing value introduced. The links' own `0.5rem` padding (which exists only to grow the tap target to 44px around a 28px icon) is cancelled by a `margin-inline-start: -0.5rem` on the list, so the *first icon's visible edge* — not its padding box — lands on that gutter.
-  - **Icons are plain `<img>`, deliberately NOT the `mask-image` tinting used by `.teaches__point-icon`** — verified against the actual assets rather than assumed. That mask pattern exists to recolour *single-colour* source glyphs to whatever contrast each tile needs. These two are multi-colour brand marks: `facebook.png` measures 264 distinct RGB values (a solid `#1877F2` disc with a white "f"), `instagram.png` measures 2,631 (a full magenta→purple→amber gradient disc). Masking either would flatten it to one flat silhouette — destroying Instagram's gradient outright — and both marks carry brand-usage rules that assume their real colours. Assets live at `assets/social/facebook.png` and `assets/social/instagram.png`, 512×512 with real alpha.
-  - **Optical size correction, measured not eyeballed**: `facebook.png`'s artwork fills its 512×512 canvas edge to edge (opaque bounding box 0,0→512,512) while `instagram.png`'s is inset 31px on every side (31,31→481,481, i.e. 450 of 512). Rendered in the same 28px CSS box the Instagram mark would sit ~12% smaller — visible side by side. Corrected with `transform: scale(calc(512 / 450))` on a `--inset` modifier: `transform` rather than a larger `width`/`height` so the **layout** box stays identical for both (keeping the flex gaps and the 44px tap targets even), and applied in CSS rather than by trimming the supplied PNG so the original asset files keep working unmodified. Verified via computed styles: both `offsetWidth` = 28px, painted widths 28px and 31.86px.
-  - **Alignment: centred at EVERY width (Phase 5.5, direct request).** This moved twice before settling: Phase 5.3 put the row at the section's bottom-left corner, Phase 5.4 centred it on tablet and mobile only, and Phase 5.5 centred desktop too — so there is now no breakpoint where it is left-aligned, and no alignment media query at all. That also retires the "is a 1024px landscape tablet a tablet or a desktop?" ambiguity the tablet/desktop split had created: with one alignment everywhere, nothing rides on the answer. The −0.5rem `margin-inline-start` that the left-aligned version used is gone rather than overridden — it existed only to cancel the links' tap-target padding and pull the first icon's *visible* edge onto the section's gutter, which has nothing left to correct once the group is centred. Verified: left and right gaps match to within 0.1px at every width from 320px to 2560px.
-  - **Mobile (≤767px) splits into two rows (Phase 5.4, direct request): the two social icons share the first row, the policy link gets its own row beneath them.** Implemented by giving the last list item `flex-basis: 100%` so it's forced onto its own line — not by a `flex-direction: column` (which would have stacked all three) and not by a hand-placed break. The list already has `flex-wrap: wrap`, so nothing else changed; the row gap (`--space-1`) separates the two lines, and the item becomes a flex box so the anchor centres within its now-full-width line. Above 767px all three sit on one line. This supersedes the Phase 5.3 note that the row stays horizontal at every breakpoint.
-  - **Cloud clearance is now UNIFORM (136px) at every width, not a breakpoint override — Phase 5.5.** The history is the argument: the clearance started mobile-only (≤767px), had to widen to ≤1023px when Phase 5.4 centred the row on tablet (centring pushed it right into the clouds at 768–1023px, a 60×37px collision *created by* the centring change), and would have needed widening a third time when Phase 5.5 centred desktop (fresh collisions at 1024–1280px). Each horizontal move of the row landed it in the clouds at a new band; re-tuning a breakpoint each time was a pattern worth stopping.
-    - Uniform also turns out not to be a compromise: the required clearance is nearly the same at both ends. Mobile's worst case is 113.6px (620–699px, where the bottom pair's vw-driven width hits its 320px clamp so their height plateaus); desktop's is ~112px (the 560px clamp at a 40% y-offset leaves ~60% of a 186px-tall cloud above the section's bottom edge). `calc(--space-6 + --space-4)` = 136px clears both with ~22px to spare. One value, no breakpoint, nothing to re-tune when the row moves again.
-    - Cost: the section is ~105px taller on a phone and ~112px taller on desktop (356.6px → 468.6px) than before the footer row existed. The extra strip isn't empty — it's the band the clouds occupy. `margin-top` still drops one step below 1024px (`--space-4` → `--space-3`) where vertical space is tightest.
-  - **Real collision found and fixed — the bottom-right cloud pair.** Swept every viewport width from 320px to 767px in 20px steps, comparing rendered link boxes against rendered cloud boxes (true rectangle intersection, not eyeballed). The links overlapped the clouds at **every width from 320px up to ~699px** — 164px of horizontal overlap at 375px, i.e. most of the privacy link sat over cloud art — and were clear from ~700px up (at 768px the nearest cloud starts 154px right of the last link, and that clearance only grows). `z-index` does not solve this even though it correctly paints the links above the clouds: the text link is white and so are the clouds, so white-on-white is strictly worse than the 1.37:1 it already has against the yellow.
-    - Fixed **vertically, without touching the clouds' size or position** — those are the result of several rounds of direct requests ("barely showing" on mobile, "at least 50% visible"), and shrinking them or shoving them right to make room would have undone that. Instead `padding-bottom` rises at ≤767px so the row sits above the clouds' top edge; the clouds are anchored to the section's bottom edge, so they don't move — only the row lifts.
-    - **A first attempt at this landed on 96px and was wrong** — it compared the links' *top* edge against the cloud top, when `padding-bottom` actually controls the links' *bottom* edge. That left a 7–18px vertical overlap between 540px and 699px, caught by re-running the sweep rather than by eye. Worth remembering the general shape of the mistake: when a fix is expressed as padding from an edge, measure the box edge that padding actually governs.
-    - Correct worst case is **113.6px** of required clearance above the section's bottom edge, occurring at 620–699px — that's where the bottom pair's `vw`-driven width hits its 320px clamp, so their height plateaus at maximum while the viewport keeps widening. `calc(var(--space-6) + var(--space-4))` = 136px clears it by 22.4px at the tightest point and by ~61px at phone widths. Composed from two existing spacing tokens rather than a new 136px literal, and applied as one uniform `@media (max-width: 767px)` rule rather than adding a third breakpoint just for the 540–699px band. `margin-top` drops one step (`--space-4` → `--space-3`) at the same breakpoint to claw back a little of the added height.
-    - **Cost, stated plainly rather than buried**: this makes the section ~105px taller on a phone than it was before the footer existed (375px: ~421.7px → 528.3px). That extra strip isn't empty — it's the band the clouds occupy — but if that height is unwanted, the lever is the clouds' mobile size, which was deliberately left alone here.
-  - **Focus states reuse the sitewide rule** — no per-component focus style was added, so all three links pick up `a:focus-visible` (3px solid `--color-zaki`, 3px offset) exactly like every other focusable element on the page. Verified by tabbing through all three at every breakpoint and reading computed styles: `solid 3px rgb(114, 85, 152)`, offset 3px, on each.
-  - **Link target convention — checked before introducing one, and there wasn't an existing one**: zero instances of `target="_blank"`, `noopener`, or `noreferrer` anywhere in `index.html`, `style.css`, or `script.js` before this change. So all three use `target="_blank" rel="noopener"` as specified, and `noreferrer` was **not** added — partly because there was no existing convention to match, and partly because for these two links specifically it would strip the referrer, so Facebook and Instagram wouldn't see the traffic as originating from smelcho.bg.
-  - **Privacy policy URL is a deliberate placeholder**: `href="PLACEHOLDER-privacy-policy"` plus `data-placeholder-href="true"` and an HTML comment. Chosen to 404 loudly rather than something real-looking (`privacy-policy.html`, `/поверителност`) that could ship unnoticed. Replace the href and drop the data attribute once the real page exists.
-  - **Text link colour is white per direct request — but see Open Decisions, this is the one item here with a real accessibility cost.** 1.37:1 against `--color-neda`, measured.
-- The `NEXT-PHASE-INSERT-POINT` marker comment has been removed — Phase 5 is an integration pass only, no new sections to insert.
+- Background `--color-neda`. Order is heading → badge → form.
+- **Heading**: white, forced to one line via `white-space: nowrap` +
+  `clamp(1.35rem, 6vw, 2.5rem)`, tuned to fit down to 375px. Verify below 340px
+  if you test a smaller device.
+- **Badge**: two pills (`.waitlist-signup__badge-line`), each holding its
+  connector text and its highlighted phrase (bold `<strong>`) inside one
+  rounded box. White background, `--color-zaki` text. Second phrase reads "за
+  първите 100", echoing the button. Centred.
+  - `.waitlist-signup__badge-wrap` is a flex container in **both** directions —
+    `column` on mobile, `row` at the row-layout breakpoint. `flex-wrap: nowrap`
+    is what guarantees one line there: the pills' combined ~500–580px exceeds
+    `.waitlist-signup__inner`'s 480px, and neither element sets `overflow`, so
+    the row is allowed to render wider than the column around it. That is
+    intended. `flex-shrink: 0` keeps the pills from being squeezed instead.
+- **Button**: `--color-zaki` background, white text. Deliberately left solid
+  purple while the badge pills are white, so it still reads as the call to
+  action; settled, not pending.
+- **Input**: solid white background, `--color-zaki` text, plus `min-width:
+  190px` at the row-layout breakpoint. CSS cannot size an element as a
+  percentage of a *sibling*, so this is a px value calibrated against the
+  button's measured ~273px (≈70%). Re-measure if the button's label changes.
+  Not applied below that breakpoint, where the input already stacks at 100%.
+  - Two interactive-state rules that must not be removed:
+    1. This section's `:focus` rule pins `background: var(--color-surface-white)`.
+       Without it the sitewide `:focus` rule (translucent, tuned for the hero's
+       dark blue) makes the input visibly shift from solid to translucent.
+    2. A combined `.is-invalid:focus` selector. `script.js` calls
+       `input.focus()` immediately after adding `.is-invalid` on a failed
+       submit, so both are active at once; they tie at equal specificity and
+       `:focus` sits later in the file, so the error border silently lost to
+       the focus border exactly when it was needed.
+- `.success-message--on-light` (dark text, `--color-vesta` icon) — the default
+  success state assumes a dark section and is unreadable on yellow.
+- `.success-message[hidden] { display: none; }` is required: the element's own
+  `display: flex` outranks the browser's built-in `[hidden]` rule, so without
+  it the hidden success message reserves its full height. Affects the hero form
+  too.
+- `.waitlist-form`'s own `margin-top` is zeroed here — it is meant for the
+  hero's non-gap layout and otherwise stacks on top of this section's flex
+  `gap`.
+- Padding: `var(--space-4) var(--space-2) var(--space-3)` (40px top, 24px
+  bottom). **The bottom is small because the footer row now supplies that
+  height — this space is occupied, not spare.** The bottom-right cloud pair is
+  anchored to this section's bottom edge, so a large height change moves it.
+
+**Clouds**
+
+- Two overlapping pairs reusing the hero's four PNGs: `--wl-1`/`--wl-2`
+  top-left, `--wl-3`/`--wl-4` bottom-right, each pair with a different
+  `--cloud-distance` so the layers drift at different rates.
+- Parallax runs through `initWaitlistClouds()`, **separate from**
+  `initHeroClouds()`: the hero is always page-top (`window.scrollY /
+  heroHeight`), while this section's progress comes from
+  `getBoundingClientRect()`. The denominator is `window.innerHeight` alone, not
+  `innerHeight + sectionHeight` — this is always the last section on the page,
+  so an entrance-plus-exit model can never complete and progress would cap at
+  roughly `1 − sectionHeight/viewportHeight`.
+- **`.waitlist-signup__clouds--top` and `--bottom` are two separate containers
+  with the same `inset: 0` but opposite `overflow`.** The top pair is unclipped
+  so it bleeds up over the FAQ. The bottom pair must stay clipped: unclipped,
+  it stretched the page's real scrollable height into blank space past the last
+  section. Trailing scroll is verified at 0px.
+- `html` needs `overflow-x: hidden` as well as `body` — `html` is the real
+  scrolling root once `body` has its own overflow, and it became load-bearing
+  once the unclipped section stopped catching the wide cloud content.
+- Vertical placement comes from `--cloud-y-offset`, not `top`/`bottom` (those
+  are anchor points only). **The top-left pair uses `calc(-100% + Npx)`**, a
+  fixed-pixel sliver, because it must clear the heading *inside* this section
+  and that clearance is a fixed pixel budget (the section's own `padding-top`),
+  not a proportion. **The bottom-right pair uses a plain percentage** (40%
+  offset, ~60% visible) because the requirement there is "at least 50% visible", a
+  proportion that must hold at any resolved size.
+- **Mobile top-left sliver is 26px/30px** — a two-sided constraint, hence the
+  exact values. Pulling the clouds up to clear the heading pushes them further
+  into the FAQ; at 736–767px a 20px sliver left only 7.5px above the last FAQ
+  question's text. The heading's top edge sits a constant 40px below the
+  section's top (that's `padding-top`, so it doesn't move with width), leaving
+  14px/10px below it, with FAQ-side clearance back to 13.5–36px.
+  - Measured against the question's **text ink** via a `Range` over the text
+    node. The `.faq__item` box carries 17px of padding below its text, so a
+    box-level check reports a collision when nothing visible is touching.
+- Bottom-right pair is larger and more visible on mobile (~78–82%, up from the
+  base 60–65%) — the base proportion read as thin against the empty yellow
+  below the button on a tall phone.
+- `@media (max-height: 500px)` pulls the bottom-right pair back to ~25–28% so
+  it can't crowd the form in phone landscape or a shallow window. It sits later
+  in the file at the same specificity as the mobile rule, so it wins when both
+  apply.
+- `--wl-1`'s max width is `360px`, not 460px: at 460 its resolved height
+  (~204px) overran the FAQ's bottom padding and crossed the FAQ text column at
+  tablet widths.
+- Sharpness depends on the source PNGs' native resolution — these are
+  `background-size: contain` boxes, so a low-res source visibly softens when
+  upscaled. Rule of thumb: ~920px native for a sharp ~460px render at 2×.
+
+**Footer link row**
+
+Three links at the section's bottom: Facebook
+(`https://www.facebook.com/smelcho`), Instagram
+(`https://www.instagram.com/smelcho.bg/`), and "Политика за поверителност".
+Markup is `<nav class="waitlist-signup__footer" aria-label="Социални мрежи и
+правила">` holding a `<ul>`, added as a **sibling of
+`.waitlist-signup__inner`**, not a child.
+
+- **It lives inside this section, not as a page-level `<footer>` after
+  `</main>`.** The bottom-right cloud pair is anchored to this section's bottom
+  edge inside an `overflow: hidden` container, and the page's `scrollHeight`
+  matches that edge to 0px. A separate footer beneath the section would push
+  those clouds off the page's bottom edge and undo that.
+- **`<nav>`, not `<footer>`**: a `<footer>` nested in a `<section>` scopes to
+  that section in the document outline, which misstates a site-wide privacy
+  link. Class naming follows this section's BEM prefix rather than opening a
+  global `.site-footer` namespace.
+- **Centred at every width**, with no alignment media query.
+  `margin-inline-start` is `0`: the −0.5rem the left-aligned version used
+  existed only to cancel the links' tap-target padding, and once centred it
+  just shifts the row 8px off-centre. Left and right gaps match within 0.1px
+  from 320px to 2560px.
+- **Mobile (≤767px) splits into two rows**: the two social icons share the
+  first, the policy link takes its own, via `flex-basis: 100%` on the last item
+  — not `flex-direction: column`, which would stack all three. The list already
+  has `flex-wrap: wrap`; the row gap separates the lines. `flex-wrap` is
+  otherwise a safety valve, not the layout — all three fit on one line down to
+  375px.
+- **Cloud clearance is uniform (136px) at every width**, set on
+  `.waitlist-signup`'s `padding-bottom`, not as a breakpoint override. Worst
+  case is 113.6px on mobile (620–699px, where the bottom pair's vw-driven width
+  hits its 320px clamp and their height plateaus) and ~112px on desktop (the
+  560px clamp at a 40% y-offset leaves ~60% of a 186px-tall cloud above the
+  bottom edge). `calc(var(--space-6) + var(--space-4))` = 136px clears both with ~22px to
+  spare, composed from existing tokens rather than a new literal. **Do not
+  convert this back to a breakpoint override** — the row's horizontal position
+  moved three times and each move landed it in the clouds at a new band.
+  `margin-top` still drops one step below 1024px.
+  - Cost: the section is ~105px taller on a phone and ~112px on desktop than
+    before the footer row existed. That strip is the band the clouds occupy,
+    not empty space. If it ever needs to come down, the lever is the clouds'
+    mobile size, not the clearance.
+  - `z-index` does not solve the collision this fixes: the text link is white
+    and so are the clouds, so white-on-white is worse than the 1.37:1 it
+    already has against the yellow.
+- **Icons are plain `<img>`, deliberately NOT the `mask-image` tinting used by
+  `.teaches__point-icon`.** That pattern recolours *single-colour* glyphs.
+  These are multi-colour brand marks — `facebook.png` measures 264 distinct RGB
+  values, `instagram.png` 2,631 (a full gradient) — and masking would flatten
+  either to one silhouette, destroying Instagram's gradient. Both marks also
+  carry brand-usage rules assuming their real colours. Assets are 512×512 with
+  real alpha at `assets/social/`.
+- **Optical size correction**: `facebook.png` fills its 512×512 canvas edge to
+  edge; `instagram.png` is inset 31px per side (450 of 512), so in the same
+  28px box it would render ~12% smaller. Corrected with `transform:
+  scale(calc(512 / 450))` on an `--inset` modifier — `transform` rather than a
+  larger `width`/`height` so the **layout** box stays identical and the flex
+  gaps and 44px tap targets stay even.
+- Icon hit area is 28px icon + 8px padding per side = 44px.
+- **Focus states reuse the sitewide `a:focus-visible`** (3px `--color-zaki`,
+  3px offset). No per-component focus style was added.
+- All three links use `target="_blank" rel="noopener"`. `noreferrer` was
+  deliberately **not** added — it would strip the referrer, so Facebook and
+  Instagram wouldn't see traffic as originating from smelcho.bg.
+- Privacy policy URL is a deliberate placeholder:
+  `href="PLACEHOLDER-privacy-policy"` plus `data-placeholder-href="true"`,
+  chosen to 404 loudly rather than something real-looking that could ship
+  unnoticed.
+- Text link colour is white — 1.37:1 against `--color-neda`. An accepted risk,
+  decided; see Open Decisions.
 
 ### Design System
 
-- **Typography — Dela Gothic One (display/headings) + Nunito Sans (body/UI).** Not in the original brief; chosen after a dedicated typography pass (see below), replacing the initial Baloo 2 choice.
-  - **Fonts are self-hosted** from `/assets/fonts` via `@font-face` in `style.css`, not loaded from Google Fonts' CDN. Deliberate choice, not a default: this is an EU/Bulgaria-facing site collecting emails, and loading `fonts.gstatic.com` directly sends every visitor's IP to Google before any consent — the exact pattern a 2022 Munich court ruling found to violate GDPR. Self-hosting sidesteps it entirely and drops two DNS/TLS round-trips as a bonus. `index.html`'s `<head>` still has the (now-unused) `preconnect` tags for Google Fonts — harmless, safe to delete later.
-  - **Baloo 2 was dropped for a real reason, not just taste**: verified directly (pulled the actual font package, not just its Google Fonts description page) that Baloo 2 ships zero Cyrillic glyphs — only Devanagari, Latin, Latin Extended, and Vietnamese. Every Bulgarian heading was silently falling back to the browser's system font this whole time. Lesson applied going forward: check actual subset/glyph coverage in the font files themselves before adopting any typeface for this project, not just a description page — a font can be "on Google Fonts" and still not cover the language you need.
-  - **Dela Gothic One has exactly one real weight (400, static, not variable).** Every heading/display-font rule in `style.css` is pinned to `font-weight: 400` for this reason — requesting 700/800/900 against a single-weight face makes the browser synthetic-bold it, which looks blobby on an already-heavy display font. If you ever want a lighter or heavier display option later, that requires a different typeface, not a different weight of this one.
-  - **One deviation from a literal 1:1 swap, flagged for your review**: the Testimonials quote sentence itself (`.testimonials__quote p`) is set in Nunito Sans (weight 600), not Dela Gothic One, even though it's inside an otherwise Dela-Gothic-One-only section. Reasoning: Dela Gothic One is a poster/headline face meant for a few words at a time; a full sentence set in it at `--font-size-h2` read as shouty rather than warm when tested. The giant opening/closing quotation-mark glyphs around it stayed in Dela Gothic One (400) since those are just 1–2 characters, which is exactly what the face is good at. Happy to revert this specific choice if you'd rather the whole quote block match.
-  - Body text default weight is now 300 (light), per your original "thick childlike titles / light non-serif paragraphs" direction — explicit `font-weight` overrides (buttons, labels, citations) are unaffected since they set their own weight already.
-  - **Cyrillic-quality caveat, for the record**: a specialist Cyrillic type-review source (type.today) flags Dela Gothic One's Cyrillic extension as technically complete but lower design quality than its Latin set — likely subtle stroke/proportion inconsistencies a trained eye would catch. Nothing looked broken in our own rendered tests (see the headline/pairing screenshots from this pass), so treating this as a "know before you scale up" note rather than a blocker.
-- Brand colors: Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста `#278C5D`, Мишо `#E5E1D6`, Buddy/joker `#2FB6B0` (turquoise, new — not one of the original 5 Bravies). Deep-toned icon-only variants: burnt orange `#A8501A`, deep red `#7A2020`, deep teal `#0E4749` (used for colorful icon glyphs where plain white/dark wouldn't do). Мишо's full character palette (for accenting content near her beige without clashing): `--color-misho-accent` sky blue `#4FA6E0` (cap/backpack), `--color-misho-trim` brown `#8B5E3C` (shoes/trim, currently used for How It Works' step titles), `--color-misho-hair` sandy blonde `#D4B483` (not yet used anywhere).
-  - **`--color-yellow-light` (`#FEEBA4`), added Phase 4.5**: a lighter yellow for inline TEXT highlights, distinct from `--color-neda` on purpose — same hue/saturation as Neda's yellow, just raised lightness (61% → 82%), so it reads as "a softer version of that yellow" rather than an unrelated new color, while staying visually distinct enough that it doesn't read as "another button" when it shows up as text (currently used for the two highlighted words in the hero's new tagline — see Hero Section above). Contrast against the hero background: **4.58:1 as of Phase 5.7** (was 3.40:1 against the old `#5080BF`), so it now clears AA for normal text, not just the 3:1 large/bold threshold. Verified against the actual rendered screenshot (pixel-sampled, not just hex comparison) that this renders visually distinct from the CTA button's `--color-neda` fill.
-- Section backgrounds, in the spec's alternation order: Hero `#436BA0` → Bravies white → Problem `#725598` (Заки purple) → What It Teaches white → How It Works `#E5E1D6` (Мишо beige) → Testimonials white (`#F8FAFC`) → Desired State `#F68044` (Вихрен orange, **proposed, not locked** — the only warm brand color not yet used as a full section background; flagging for confirmation) → FAQ white (`#F8FAFC`) → Wait-list Signup `#FDD43B` (Неда yellow, **now set** — see FAQ/Wait-list Signup sections above for the button-contrast follow-on this required).
-- Responsiveness: mobile (375px), tablet (768px portrait + landscape), desktop (1440px). Portrait vs. landscape tablet is distinguished via `orientation` media queries where the layout actually differs (Bravies section).
+- **Typography — Dela Gothic One (display/headings) + Nunito Sans (body/UI).**
+  - **Fonts are self-hosted** from `/assets/fonts` via `@font-face`, not from
+    Google's CDN: this is an EU-facing site collecting emails, and loading
+    `fonts.gstatic.com` sends every visitor's IP to Google before consent — the
+    pattern a 2022 Munich ruling found to violate GDPR. Do not add `preconnect`
+    tags for Google Fonts back.
+  - **Dela Gothic One has exactly one real weight (400, static).** Every
+    display-font rule is pinned to `font-weight: 400` — requesting 700/800/900
+    against a single-weight face makes the browser synthetic-bold it, which
+    looks blobby. A lighter or heavier display option needs a different
+    typeface, not a different weight.
+  - **Check actual glyph coverage before adopting any typeface here.** Baloo 2
+    was dropped because it ships zero Cyrillic glyphs, so every Bulgarian
+    heading was silently falling back to a system font. Being "on Google Fonts"
+    doesn't mean it covers the language.
+  - The Testimonials quote sentence is Nunito Sans 600, not Dela Gothic One — a
+    full sentence in a single-weight poster face at h2 size reads as shouty.
+    The flanking quotation-mark glyphs stay in Dela Gothic One.
+  - Body text default weight is 300; buttons, labels and citations set their
+    own.
+  - *Caveat: type.today flags Dela Gothic One's Cyrillic extension as
+    technically complete but lower design quality than its Latin set. Nothing
+    looked wrong in rendered tests — a "know before you scale up" note.*
+- Brand colours: Заки `#725598`, Вихрен `#F68044`, Неда `#FDD43B`, Веста
+  `#278C5D`, Мишо `#E5E1D6`, Buddy/joker `#2FB6B0`. Deep-toned icon-only
+  variants: burnt orange `#A8501A`, deep red `#7A2020`, deep teal `#0E4749`.
+  Мишо's full palette: `--color-misho-accent` `#4FA6E0`, `--color-misho-trim`
+  `#8B5E3C`, `--color-misho-hair` `#D4B483` (unused).
+  - **`--color-yellow-light` (`#FEEBA4`)** — for inline TEXT highlights,
+    deliberately distinct from `--color-neda`, which is a button fill; one
+    value in both roles makes the highlight read as another button. 4.58:1
+    against `--color-hero-bg`.
+- Section backgrounds in order: Hero `#436BA0` → Bravies white → Problem
+  `#725598` → What It Teaches white → How It Works `#E5E1D6` → Testimonials
+  white → Desired State `#278C5D` → FAQ white → Wait-list Signup `#FDD43B`.
+- Responsiveness: mobile (375px), tablet (768px portrait + landscape), desktop
+  (1440px). Portrait vs landscape tablet is distinguished via `orientation`
+  media queries only where the layout actually differs (Bravies).
 
 ## 4. Functional Requirements (JS)
 
-- Validate email format before submission; show an inline error message if invalid (see error message styling above).
-- On valid client-side format, submit to MailerLite (see "Real submission — Phase 5.1" below). On a real success response, hide the form, fade in "Благодарим Ви! Вече сте записани. Ще се свържем с Вас за първия тираж!" On a server-side rejection or a network/timeout failure, the form stays visible and the inline error message shows a generic Bulgarian retry message instead — the person's typed email isn't lost.
-- Validation and submission apply identically to both waitlist forms (hero + bottom signup) via the shared `[data-waitlist-form]` pattern and the shared `mailerliteSubscribe()` helper.
-- **Real submission — Phase 5.1**: `mailerliteSubscribe(email)` in `script.js` sends the email to MailerLite via hand-rolled JSONP (not MailerLite's bundled `webforms.min.js`) — a `<script>` tag injected pointing at `https://assets.mailerlite.com/jsonp/2598792/forms/196895404753684115/subscribe?callback=...&fields[email]=...&ml-submit=1&anticsrf=true`, with a uniquely-named temporary global callback per call and an 8s timeout fallback in case the callback never fires.
-  - **Why hand-rolled instead of MailerLite's own script — investigated, not assumed**: fetched and read the actual `webforms.min.js` source before deciding. It only binds to forms matching the selector `.ml-subscribe-form form, .ml-contact-form form, .ml-preferences-form form`, and once bound, depends on finding its own `.ml-block-success`/`.ml-block-form` pair and `data-id`/`data-code` attributes *inside that specific wrapper* — none of which key off the form's `action` URL, field names, or the two documented hidden fields. This project's forms are custom-styled and don't use MailerLite's wrapper markup at all, so the bundled script would simply never bind to them — including it would be dead weight, not a working integration. The hand-rolled JSONP request shape mirrors exactly what that script sends internally (`dataType: "jsonp"`, same `ml-submit`/`anticsrf` params), so this is the same request, just triggered directly.
-  - **Per-request callback naming, not MailerLite's own `ml_webform_success_{id}` convention**: that convention bakes in one numeric form ID per page, which assumes a single embed. This page has two independent forms (hero + bottom) posting to the same list; a fixed/shared callback name risked one submission's response resolving (or clobbering) the other's in-flight promise. Each call generates its own callback name (`mlWaitlistCallback_{timestamp}_{counter}`), so this is a non-issue once hand-rolled — not something that needed a workaround.
-  - **The unconditional `.../takel` tracking-beacon request** seen in MailerLite's own embed snippet (fired on page load, appears to be a form-impression counter) is **deliberately not replicated** — see Open Decisions.
-  - **Double opt-in**: confirmed as already enabled on MailerLite's side (dashboard/group setting) for GDPR consent-evidence reasons. Nothing in this HTML/JS integration implements or touches it — the confirmation-email flow is entirely MailerLite's.
-  - **What's actually verified vs. not**: client-side validation, loading state, and the success-message swap (now firing off a real callback invocation rather than the old fake `setTimeout`) were verified via Playwright against a local HTTP server, with the MailerLite request intercepted and mocked (`page.route`) to return success/field-error/network-failure responses — the real `assets.mailerlite.com` endpoint isn't reachable from this environment's network allowlist. This confirms the integration is *wired correctly*, not that a real subscriber has landed in the MailerLite dashboard — that end-to-end proof can only happen after deployment, against the live site.
-  - **Real bug found via live testing, fixed**: the first deployed version omitted two params MailerLite's own `webforms.min.js` always sends alongside the documented fields — `ajax=1` and a per-browser `guid` (a random ID, generated once via the same algorithm as their script and cached in `localStorage['ml_guid']`, matching their own client's behavior so repeat visits reuse it). Symptom, diagnosed live via the browser's Network tab: the subscribe request returned 200 in ~160ms with an **empty body** — no `callback(...)` invocation for our JSONP promise to resolve against, so it always hit its own 8s timeout and showed the generic retry error — while the subscriber was still being created server-side (confirmed present in the MailerLite dashboard despite the client-side "failure"). Read as: without `ajax=1`, the endpoint falls back to a legacy plain-form-submit path that expects a real page redirect rather than a JSONP-wrapped response, so it had nothing to hand back to a `<script>` tag. Fixed by adding both params so the request matches their own script's shape exactly, not just the documented field list. Ruled out first, via live DevTools inspection before making this change: an ad blocker (same behavior in Incognito) and a slow response (160ms, nowhere near the 8s timeout).
-  - **Second real bug, found when the `ajax`/`guid` fix alone didn't resolve it (still empty response, both locally and live)**: re-fetching `webforms.min.js` a second time — reading the *complete* unminified source this time rather than the fragment initially pulled — showed the actual `$.ajax()` call uses `jsonpCallback: "mlWebformSubmitted"`, a fixed, hardcoded literal string used by every real MailerLite embed, not a per-request generated name. Our original implementation generated a fresh random callback name per submission (documented at the time as intentional, to avoid two forms colliding on one shared name) — reasonable for textbook JSONP, but not what this specific backend was actually built and tested against. Switched `MAILERLITE_JSONP_CALLBACK` to the same fixed `'mlWebformSubmitted'` string. This reintroduces the shared-callback-name concern the original (wrong) design was trying to avoid, so `mailerliteSubscribe()` now serializes calls through a small promise queue (`mlSubscribeQueue`) — a near-simultaneous hero+bottom submission waits for the first to fully settle before the second's request goes out, rather than both racing to define/overwrite the one shared global callback. Verified via Playwright that two overlapping submissions both resolve to their own correct success state under this queueing. Real subscriber creation with a real, correctly-parsed JSONP response (not an empty body) is the next thing to confirm live.
-  - **Third real bug, found after the fixed-callback fix also produced identical empty-response behavior**: `assets.mailerlite.com` is a CDN domain — once the callback name became a fixed literal (previous bullet), a repeat submission with the same email + the same persisted `guid` produced an *identical URL* to a prior attempt, which browsers are free to serve from their HTTP cache instead of re-requesting. Diagnosed live: an early empty-body response had gotten cached, and every identical retest after that was silently served that stale cached copy rather than reaching MailerLite at all — which is also why the two earlier request-shape fixes appeared to change nothing (the browser wasn't even sending the new requests to compare). Disabling browser extensions "fixed" it only as a side effect of Chrome reloading the tab and bypassing the cache, not because any extension was actually interfering — re-enabling everything afterward kept working because the correct response was now cached instead of the stale empty one. Fixed properly by adding a `_={timestamp}{random}` cache-busting param to every request, guaranteeing a unique URL — and therefore an actual network round trip — on every single submission regardless of email/guid reuse. Verified via Playwright that two submissions with the same test email now produce two distinct request URLs.
+- Validate email format before submission; show an inline error if invalid.
+- On valid format, submit to MailerLite. On success, hide the form and fade in
+  the success message. On server rejection or network/timeout failure, the form
+  stays visible and shows a generic Bulgarian retry message — **the typed email
+  is not lost**.
+- Both forms share the `[data-waitlist-form]` pattern and the same
+  `mailerliteSubscribe()` helper.
+- **Submission is hand-rolled JSONP**, not MailerLite's `webforms.min.js`: that
+  script only binds to `.ml-subscribe-form form` (and siblings) and depends on
+  its own `.ml-block-success`/`.ml-block-form` wrapper markup, none of which
+  this project uses, so it would never bind. The request shape mirrors what
+  that script sends internally.
+- Request URL:
+  `https://assets.mailerlite.com/jsonp/2598792/forms/196895404753684115/subscribe`
+  with `callback`, `fields[email]`, `ml-submit=1`, `anticsrf=true`, plus an 8s
+  timeout fallback. Three parameters are load-bearing and were each found the
+  hard way:
+  - **`ajax=1`** — without it the endpoint falls back to a legacy plain-form
+    path expecting a page redirect, and returns 200 with an **empty body**, so
+    the JSONP promise never resolves. The subscriber is still created
+    server-side, so this fails silently in the worst way.
+  - **`guid`** — a per-browser random ID cached in `localStorage['ml_guid']`,
+    matching MailerLite's own client so repeat visits reuse it.
+  - **`_={timestamp}{random}` cache-buster** — `assets.mailerlite.com` is a CDN
+    domain, and with a fixed callback name a repeat submission of the same
+    email produces an identical URL that the browser may serve from cache,
+    never reaching MailerLite at all.
+- **The JSONP callback name must be the fixed literal `mlWebformSubmitted`** —
+  that string is hardcoded in MailerLite's own `$.ajax({ jsonpCallback: ... })`
+  and is what the backend was built against. A per-request generated name is
+  textbook JSONP but produces an empty response here. Because that name is
+  shared, `mailerliteSubscribe()` serialises calls through a promise queue
+  (`mlSubscribeQueue`), so a near-simultaneous hero+bottom submission can't
+  race to overwrite the one global callback.
+- **The unconditional `.../takel` tracking beacon** in MailerLite's own embed
+  is deliberately not replicated — see Open Decisions.
+- **Double opt-in** is enabled on MailerLite's side; nothing in this
+  HTML/JS touches it.
 
 ## 5. Constraints
 
 - All CSS in `style.css`; all JS in `script.js`.
+- No third-party network requests on page load.
 
-## SEO / AEO (Phase 5.6)
+## SEO / AEO
 
-Added as foundations only. Everything in this phase is mechanical — nothing here changed visible copy, layout, or design. Verified after the fact that no layout regression was introduced at 320/375/768/1024/1280/1440/1920px, and that the page still makes **zero** third-party network requests.
-
-- **`<link rel="canonical">` → `https://smelcho.bg/`.** Matters more than usual: the site is reachable at the apex domain, the `www` subdomain, with and without a trailing slash, *and* at its GitHub Pages `*.github.io` address. That last one is the real risk — it can be indexed independently and split ranking signals between two copies of the page.
-- **Open Graph + Twitter Card tags.** The most consequential item in this phase given the go-to-market: distribution is Bulgarian parent Facebook groups, an Instagram bio link, and parents forwarding to each other on Viber. Without these, every share renders as a bare grey link with whatever Facebook scrapes on its own. `og:locale` is `bg_BG` (the full `language_TERRITORY` form — Facebook silently ignores a bare `bg`).
-- **`theme-color` → `#FDD43B`**, the `--color-neda` brand yellow. A literal, since `<meta>` can't read a CSS custom property — if that token changes, this needs changing with it.
-- **Font preloads for exactly two faces**, chosen by measuring computed styles rather than guessing: Dela Gothic One 400 (the `h1` and the CTA button) and Nunito Sans 600 (the hero subtitle and tagline). The other four Nunito weights are deliberately **not** preloaded — preloading faces that aren't needed immediately competes with the ones that are and makes LCP worse, which is the standard way this optimisation backfires. `crossorigin` is required on font preloads even same-origin, or the file is fetched twice.
-- **The two dead `preconnect` tags to `fonts.googleapis.com` / `fonts.gstatic.com` are removed.** They were leftovers from before self-hosting, already flagged in a code comment as safe to delete. They opened connections to Google for no benefit, which quietly undercut the GDPR reasoning that motivated self-hosting in the first place. Confirmed by request interception: the page now makes no external requests at all.
-- **`robots.txt`** (new file) — allows everything, points to the sitemap. **AI/answer-engine crawlers are deliberately NOT blocked**, and that's recorded in the file itself as a choice rather than an oversight: the entire point of the AEO work is to be the cited source when a Bulgarian parent asks an assistant about teaching children to handle strangers, and blocking GPTBot/ClaudeBot/PerplexityBot/Google-Extended would opt the page out of exactly that surface.
-- **`sitemap.xml`** (new file) — one URL. No `changefreq` or `priority`, which crawlers largely ignore. Add the privacy policy page here when it ships.
-- **Real assets as of Phase 5.7** — both placeholder sets are gone; nothing in the `<head>` carries a `PLACEHOLDER-` path any more.
-  - `assets/og/og-image-1200x630.png` — supplied, measured 1200×630. Referenced by both `og:image` and `twitter:image`.
-  - `assets/icons/favicon-32.png`, `favicon-192.png`, `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source tile: the „С“ isolated by flood-filling the outer white away from the canvas borders, rebuilt on `--color-neda` `#FDD43B` (**not** the source file's `#FFD21F`), scaled 135%, optically centred, exported **opaque** — iOS composites any alpha onto black. Source tile bbox measured at x 255–633 / y 204–696 before cropping rather than trusted. The glyph is 241×317 in that tile (64.3% of its height); at 135% it lands at 86.8% of the square canvas height, 66.0% of its width, i.e. 6.6% of vertical margin per side — fine in a tab, slightly tight under iOS's squircle mask. 120–125% is the lever if that wants more air.
-  - **The SVG icon entry was dropped, not repointed.** The source is brush artwork; a trace would be heavier than the 1 KB 32px PNG and gain nothing.
-  - `favicon-192.png` / `favicon-512.png` are wired as plain `rel="icon"` entries. A web app manifest is the more standard home for those two — worth adding if a manifest ever lands, but not worth adding a manifest for.
+- **`<link rel="canonical">` → `https://smelcho.bg/`.** The site is reachable
+  at the apex domain, `www`, with and without a trailing slash, *and* at its
+  GitHub Pages `*.github.io` address — that last one can be indexed
+  independently and split ranking signals.
+- **Open Graph + Twitter Card tags.** Distribution is Bulgarian parent Facebook
+  groups, an Instagram bio link and Viber forwards, so these decide how every
+  share renders. `og:locale` is `bg_BG` — Facebook silently ignores a bare
+  `bg`. `og:image` / `twitter:image` point at the real 1200×630
+  `assets/og/og-image-1200x630.png`.
+- **`theme-color` → `#FDD43B`**, a literal because `<meta>` can't read a CSS
+  custom property. If `--color-neda` changes, change this with it.
+- **Font preloads for exactly two faces**: Dela Gothic One 400 and Nunito Sans
+  600, chosen by measuring computed styles. The other four Nunito weights are
+  deliberately not preloaded — preloading faces not needed immediately competes
+  with the ones that are and makes LCP worse. `crossorigin` is required even
+  same-origin, or the file is fetched twice.
+- **`robots.txt`** allows everything and points at the sitemap. **AI and
+  answer-engine crawlers are deliberately not blocked**, recorded in the file
+  itself as a choice: the point of the AEO work is to be the cited source when
+  a Bulgarian parent asks an assistant about teaching children to handle
+  strangers.
+- **`sitemap.xml`** — one URL. Add the privacy policy page when it ships.
+- **Favicons** at `assets/icons/`: `favicon-32.png`, `favicon-192.png`,
+  `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source
+  tile — the „С“ isolated by flood-filling the outer white away, rebuilt on
+  `--color-neda` `#FDD43B` (**not** the source's `#FFD21F`), scaled 135%,
+  optically centred. **All exports are opaque**: iOS composites alpha onto
+  black. The glyph occupies 86.8% of canvas height, i.e. 6.6% margin per side —
+  fine in a tab, slightly tight under iOS's squircle mask; 120–125% is the
+  lever if that wants more air. No SVG entry: the source is brush artwork.
+  192/512 are wired as plain `rel="icon"`; a web app manifest is their more
+  standard home if one ever lands.
 
 ### Structured data (JSON-LD)
 
-Three separate blocks rather than one `@graph` — easier to edit or delete independently, equally valid to parsers.
+Three separate blocks rather than one `@graph`, so each can be edited or
+deleted independently.
 
-- **`FAQPage`** — generated from the seven Q&A pairs already written in the FAQs section, extracted **verbatim** from the rendered DOM rather than rewritten. Verified programmatically that all seven questions and all seven answers match the visible copy character-for-character after whitespace normalisation. **This is the maintenance hazard in this phase**: the markup and the visible copy can drift, and Google treats a mismatch as a structured-data violation rather than a formatting nit. If a FAQ answer changes in `index.html`, this block must be updated to match.
-- **`WebSite`** and **`Organization`** — `Organization` carries `sameAs` for the Facebook and Instagram profiles, which is the standard entity-reconciliation signal.
-- Rationale for doing this at all: the queries that matter here aren't brand queries (nobody searches "Смелчовци в беда" yet), they're parent questions like *как да науча детето си да не тръгва с непознати*. Those are answered by AI assistants and AI Overviews, and structured data is the mechanism for being cited rather than uncited.
+- **`FAQPage`** — extracted **verbatim** from the seven visible Q&A pairs. See
+  the FAQ section above for the drift hazard this creates.
+- **`WebSite`** and **`Organization`** — `Organization` carries `sameAs` for
+  the Facebook and Instagram profiles.
 
 ## Open Decisions
 
-- **New, Phase 5.7**: image weight is 2.4 MB across 8 images against a <500 KB target. Into the illustrator brief: WebP, and uniform dimensions per set (one size for all portraits, one for all cards).
-- **New, Phase 5.7**: card colours are not tokenised — three different blues are in play (`#436BA0` hero, `#095ACB`, `#4FA6E0` `--color-misho-accent`). Pick one as the brand blue and tokenise it.
-- **New, Phase 5.7**: make **"(не)познати" explicit in the FAQ**. That the game covers *known* adults — neighbours, instructors, family friends — is the actual differentiator against Diveyko, and it currently lives only inside a parenthetical nobody will unpack.
-- **New, Phase 5.7, deferred**: Desired State's position in the page order. Do not move it again on argument — measure scroll depth in PostHog first.
-- **New, Phase 5.7**: check the cloud source PNGs' native resolution. Above ~1100px wide is fine at the current render size; below ~500px, re-export.
-- **New, Phase 5.7, recorded rather than fixed**: `.waitlist-signup__heading` is white on `--color-neda` at **1.37:1** — the same ratio as the footer link below it. Not changing it. Logged so it's known that the Phase 5.5 footer-centring work did **not** make this section accessible; it only moved the row off the clouds.
-
-- **New, Phase 5.3, real accessibility cost, implemented as asked rather than silently substituted**: the footer's "Политика за поверителност" link is white (`--color-surface-white`) per direct request, matching this section's H2 treatment. Contrast against `--color-neda` measures **1.37:1** — below every WCAG threshold, including the 3:1 one that applies to non-text. It is materially worse here than on the H2, which at least carries that ratio at up to 40px of heavy Dela Gothic One; this is 0.875rem body type at the bottom of the page. Two one-line swaps available: `--color-zaki` gives 4.23:1, `--color-text-dark` gives 10.81:1. Flagging rather than overriding the instruction, but this is the item on this list most worth acting on.
-- **New, Phase 5.3, small addition beyond the literal request**: that same link is underlined (`text-decoration: underline; text-underline-offset: 3px`). The request said "plain white text," which the underline arguably exceeds — added because it's the only bare-text link on the page (both `.cta-button`s are filled pills carrying their own affordance) and, at 1.37:1, there is no colour cue left to signal that it's clickable. One line to remove if unwanted. Note the site's only other anchor (`.cta-button`) uses `text-decoration: none`, so this does introduce a second link treatment.
-- **New, Phase 5.3, judgment call flagged rather than guessed at silently**: "bottom left" was read as the section's bottom-left **corner** (row spans the section, starting at its own 16px gutter) rather than "left-aligned within the 480px content column." Reasoning is in the Wait-list Signup Section above — briefly, the column reading would place the links ~480px from the left edge at desktop, which reads as "under the form" rather than "bottom left," and the request framed this against the bottom-*right* cloud pair, a section-corner reference. If the narrower reading was meant, it's a small change (move the `<nav>` inside `.waitlist-signup__inner` and drop the negative `margin-inline-start`), but it's a visibly different result, so confirm before assuming.
-- **Decided, not implemented (confirmed Phase 5.7) — waiting on a price**: `Product` + `Offer` schema. An `Offer` without a price won't validate, and guessing a number on a pre-launch product would be worse than omitting the block. Once price and launch timing are set, this is what makes the page eligible to appear as a purchasable product rather than an article. Add `availability: PreOrder` alongside it.
-- **Decided, not implemented (Phase 5.7) — after playtests.** `Person` / author-credential schema, plus a visible "who made this" block. **The schema alone is not valid without the visible on-page content** — markup asserting authorship the page doesn't show is a structured-data violation, so these two ship together or not at all. This is the **strongest available E-E-A-T lever** and the page currently makes no claim at all about who built it or why they're credible — which matters disproportionately for a child-safety product, since it sits close to YMYL territory and assistants weight author credibility heavily when choosing what to cite. It's a content and privacy decision (how much to disclose about a solo creator) before it's a markup one.
-- **New, Phase 5.6, deliberately NOT changed — copy decisions**: the `<title>` (currently `Смелчовци в беда — Записване в списъка на чакащите`, 50 chars), the meta description, and the `h1` (currently the bare brand name). The title spends both halves of its ~60 usable characters on zero-volume terms — an unknown brand and "записване в списъка на чакащите", which nobody types. A `[what it is] + [who for] + [brand]` pattern including the 5–9 age range would serve better, but the exact wording is a copy call and depends on real Bulgarian keyword data that hasn't been gathered.
-- **New, Phase 5.6, deliberately NOT changed — genuine a11y/SEO tension**: the three `how-it-works` card images carry `alt=""` **and** `aria-hidden="true"`, i.e. they're explicitly marked decorative. That's defensible, since the step text beside each card fully describes it and alt text would be duplicate announcement for screen-reader users. But these are the only product photography on the page, and card art is exactly what image search surfaces for board-game queries. Adding alt text while leaving `aria-hidden` in place would be self-contradictory, so this needs a call on whether the cards are decoration or content. The five character portraits are a clearer case for staying decorative — their captions already supply the names.
-- **New, Phase 5.6, blocks measurement**: no analytics are installed. PostHog is the recorded choice but isn't implemented, so none of this phase's work — or the waitlist conversion rate the whole landing page exists to measure — can currently be observed. Needs an account/key, and a cookie consent banner alongside it (PostHog sets identifying cookies).
-- **Resolved, Phase 5.7 — dropped, not deferred.** `width`/`height` attributes on the eight content images are not needed: measured CLS is 0.009 mobile / 0.0005 desktop, well inside the 0.1 threshold, because every one of these images already sits in a container that reserves its box via CSS (`aspect-ratio` on the cards and portraits). The attributes would duplicate work the layout already does.
-- **New, Phase 5.5, worth knowing but not acted on**: at 2560px the desktop hover pulse brings the portrait's top to within 2.2px of the section heading's bottom. Positive, so no overlap, and this is the original pre-5.4 behaviour rather than anything newly introduced — but it is thin, it was measured against placeholder art whose proportions differ from the real character files, and it tightens as viewport width grows (28.7px at 1024px → 6.1px at 1920px → 2.2px at 2560px). Worth a re-measure once the real art lands; if it goes negative, the lever is the desktop hover keyframe's `scale(1.22)` peak or the heading's bottom margin.
-- **Superseded by Phase 5.5**: the Phase 5.4 note about a 1024px landscape tablet falling on the desktop side of the alignment split is moot — the footer row is centred at every width now, so there is no split.
-- **Superseded by Phase 5.4**: the Phase 5.3 assumption that the footer row stays horizontal at every breakpoint no longer holds — at ≤767px the two social icons take the first row and the policy link takes a second, per direct request. See Wait-list Signup Section above.
-- **Resolved, Phase 5.4, and directly relevant to the unexplained Windows/Edge rendering report below**: `style.css` had an **unterminated comment block** — the "Sizes bumped up (~1.4x)" comment above the Wait-list Signup cloud definitions never closed, so it ran on and swallowed the following "Vertical positioning" comment as one block. Harmless in practice (both were comments, and CSS doesn't nest `/*`, so the block simply closed at the next `*/`), but it is *exactly* the failure mode flagged as a suspect for that report, and an earlier check that counted 148 open / 148 close had concluded comments were balanced — that count was taken before later edits, and the file has been unbalanced (191 `/*` / 190 `*/`) at least as far back as the copy supplied for Phase 5.3. Closed now; counts balance at 207/207. This does **not** explain the Edge report on its own, since the imbalance was benign, but it removes the one code-level candidate that was ever proposed for it — so if that machine still renders wrong after a hard refresh, the cause is somewhere else entirely.
-- **Accepted, Phase 5.7 — the Wait-list Signup section's height is fine as-is.** If it ever does need to come down, the lever is the bottom-right cloud pair's height, **not** the footer clearance. Original watch item follows. **Height watch, updated Phase 5.5**: the Wait-list Signup section is now ~575–600px tall at mobile widths (up from ~422px before the footer row existed) and 468.6px at desktop (up from 356.6px). Mobile is driven by the 136px cloud clearance plus the row taking two lines; desktop is now driven by the same 136px clearance, which Phase 5.5 made uniform. Nothing is broken and nothing collides at any width from 320px to 2560px, but this is the tallest the section has ever been at both ends and it's worth a look on real devices. The lever, if it needs one, is the bottom-right cloud pair's visible height — deliberately untouched throughout, since its mobile size came from two prior rounds of direct requests.
-- **New, Phase 5.3, worth a look once real cloud assets are in place**: the ~105px of extra section height on mobile that the cloud-clearance fix costs. The alternative lever — reducing the bottom-right cloud pair's mobile size or pushing it further right — was deliberately not touched, since that size is the result of two prior rounds of direct requests ("barely showing", "at least 50% visible"). If the taller mobile section reads as too much empty yellow on a real device, revisiting the cloud size is the trade to make, not shrinking the footer clearance.
-- **New, Phase 5.3, must not ship as-is**: the privacy-policy link points at `PLACEHOLDER-privacy-policy`, which will 404. Deliberately chosen over a real-looking path so it can't ship unnoticed; the real page doesn't exist yet. Also carries `data-placeholder-href="true"` for easy grepping.
-- **Resolved, Phase 5.3**: the Wait-list Signup section's reserved bottom padding is no longer "future" space — the footer row it was held open for has landed and occupies it. The old warning ("check whether that content has landed before shrinking `padding-bottom`") is retired; the padding values now have their own reasoning documented in the Wait-list Signup Section above, and `padding-bottom` differs by breakpoint for cloud-clearance reasons, so don't unify the two values without re-running the collision sweep.
-- **Partially closed, Phase 5.3, relevant to several older caveats in this file**: this round's verification ran against the **real** Dela Gothic One and Nunito Sans woff2 files, pulled from the Fontsource npm packages (whose filenames match what `style.css` already expects exactly), rather than fallback fonts. That removes the long-standing "verified against a fallback font, re-check with the real font" caveat *for this phase's measurements only* — it does **not** retroactively verify the Problem/Testimonials heading line-break checks from Phase 4.6 or the Phase 5.2 copy changes, which were measured under the old conditions and still want a re-check. Worth knowing the workaround exists, since it makes those re-checks cheap to do properly. Separately, cloud/character/card/icon artwork was stood in with placeholders this round; cloud *geometry* is fully CSS-driven (`width` + `aspect-ratio`), so the collision measurements above are unaffected by that, but nothing here verifies how the real cloud art reads next to the footer row visually.
-- **Resolved, Phase 5.7 — option (c).** The 6 character-tagged tiles stay exactly as built; the supplied 10-item list is treated as source material for some other future placement, not as a replacement for this section. No code change. Original entry: What It Teaches' body copy — the supplied document has a single flat 10-item bullet list ("Играта учи детето: ..."), not the 6 character-tagged tiles currently built. Options, not yet chosen between: (a) keep the 6-tile structure and have someone rewrite/remap the document's 10 points into 6 tile-sized blurbs by hand (an editorial task, not a text-swap); (b) replace the whole tile grid with a plain checkmark bullet list (same pattern already used in Desired State) holding the document's 10 items verbatim, dropping the per-character color/icon callback; (c) leave the 6 tiles exactly as they are (current state, since this phase didn't touch them) and treat the document's list as source material for some other future placement instead. See What It Teaches Section above for the full reasoning this decision is blocked on.
-- **New, Phase 5.2, verification gap, not silently glossed over**: this phase's copy edits were **not verified via Playwright screenshots** as the process normally requires. Two separate blockers: (1) `style.css`, `script.js`, and the `/assets` folder weren't included in this round's file set (only `index.html`, `SDD.md`, and the copy document were), so even a working browser would render this file unstyled, unscripted, and missing every image — nothing like the real page; (2) independently, this session's sandboxed environment couldn't install a Playwright browser at all (its package fetch hit a domain outside the environment's network allowlist). What *was* checked instead: a plain-text diff confirming every intended old string was removed and every new string is present exactly once, and a basic tag-balance sanity pass (`<section>`/`<div>`/`<p>`/`<ul>`/`<li>`/headings) confirming the edits didn't corrupt the markup structure — no tags were added, removed, or reordered, only text inside existing `<p>`/`<h2>`/`<span>` nodes changed. **Real line-wrap/overflow verification against the live fonts and layout — specifically relevant here since the How It Works meta line and the FAQ Q4/Q7 answers got measurably longer — still needs to happen** with the full file set in a normal environment before this ships.
-- **Resolved, Phase 5.7 — permanently omitted, not revisitable as a default.** PostHog covers form impressions; the beacon would add an always-on third-party call on load for a metric this project already has. Original reasoning: MailerLite's own embed fires an unconditional tracking-beacon `fetch()` to `.../takel` on page load, seemingly a form-impression counter for their dashboard. Not replicated — it's a third, always-on third-party network call this page didn't previously make, and (unlike the actual subscribe action, which only fires on a person's own explicit submit) it would run for every visitor regardless of intent, which sits awkwardly next to this project's existing GDPR-conscious choices (self-hosted fonts specifically to avoid an unconsented third-party request on load). If MailerLite's own "form views" dashboard metric turns out to matter, this can be added later as a deliberate, consent-aware decision rather than a byproduct of copying their snippet.
-- **Resolved, Phase 5.7**: real end-to-end proof of the MailerLite integration — retested live, works. The cache-buster was the fix. Original entry kept below for the diagnostic trail. ~~**still open, but the root cause is now believed found and fixed**~~ (browser-cached empty response, see §4 above — not a request-shape problem after all). The cache-buster fix hasn't yet had its own live retest, since it was only verified against a mocked endpoint via Playwright so far. Next live test should specifically try a *previously-tested* email address (one already cached with a bad response under the old code) to confirm the fix actually breaks that stale cache, not just fresh emails that were never cached in the first place. Double opt-in was temporarily disabled during troubleshooting to rule it out as a variable — **re-enable it before this ships for real**, since it was left off specifically to isolate this bug, not because the GDPR consent-evidence reasoning for it changed.
-- **Resolved, Phase 4.9**: Мишо's "What It Teaches" icon now has a real asset (a confused/questioning face, supplied directly) — see What It Teaches Section above. **New concern from this same change, worth a look**: this icon is visibly more detailed than the other 5 tiles' simple flat glyphs, and reads fainter against Мишо's beige than the other 5 read against their saturated colors — flagged as a real inconsistency, not silently accepted, in case a simpler/bolder replacement icon is preferred later.
-- Buddy tile copy (What It Teaches) — first draft, not yet reviewed.
-- **Resolved, Phase 4.9**: How It Works' step 3 card now has real artwork (`assets/cards/zaki.png`, supplied directly) — all three step cards use real images now, none are placeholders. See How It Works Section above.
-- **New, Phase 4.9, judgment call flagged rather than decided unilaterally**: Wait-list Signup's two badge pills flipped to white bg/purple text per direct request, but the submit button (also purple bg/white text) was deliberately left unflipped so it still stands out as the primary action against the now-lighter pills above it. Flag if the button should match the pills instead.
-- **Phase 4.5, flagging for review rather than presenting as settled**: the hero tagline's highlighted words (`--color-yellow-light`, `#FEEBA4`) measure 3.40:1 contrast against the hero background — clears WCAG AA's 3:1 threshold for large/bold text, but not the stricter 4.5:1 for small normal text. Noted in style.css as a known trade-off, not hidden: the hero's own existing body text (`--color-hero-text`) only reaches 3.87:1 against that same background, so this isn't a new low relative to what's already shipping, but if strict AA-normal compliance matters here, the token would need to go paler still (past the point where it stops reading as "yellow" and starts reading as "off-white" — tested a range up to `#FFFBEB` at 3.91:1, still short of 4.5).
-- Desktop Bravies card tab-order vs. visual-order mismatch — no decision yet on whether to address it.
-- Testimonials' 5-color accent cycle reaches Мишо's pale beige as a 5th option — confirm it's acceptable at low contrast against the white section background, or swap it for something darker once there are enough quotes to reach it.
-- **Superseded by Phase 4.8**: Desired State's background is `--color-vesta` green now, not `--color-vihren` orange (see Desired State Section above for the full reasoning — orange+dark text reads as hazard/warning signage, which contradicted the section's calm/reassurance content).
-- **New, Phase 4.8, worth a quick look**: Desired State (green) now sits later in the page than Problem (purple) — they're not adjacent (Teaches, How It Works, and Testimonials sit between them), so this is a minor note rather than a real concern, but worth a glance in the full page flow to confirm purple-then-green doesn't feel like too much color variety across the two "loud" sections, given both now use the white-on-saturated-color pattern.
-- **Resolved**: Wait-list Signup's button now uses `--color-zaki` (Заки purple) + white text.
-- **Resolved**: the duplicate "На какво учи играта?" FAQ question was cut — 7 questions ship, not 8.
-- **Resolved, after a follow-up correction**: Wait-list Signup's height was cut ~in half (~446px → ~220px), which turned out too far — now settled at ~290–350px depending on breakpoint, with extra bottom padding reserved for a future footer row (social/policy links). See Wait-list Signup Section above for the full history, including a genuine cross-cutting CSS bug fix (`[hidden]` on `.success-message` wasn't actually hiding it from layout — affects the hero form too).
-- **Resolved, after three follow-up bug fixes**: Wait-list Signup's clouds are now bigger AND allowed to bleed over the FAQ section above (both direct requests), using a `--cloud-y-offset` custom property that stays correct regardless of section height or viewport width. Landed three real bugs along the way, each needing a separate fix: a page-wide horizontal scrollbar (`<html>` didn't have `overflow-x: hidden`, only `<body>` did), actual text overlap with the FAQ's last question (confirmed via measured bounding-box overlap, fixed with coordinated cloud-size and `.faq` padding-bottom adjustments), and the bottom-right cloud pair bleeding past the actual end of the page, stretching the page's scrollable height into empty space (fixed by splitting the shared clouds container into two — one unclipped for the top pair, one clipped for the bottom pair, since they need opposite `overflow` behavior). Re-verified clear on all three fronts at multiple widths after each fix.
-- **Resolved**: Wait-list Signup's top-left cloud pair is now removed entirely (not just shrunk) on mobile — direct request, independent of the collision-avoidance work above.
-- **Resolved, heading order**: Wait-list Signup's H2 now sits first (heading → badge → form), was previously badge → heading → form — direct request.
-- **Resolved, real bug**: Wait-list Signup badge overlap on mobile — fixed by rebuilding the mobile-width layout with flexbox instead of relying on inline-text/`display: block` flow, which couldn't reliably reserve room for the taller, padded chip when trailing text wrapped. Then rebuilt again this round (with a real device screenshot confirming the previous fix's shape wasn't what was wanted) into unified pills with the connector text moved inside — see Wait-list Signup Section above for the full history.
-- **Resolved, real bug**: Wait-list Signup clouds showing "no movement" on mobile — the parallax progress formula could mathematically never get far past ~0.3–0.5 on a page where this (last) section is shorter than the viewport, and worse, sat at exactly 0 for most of the scroll journey before that. Fixed by changing what "fully progressed" means (entrance-only, not entrance-plus-exit) — see Wait-list Signup Section above.
-- **Resolved, confirmed with a real device screenshot**: the max-height crowding fix from the previous round didn't address this round's "clouds barely showing on mobile" report — those were two different concerns (one about a short-viewport edge case, this one about normal portrait mobile). Bumped both the mobile cloud size and visible proportion for the bottom-right pair specifically; see Wait-list Signup Section above. The `max-height: 500px` short-viewport rule from before is unaffected and still composes correctly on top of this.
-- **Decided, Phase 5.7**: FAQ stays multi-open and closed-by-default. No change needed — that is the current behaviour.
-- **Still open**: cloud sharpness at the current size depends on the source PNGs' native resolution, which couldn't be checked (no cloud assets in this file set). See the "Clouds — bigger" note under Wait-list Signup Section for the current rule of thumb.
-- **Resolved, Phase 5.7 — stale cache.** Closed as a caching issue on that one machine. Note explicitly that this was **not** caused by, and not fixed by, the Phase 5.4 unterminated-comment repair: that imbalance was benign and the two are unrelated. Original report: a screenshot showed the live GitHub Pages site rendering broken (huge unstyled FAQ icons, unstyled heading, FAQ answers not collapsing) on one Windows/Edge machine specifically, while working correctly on mobile Chrome and in local testing. Checked the current `style.css` for a parse-breaking issue (e.g. an unclosed comment swallowing a large chunk of the file, which would produce exactly these symptoms) — comments are balanced (148 open/148 close) and the file renders correctly in a Chromium-based browser locally, so nothing here points to a code-level cause. Given it's isolated to one machine while other clients on the same deployed files are fine, a stale cached copy (GitHub Pages/CDN or Edge's own cache) is the most likely explanation — recommended a hard refresh (Ctrl+Shift+R) as the first troubleshooting step. Worth confirming whether that resolved it; if the issue persists after a hard refresh, that would rule out caching and point at something else worth investigating directly against the live deployment.
-- **Resolved, Phase 4.6**: Bravies card "pop out and back" animation duration doubled at both breakpoints (desktop hover 0.5s→1s, mobile scroll-triggered 0.6s→1.2s) — direct request. Only the duration changed; keyframe percentages/shape of the motion are untouched, so this doesn't affect the earlier `is-active`/hover bug fix documented in the Bravies Intro Section above.
-- **Line-break caveat closed, Phase 5.7**: the Phase 4.6 Problem and Testimonials heading checks were re-verified against the real Dela Gothic One, not a fallback — both hold. The two entries below keep their original caveat text for the record.
-- **Resolved, Phase 4.6**: Problem section's heading was wrapping too tightly — `.problem__inner` widened from `62ch` to a fixed `800px`, verified as a clean 2-line break at 768/1024/1440px via measured rendered height ÷ line-height (not eyeballed). Switched away from `ch` deliberately since that unit is sized off the container's own font (Nunito Sans), not the heading's actual Dela Gothic One — a `ch` value doesn't track the heading's real width. **Caveat, worth re-checking**: this session's test environment doesn't have the real self-hosted font files, so this was verified against a fallback font, not the real (wider/chunkier) Dela Gothic One — re-verify the exact line break once real fonts are loading in production.
-- **Resolved, Phase 4.6**: Testimonials heading was wrapping to 2 lines — `.testimonials__inner` widened from `700px` to `980px`, verified as 1 line at 768/1024/1440px the same way as the Problem section above. Same font-fallback caveat applies.
-- **Superseded by Phase 4.7**: the Phase 4.6 Desired State reorder (and its two flagged side-effects — the "Хайде да играем!" link jumping past the section, and Testimonials/FAQ becoming consecutive white sections) is no longer applicable — the reorder itself was reverted after review. See Desired State Section above for the reasoning (the reorder traded a strong pre-CTA close for earlier exposure, at the cost of separating What It Teaches from How It Works and placing an emotional promise before any evidence for it existed on the page) and for what replaced it as the plan for the underlying "low scroll depth" concern (a short earlier teaser, evaluated but not yet added — see the next entry).
-- **Still open, Phase 4.7**: the underlying reason Desired State was moved in Phase 4.6 — the concern that most visitors won't scroll far enough to reach it in its original position — hasn't actually been solved by the revert, only the trade-off was rejected. A few one-line teaser options (to place after Problem, previewing the emotional payoff without giving away Desired State's full scenario) were drafted and discussed but none felt like a clear improvement over what's already on the page — worth revisiting, ideally once there's actual scroll-depth data to confirm whether this is a real problem worth solving at all.
-- **Resolved, Phase 4.7**: long-form paragraph body text (`.problem__body`, `.teaches__body`, `.desired-state__body`) switched from centered to left-aligned — centered multi-sentence prose has real readability costs (moving "return point" per line, uneven/short-looking line breaks) that don't apply to short display text, so headings/pull-quotes stay centered while paragraph bodies don't. What It Teaches' individual tile copy was deliberately left centered — compact card UI is a different, more defensible case. See The Problem Section above for the full reasoning.
-- **Resolved, Phase 4.7**: Testimonials heading renamed to "Какво казват семействата?" (was "Какво казват децата и родителите?") — shorter, avoids redundant phrasing, fits the one-line requirement with more margin. No argument against it.
+- **Must not ship as-is**: the privacy-policy link points at
+  `PLACEHOLDER-privacy-policy` and will 404. Also carries
+  `data-placeholder-href="true"` for grepping.
+- **Accepted risk, recorded rather than fixed**: both
+  `.waitlist-signup__heading` and the footer's policy link are white on
+  `--color-neda` at **1.37:1** — below every WCAG threshold, including the 3:1
+  one for non-text. Implemented as asked. One-line swaps if it's ever
+  revisited: `--color-zaki` gives 4.23:1, `--color-text-dark` 10.81:1. Note
+  that the Phase 5.5 footer-centring work did **not** make this section
+  accessible; it only moved the row off the clouds.
+- **Small addition beyond the literal request**: that same link is underlined
+  (`text-decoration: underline; text-underline-offset: 3px`). At 1.37:1 there
+  is no colour cue left that it's clickable, but this is the site's only
+  bare-text link, so it introduces a second link treatment. One line to remove.
+- **Blocks measurement**: no analytics are installed. PostHog is the recorded
+  choice but isn't implemented, so neither this work nor the waitlist
+  conversion rate the page exists to measure can be observed. Needs an
+  account/key and a cookie consent banner alongside it.
+- **Decided, not implemented — waiting on a price**: `Product` + `Offer`
+  schema. An `Offer` without a price won't validate. Add `availability:
+  PreOrder` alongside it.
+- **Decided, not implemented — after playtests**: `Person` / author-credential
+  schema plus a visible "who made this" block. The strongest available E-E-A-T
+  lever for a child-safety product. **The schema alone is not valid without the
+  visible on-page content** — they ship together or not at all.
+- **Image weight** is 2.4 MB across 8 images against a <500 KB target. Into the
+  illustrator brief: WebP, uniform dimensions per set.
+- **Card colours are not tokenised** — three blues in play (`#436BA0`,
+  `#095ACB`, `#4FA6E0`). Pick one as the brand blue. *Note: `#095ACB` does not
+  appear in `style.css`; presumably it's in the card art.*
+- **Make "(не)познати" explicit in the FAQ.** That the game covers *known*
+  adults is the actual differentiator, and it currently lives only inside a
+  parenthetical.
+- **Desired State's position in the page order — deferred.** The underlying
+  concern is that most visitors won't scroll far enough to reach it. A reorder
+  was tried and reverted; teaser options were drafted and none was an
+  improvement. Do not move it again on argument — measure scroll depth in
+  PostHog first.
+- **Check the cloud source PNGs' native resolution.** Above ~1100px wide is
+  fine at the current render size; below ~500px, re-export.
+- **Wait-list Signup section height is accepted as-is.** If it ever needs to
+  come down, the lever is the bottom-right cloud pair's height, not the footer
+  clearance — that size is the result of two rounds of direct requests.
+- **Worth knowing, not acted on**: at 2560px the desktop hover pulse brings the
+  portrait's top to within 2.2px of the section heading's bottom. Positive, and
+  the original pre-5.4 behaviour rather than anything new, but it tightens as
+  width grows (28.7px at 1024px → 6.1px at 1920px → 2.2px at 2560px) and was
+  measured against placeholder art. Re-measure once the real art lands; the
+  lever is the hover keyframe's `scale(1.22)` peak or the heading's bottom
+  margin.
+- **Desktop Bravies card tab-order vs visual-order mismatch** — no decision yet
+  on whether to address it.
+- **Testimonials' accent cycle** reaches Мишо's pale beige as its 5th option.
+  Confirm that's acceptable at low contrast against the white background, or
+  swap it once there are enough quotes to reach it.
+- **Buddy tile copy** (What It Teaches) — first draft, not yet reviewed.
+- **Мишо's What It Teaches icon** is a noticeably more detailed illustration
+  than the other five flat single-shape glyphs, and reads fainter against her
+  beige. Flagged as a real inconsistency in case a simpler replacement is
+  wanted.
+- **Two copy items carried over verbatim from the supplied document, not
+  silently corrected** — Desired State's "На площадката сте." (formal/plural,
+  inconsistent with every other verb in that section; reads like it should be
+  "си"), and the feminine-singular forms in list items 2 and 4, which shift
+  that section's audience to a mother while the rest of the site stays
+  gender-neutral. Confirm both before shipping.
+- **Desired State (green) now sits later in the page than Problem (purple)** —
+  not adjacent, so minor, but worth a glance in the full page flow.
+- **Font-verification caveat, partially closed**: verification now runs against
+  the real Dela Gothic One and Nunito Sans woff2 files from the Fontsource npm
+  packages, and the Phase 4.6 heading line-break checks have been re-verified
+  under them. The Phase 5.2 copy changes — specifically the How It Works meta
+  line and the FAQ Q4/Q7 answers, all of which got measurably longer — have
+  still not had a line-wrap check under the real fonts.
+- **The `.../takel` tracking beacon is permanently omitted, not deferred.**
+  PostHog covers form impressions; the beacon would add an always-on
+  third-party call on load for a metric the project will already have.

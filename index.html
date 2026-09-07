@@ -6,33 +6,25 @@
   <title>Семейна игра за безопасност, 5–9 г. | Смелчовци в беда</title>
   <meta name="description" content="Семейна игра с карти, която учи децата на 5–9 г. на безопасни действия при среща с непознат. Запиши се за първия тираж." />
 
-  <!-- Canonical. Matters more than usual here: this site is reachable at
-       smelcho.bg, www.smelcho.bg, with and without a trailing slash, AND
-       at its GitHub Pages *.github.io address. That last one is the real
-       risk — it can get indexed independently and split ranking signals
-       between two copies of the same page. Pointing every variant at the
-       apex domain collapses them into one. Uses a trailing slash because
-       that's what GitHub Pages serves for a directory root. -->
+  <!-- Canonical. The site is reachable at smelcho.bg, www, with and
+       without a trailing slash, AND at its GitHub Pages *.github.io
+       address — that last one can be indexed independently and split
+       ranking signals. Trailing slash, because that is what GitHub Pages
+       serves for a directory root. -->
   <link rel="canonical" href="https://smelcho.bg/" />
 
-  <!-- Open Graph / Twitter Card.
-       Disproportionately important for this project specifically: the
-       go-to-market is Bulgarian parent Facebook groups, an Instagram
-       bio link, and parents forwarding the link to each other over
-       Viber. Without these, every one of those shares renders as a bare
-       grey link — Facebook scrapes something arbitrary and usually gets
-       it wrong. These tags are what decide whether a post into a parent
-       group reads as a product or as spam.
-       og:locale is bg_BG, not just "bg" — Facebook wants the full
-       language_TERRITORY form and silently ignores the short one. -->
+  <!-- Open Graph / Twitter Card. Distribution is parent Facebook groups,
+       an Instagram bio link and Viber forwards, so these decide how every
+       share renders. og:locale is bg_BG, not bare "bg" — Facebook
+       silently ignores the short form. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Смелчовци в беда" />
   <meta property="og:locale" content="bg_BG" />
   <meta property="og:url" content="https://smelcho.bg/" />
   <meta property="og:title" content="Смелчовци в беда — игра за детска безопасност" />
   <meta property="og:description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта." />
-  <!-- Real asset, supplied and measured at 1200x630. og:image:alt is read
-       aloud by screen readers on some platforms, so it isn't decorative. -->
+  <!-- og:image:alt is read aloud by screen readers on some platforms, so
+       it isn't decorative. -->
   <meta property="og:image" content="https://smelcho.bg/assets/og/og-image-1200x630.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -42,80 +34,40 @@
   <meta name="twitter:description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта." />
   <meta name="twitter:image" content="https://smelcho.bg/assets/og/og-image-1200x630.png" />
 
-  <!-- Browser chrome colour on mobile. Real value, not a placeholder —
-       --color-neda (#FDD43B), the brand yellow the Wait-list Signup
-       section already uses. Kept as a literal because <meta> can't read
-       a CSS custom property; if that token ever changes, this needs
-       changing with it. -->
+  <!-- Literal, because <meta> can't read a CSS custom property: this is
+       --color-neda. If that token changes, change this with it. -->
   <meta name="theme-color" content="#FDD43B" />
 
-  <!-- Built from the supplied source tile: the „С“ isolated by flood-filling
-       the outer white away, rebuilt on --color-neda (#FDD43B — NOT the
-       source file's #FFD21F), scaled 135%, exported opaque. Opaque is the
-       load-bearing part: iOS composites any alpha onto black. No SVG entry
-       — the source is brush artwork, so a trace would be heavier than the
-       32px PNG and gain nothing. -->
+  <!-- Rebuilt on --color-neda (#FDD43B), NOT the source file's #FFD21F,
+       and exported opaque — iOS composites any alpha onto black. No SVG
+       entry: the source is brush artwork. -->
   <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="icon" href="assets/icons/favicon-192.png" sizes="192x192" type="image/png" />
   <link rel="icon" href="assets/icons/favicon-512.png" sizes="512x512" type="image/png" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png" />
 
-  <!-- Fonts are self-hosted from /assets/fonts (see @font-face rules at the
-       top of style.css) rather than loaded from Google Fonts' CDN.
-       Meaningful reason for this one: this is an EU/Bulgaria-facing site
-       collecting emails, and loading fonts.gstatic.com directly sends
-       every visitor's IP to Google before they've consented to
-       anything — this is the exact pattern a 2022 Munich court ruling
-       found to violate GDPR (no consent basis for that third-party
-       transfer). Self-hosting sidesteps the question entirely, plus
-       drops two DNS/TLS round-trips.
-       The two `preconnect` tags that used to sit here (to
-       fonts.googleapis.com and fonts.gstatic.com) have been REMOVED.
-       They were dead leftovers from before self-hosting — they opened
-       connections to Google for no benefit, which quietly undercut the
-       GDPR reasoning above.
-       Preloads below cover only the two faces that render above the
-       fold, measured rather than guessed: Dela Gothic One 400 (the h1
-       and the CTA button) and Nunito Sans 600 (the hero subtitle and
-       tagline). Deliberately NOT preloading the other four Nunito
-       weights — preloading fonts that aren't needed immediately
-       competes with the ones that are and makes LCP worse, which is
-       the usual way this optimisation backfires. `crossorigin` is
-       required on font preloads even for same-origin files; without it
-       the browser fetches the file twice. -->
+  <!-- Fonts are self-hosted (see @font-face in style.css), not loaded
+       from Google's CDN: fonts.gstatic.com sends every visitor's IP to
+       Google before consent, which a 2022 Munich ruling found violates
+       GDPR. Do not add preconnect tags back for them.
+       Preloads cover only the two faces above the fold — Dela Gothic One
+       400 and Nunito Sans 600. Deliberately NOT the other four Nunito
+       weights: preloading faces that aren't needed immediately competes
+       with the ones that are and makes LCP worse. `crossorigin` is
+       required even same-origin, or the file is fetched twice. -->
   <link rel="preload" href="assets/fonts/dela-gothic-one-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="assets/fonts/nunito-sans-cyrillic-600-normal.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- ===================== STRUCTURED DATA (JSON-LD) =====================
-       Added for AEO as much as SEO. The queries that matter for this
-       product aren't brand queries — nobody searches "Смелчовци в беда"
-       yet — they're parent questions like "как да науча детето си да не
-       тръгва с непознати". Those get answered by AI assistants and AI
-       Overviews, and structured data is the mechanism for being the
-       cited source rather than an uncited one.
-
-       FAQPage is generated from the SEVEN Q&A pairs already written in
-       the FAQs section below — the text here is extracted verbatim from
-       that markup, not rewritten. IMPORTANT: that means the two can
-       drift. If a FAQ answer changes in the HTML below, this block must
-       be updated to match; Google treats visible-copy/markup mismatch
-       as a structured-data violation, not a formatting nit.
-
-       Deliberately NOT included, because each needs a decision that
-       isn't mine to make:
-       - Product + Offer: needs a price and a launch/availability date.
-         An Offer without a price won't validate, and guessing a number
-         on a pre-launch product would be worse than omitting it.
-       - Person / author credentials: the strongest available E-E-A-T
-         signal for a child-safety product, and the page currently makes
-         no claim about who built it or why they're credible. That's a
-         content decision (and a privacy one) before it's a markup one.
-       Both are logged in Open Decisions in SDD.md.
-
-       Three separate blocks rather than one @graph: easier to delete or
-       edit one independently, and equally valid to parsers. -->
+  <!-- STRUCTURED DATA (JSON-LD)
+       FAQPage is extracted VERBATIM from the seven Q&A pairs in the FAQs
+       section below. The two can drift: if a FAQ answer changes in the
+       HTML, this block must change with it — Google treats a
+       visible-copy/markup mismatch as a structured-data violation.
+       Product+Offer and Person are deliberately absent; see SDD.md.
+       Three blocks rather than one @graph, so each can be edited or
+       deleted independently. -->
 
   <script type="application/ld+json">
 {
@@ -215,7 +167,6 @@
 
   <!-- ============================= HERO SECTION ============================= -->
   <header class="hero" id="hero">
-    <!-- Decorative clouds: purely visual, driven by scroll position in script.js -->
     <div class="hero__clouds" aria-hidden="true">
       <span class="cloud cloud--1"></span>
       <span class="cloud cloud--2"></span>
@@ -230,19 +181,11 @@
         Игра за безопасни действия в ситуации с (не)познати.
       </p>
 
-      <!-- Phase 4.5: new tagline, kept as its own line/paragraph per
-           spec (not merged into .hero__subtitle above). Highlighted
-           words use the new --color-yellow-light token — see its
-           definition in style.css for why it's a distinct value from
-           --color-neda rather than reusing it. -->
       <p class="hero__tagline">
         <span class="hero__tagline-highlight">Спокойствие</span> за теб.
         <span class="hero__tagline-highlight">Увереност</span> за детето.
       </p>
 
-      <!-- Waitlist form (hero instance). The bottom Wait-list Signup
-           section (Phase 4) will reuse this exact markup pattern and the
-           same validation/submit logic from script.js. -->
       <form class="waitlist-form" id="hero-form" data-waitlist-form novalidate>
         <div class="waitlist-form__row">
           <label for="hero-email" class="sr-only">Твоят имейл адрес</label>
@@ -266,8 +209,6 @@
         <p class="waitlist-form__error" role="alert" aria-live="assertive"></p>
       </form>
 
-      <!-- Success state: hidden by default, revealed by script.js after a
-           valid submission. Exact copy per spec §4. -->
       <div class="success-message" role="status" aria-live="polite" hidden>
         <svg class="success-message__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -285,20 +226,13 @@
       </h2>
 
       <!--
-        DOM order matches the spec's tablet-portrait/mobile reading order
-        (Неда, Вихрен, Веста, Заки, Мишо), since that's the order sighted
-        and keyboard/screen-reader users encounter on the narrowest,
-        most common viewports. The desktop/landscape-tablet order
-        (Заки, Вихрен, Неда, Веста, Мишо) is applied purely visually via
-        the CSS `order` property at the relevant breakpoint — see the
-        ".bravies__order--desktop" comment in style.css for the mapping.
-        NOTE: this means desktop tab order won't visually match reading
-        order left-to-right; flagging this as a known accessibility
-        trade-off rather than silently deciding it's fine.
+        DOM order is the mobile/portrait reading order (Неда, Вихрен,
+        Веста, Заки, Мишо). The desktop order is applied visually via CSS
+        `order`, so desktop tab order does NOT match left-to-right visual
+        order — a known accessibility trade-off, logged in SDD.md.
       -->
       <ul class="card-row" id="card-row">
 
-        <!-- Неда is the default-active card per spec: expanded state applied on load -->
         <li class="brave-card brave-card--neda is-active" data-name="Неда">
           <button type="button" class="brave-card__trigger" aria-expanded="true">
             <span class="brave-card__portrait" aria-hidden="true">
@@ -362,22 +296,7 @@
       </ul>
     </section>
 
-    <!--
-      PHASE BOUNDARY — sections below this point are built in later phases:
-      Phase 2: The Problem section, "What the game teaches?" section, How It
-               Works section
-      Phase 3: Testimonials section, Desired State section (placed after
-               How It Works — see bottom of </main>, just above
-               NEXT-PHASE-INSERT-POINT)
-      Phase 4: FAQs section, Wait-list Signup section (bottom)
-      Phase 5: Integration pass (cross-section parallax/animation checks)
-    -->
-    <!-- ============================= PROBLEM SECTION =============================
-         No responsive/mobile layout is specified in the spec for this section
-         (only How It Works has one) — defaulting to a single centered text
-         column at every breakpoint, since that's consistent with how the
-         rest of the page handles plain prose (e.g. the hero subtitle) and
-         needs no special-casing to read well on any width. -->
+    <!-- ===== PROBLEM SECTION ===== -->
     <section class="problem" id="problem" aria-labelledby="problem-heading">
       <div class="problem__inner">
         <h2 class="problem__heading reveal" id="problem-heading">
@@ -391,9 +310,7 @@
       </div>
     </section>
 
-    <!-- ============================= WHAT IT TEACHES SECTION =============================
-         Same note as Problem above: no mobile-specific layout specified,
-         defaulting to a single centered text column throughout. -->
+    <!-- ===== WHAT IT TEACHES SECTION ===== -->
     <section class="teaches" id="teaches" aria-labelledby="teaches-heading">
       <div class="teaches__inner">
         <h2 class="teaches__heading reveal" id="teaches-heading">На какво учи играта?</h2>
@@ -402,12 +319,6 @@
           <p>"Смелчовци в беда" е вдъхновена от съвременните препоръки за детска безопасност - включително разграничението между "непознат" и "човек с лоши намерения", което е много по-полезно за децата от простото "не говори с непознати." Играта учи детето:</p>
         </div>
 
-        <!-- Each point echoes one Bravie's icon + brand color from the
-             Bravies Intro section above (no names repeated here — per
-             feedback, the color/icon pairing alone is enough of a visual
-             callback). Icons are a placeholder pending the real draft
-             icon assets; see .teaches__point-icon in style.css for what
-             to swap in. -->
         <ul class="teaches__points">
           <li class="teaches__point reveal">
             <span class="teaches__point-icon" aria-hidden="true"></span>
@@ -432,10 +343,6 @@
             <span class="teaches__point-icon" aria-hidden="true"></span>
             <p>Да е осъзнато за реакциите, които му пречат в реална ситуация - замръзване, прекалена любезност, разсеяност. Не за да се срамува, а за да ги преодолява с практика.</p>
           </li>
-          <!-- 6th point: the Help/Buddy cards, a distinct "joker" category
-               usable in place of any Bravie's card rather than tied to one —
-               copy not yet revised by the person, just drafted, so treat
-               as a first pass rather than final. -->
           <li class="teaches__point reveal teaches__point--buddy">
             <span class="teaches__point-icon" aria-hidden="true"></span>
             <p>Че да поиска помощ не е слабост, а разумен избор.</p>
@@ -449,16 +356,11 @@
       </div>
     </section>
 
-    <!-- ============================= HOW IT WORKS SECTION =============================
-         Zigzag layout: step text alternates left/right/left, and the tilted
-         card-image placeholder fills the opposite side each time
-         (right/left/right) — implemented via a single .how-it-works__step
-         modifier per step that flips flex-direction, rather than hardcoding
-         markup order, so the DOM order stays the natural reading order
-         (text before image) for screen readers/keyboard users regardless
-         of visual side. On mobile, the spec calls for each card to stack
-         ABOVE its related text (not before/after in reading order — a
-         visual-only requirement), handled with the same flip technique. -->
+    <!-- ===== HOW IT WORKS SECTION =====
+         Zigzag: a per-step modifier flips flex-direction rather than
+         reordering markup, so DOM order stays text-before-image for
+         screen readers regardless of visual side. Mobile stacks the card
+         above its text by the same technique — visual only. -->
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div class="how-it-works__inner">
         <h2 class="how-it-works__heading reveal" id="how-it-works-heading">Как работи играта?</h2>
@@ -472,6 +374,10 @@
               <p class="how-it-works__step-line">(Не)познат иска помощ. Предлага изкушение. Кара те да пазиш тайна. Какво правиш?</p>
             </div>
             <div class="how-it-works__card-wrap reveal">
+              <!-- These three card images carry alt text and deliberately
+                   have NO aria-hidden: they are content, not decoration —
+                   card art is what image search surfaces. Do not re-add it.
+                   The character portraits below stay alt="". -->
               <img class="how-it-works__card how-it-works__card--img" src="assets/cards/situation.png" alt="Карта със ситуация — (не)познат моли дете за помощ" loading="lazy" />
             </div>
           </li>
@@ -494,10 +400,6 @@
               <p class="how-it-works__step-line">Всички отговарят правилно - всички споделят наградата.</p>
             </div>
             <div class="how-it-works__card-wrap reveal">
-              <!-- Real Zaki card art, supplied directly — replaces the
-                   earlier text placeholder, same pattern as steps 1–2
-                   (how-it-works__card--img, real <img> not a styled
-                   <div>). -->
               <img class="how-it-works__card how-it-works__card--img" src="assets/cards/zaki.png" alt="Карта действие „Знание“ — само възрастни помагат на възрастни" loading="lazy" />
             </div>
           </li>
@@ -507,23 +409,11 @@
 
 
 
-    <!-- ============================= TESTIMONIALS SECTION =============================
-         Slider is built for N ≥ 1 slides on purpose, even though only one
-         quote exists today: add another `.testimonials__slide` (+ matching
-         copy) later and the JS/CSS need no changes. Dots are the only
-         nav control (arrows removed per feedback) — every interaction —
-         dot click, arrow key, swipe — always plays the slide/quote
-         animation, even when it loops back to the same single quote, so
-         the mechanism is visibly "alive" before quote #2 exists.
-         Each slide carries a --slide-accent custom property cycling
-         through the 5 brand colors in this fixed order: Веста green
-         (default/first — matches your "dark green" instruction), Вихрен
-         orange, НЕда yellow, Заки purple, Мишо beige. That accent colors
-         both the giant quotation marks and that slide's dot. Note: Мишо's
-         beige is pale against the white section background — it'll read
-         as the faintest of the five once there are enough quotes to
-         reach it; flagging in case you'd rather swap it for a 6th/darker
-         color at that point. -->
+    <!-- ===== TESTIMONIALS SECTION =====
+         Built for N ≥ 1 slides: adding a `.testimonials__slide` needs no
+         JS or CSS change. Each slide carries --slide-accent, cycling the
+         5 brand colours in a fixed order (Веста, Вихрен, Неда, Заки,
+         Мишо), which colours both the quotation marks and that dot. -->
     <section class="testimonials" id="testimonials" aria-labelledby="testimonials-heading">
       <div class="testimonials__inner">
         <h2 class="testimonials__heading reveal" id="testimonials-heading">Какво казват семействата?</h2>
@@ -559,9 +449,8 @@
                   <span class="testimonials__mark testimonials__mark--close" aria-hidden="true">&rdquo;</span>
                 </blockquote>
               </li>
-              <!-- Future testimonials: append another <li class="testimonials__slide"
-                   style="--slide-accent: var(--color-neda);"> (next color in the
-                   cycle) here — no JS/CSS changes needed. -->
+              <!-- Append another <li class="testimonials__slide"
+                   style="--slide-accent: var(--color-neda);"> here. -->
             </ul>
           </div>
         </div>
@@ -615,28 +504,13 @@
     </section>
 
 
-    <!-- ============================= FAQ SECTION =============================
-         Standard vertically-unfolding layout: questions are always
-         visible, each answer expands/collapses independently via an
-         arrow-icon trigger. Went with MULTIPLE-OPEN (not a single-open
-         accordion-radio) — nothing about this content implies answers
-         are mutually exclusive, and forcing single-open would just
-         re-collapse an answer a parent is still reading if they tap a
-         second question. Flagging the choice per instructions rather
-         than assuming it's obviously right.
-         Expand state: JS toggles `.is-open` on `.faq__item` (mirrored
-         onto the trigger's `aria-expanded`) — see initFaqAccordion() in
-         script.js, added as its own function alongside
-         initRevealOnScroll()/initBraveCardScrollPulse(), same
-         one-function-per-behavior organization already used there.
-         The collapse/expand animation itself is CSS-only (grid-template-
-         rows 0fr/1fr on .faq__answer, see style.css) — JS only ever
-         toggles the class, consistent with how .reveal/.is-visible and
-         .is-pulsing already split "JS decides state, CSS animates it"
-         elsewhere in this file.
-         Note: the "На какво учи играта?" question was intentionally
-         dropped from this set — it duplicated the standalone "What It
-         Teaches" section above, so 7 questions ship here, not 8. -->
+    <!-- ===== FAQ SECTION =====
+         Multiple-open, not a single-open accordion: nothing here is
+         mutually exclusive, and single-open would re-collapse an answer
+         a parent is still reading. JS only toggles `.is-open`; the
+         animation is CSS-only (grid-template-rows 0fr/1fr) — same
+         "JS decides state, CSS animates it" split as .reveal and
+         .is-pulsing. Seven questions ship, not eight. -->
     <section class="faq" id="faq" aria-labelledby="faq-heading">
       <div class="faq__inner">
         <h2 class="faq__heading reveal" id="faq-heading">Въпроси и отговори</h2>
@@ -763,43 +637,23 @@
       </div>
     </section>
 
-    <!-- ============================= WAIT-LIST SIGNUP SECTION =============================
-         Reuses the hero form's exact markup pattern + `data-waitlist-form`
-         attribute. Verified against script.js before writing this: the
-         DOMContentLoaded handler already does
-           document.querySelectorAll('[data-waitlist-form]').forEach(initWaitlistForm);
-         — every `[data-waitlist-form]` element gets its own independent
-         handler automatically, so this section needed zero JS changes,
-         only matching markup.
-         `successEl` in initWaitlistForm() is found via
+    <!-- ===== WAIT-LIST SIGNUP SECTION =====
+         Reuses the hero form's markup pattern + `data-waitlist-form`;
+         the DOMContentLoaded handler initialises every such element, so
+         this needed no JS changes.
+         initWaitlistForm() finds the success message via
          `form.parentElement.querySelector('.success-message')`, so the
-         form and its success message must be SIBLINGS under the same
-         wrapper here too, same as `.hero__content` — see
-         `.waitlist-signup__inner` below.
-         Background is Neda's yellow (--color-neda). Heading is forced
-         white + single-line (see style.css) since the section's own
-         dark-text default (used elsewhere on light sections) read weak
-         against saturated yellow at H2 size. Button uses Zaki's purple
-         (--color-zaki) + white text per direct request — this reads
-         clearly on yellow without needing the earlier dark-inverse
-         workaround.
-         Clouds: same four PNGs as the hero (`cloud-1.png`..`cloud-4.png`),
-         reused as two overlapping pairs — top-left and bottom-right —
-         with their own independent scroll-linked parallax (see
-         initWaitlistClouds() in script.js), kept separate from the
-         hero's initHeroClouds() since this section can sit anywhere on
-         the page, not just at the very top, so its progress needs to be
-         computed from the section's own position, not page scrollY. -->
+         form and its success message MUST be siblings under the same
+         wrapper.
+         Clouds reuse the hero's four PNGs but run their own parallax
+         (initWaitlistClouds()), since this section can sit anywhere on
+         the page — progress comes from its own position, not scrollY. -->
     <section class="waitlist-signup" id="waitlist-signup" aria-labelledby="waitlist-signup-heading">
-      <!-- Two separate cloud containers, not one — they need OPPOSITE
-           overflow behavior. The top-left pair is meant to bleed
-           upward over the FAQ section above (no clipping). The
-           bottom-right pair has nothing below it to bleed into (this
-           is the last section on the page) — left unclipped, it
-           stretched the page's actual scrollable height into blank
-           space past the visible content, which read as a second,
-           empty scrollbar/slider at the very end of the page. Same
-           `inset: 0` box, same z-index, just different `overflow`. -->
+      <!-- Two cloud containers, not one — they need OPPOSITE overflow. The
+           top-left pair bleeds up over the FAQ, unclipped. The
+           bottom-right pair must stay clipped: unclipped it stretched the
+           page's scrollable height into blank space past the last
+           section. -->
       <div class="waitlist-signup__clouds waitlist-signup__clouds--top" aria-hidden="true">
         <div class="cloud cloud--wl-1"></div>
         <div class="cloud cloud--wl-2"></div>
@@ -812,19 +666,6 @@
       <div class="waitlist-signup__inner">
         <h2 class="waitlist-signup__heading reveal" id="waitlist-signup-heading">Записването е отворено</h2>
 
-        <!-- Badge, revised twice since first shipped: originally one
-             long pill wrapping the whole sentence, then split into a
-             small purple-on-white chip per highlighted phrase with
-             plain bare white text beside it (that version had a real
-             mobile overlap/alignment bug — see SDD.md for the
-             root-cause writeup). Now: each line is ONE pill — the
-             connector text lives inside the same rounded box as the
-             highlighted phrase, solid --color-zaki background, all
-             text white, highlighted phrase bold for emphasis. Centered
-             horizontally, both per-row on mobile and as a whole line
-             on desktop (see style.css). Second phrase reads "за
-             първите 100" (matches the button's own wording) rather
-             than the original longer "за първите записали се.". -->
         <p class="waitlist-signup__badge-wrap reveal">
           <span class="waitlist-signup__badge-line"><strong>Ексклузивен достъп</strong> преди всички</span>
           <span class="waitlist-signup__badge-line"><strong>Специална цена</strong> за първите 100</span>
@@ -852,10 +693,6 @@
           <p class="waitlist-form__error" role="alert" aria-live="assertive"></p>
         </form>
 
-        <!-- --on-light: default success-message styling assumes a dark
-             section (white text) — see style.css; needed a light-bg
-             variant now that a second, bright-background instance
-             exists. -->
         <div class="success-message success-message--on-light" role="status" aria-live="polite" hidden>
           <svg class="success-message__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -864,29 +701,14 @@
         </div>
       </div>
 
-      <!-- Footer link row. Lives INSIDE this section on purpose, not as
-           a separate element after </main>: this section's roomier
-           padding-bottom was reserved for exactly this row (see the
-           padding comment on .waitlist-signup in style.css), and the
-           bottom-right cloud pair is anchored to this section's own
-           bottom edge with `overflow: hidden` — a separate footer
-           element below the section would push those clouds up off the
-           page's bottom edge and undo the verified "0px of extra
-           trailing scroll" fix. That space is now IN USE, so it's no
-           longer spare padding to trim.
-
-           <nav>, not <footer>: a <footer> nested inside a <section>
-           scopes to that section, which is wrong for a site-wide
-           privacy-policy link. A labelled <nav> is accurate for a small
-           group of navigational links and doesn't misstate the
-           document outline. Class naming follows this section's own BEM
-           prefix rather than a new global `.site-footer` namespace,
-           since the row is structurally part of this section.
-
-           Icons are plain <img>, NOT the mask-image tinting used by the
-           What It Teaches icons — see style.css for the reasoning
-           (these are multi-color brand marks; masking would destroy
-           them). -->
+      <!-- Footer link row. INSIDE this section on purpose: the section's
+           padding-bottom was reserved for it, and the bottom-right cloud
+           pair is anchored to this section's own bottom edge — a separate
+           element below the section would push those clouds past the
+           page's bottom edge and undo the 0px-trailing-scroll fix.
+           <nav>, not <footer>: a <footer> nested in a <section> scopes to
+           that section, which is wrong for a site-wide policy link.
+           Icons are plain <img>, NOT mask-image tinted — see style.css. -->
       <nav class="waitlist-signup__footer" aria-label="Социални мрежи и правила">
         <ul class="waitlist-signup__footer-list">
           <li>
@@ -914,10 +736,8 @@
               target="_blank"
               rel="noopener"
             >
-              <!-- data-optical-trim: this source PNG has ~6% transparent
-                   padding on every side that facebook.png doesn't have,
-                   so it needs a small scale correction to read the same
-                   size. See style.css. -->
+              <!-- data-optical-trim: this PNG has ~6% transparent padding per
+                   side that facebook.png doesn't. See style.css. -->
               <img
                 class="waitlist-signup__footer-icon waitlist-signup__footer-icon--inset"
                 src="assets/social/instagram.png"
@@ -930,12 +750,10 @@
             </a>
           </li>
           <li>
-            <!-- PLACEHOLDER URL — the privacy policy page does not exist
-                 yet. Deliberately pointed at an obviously-fake path that
-                 will 404 loudly rather than a real-looking one (e.g.
-                 "privacy-policy.html" or "/поверителност") that could
-                 ship unnoticed. Replace both the href and remove
-                 data-placeholder-href once the real page is live. -->
+            <!-- PLACEHOLDER URL — the privacy policy page does not exist yet.
+                 Deliberately a path that 404s loudly rather than a
+                 real-looking one that could ship unnoticed. Replace the
+                 href and remove data-placeholder-href when it's live. -->
             <a
               class="waitlist-signup__footer-link waitlist-signup__footer-link--text"
               href="PLACEHOLDER-privacy-policy"
