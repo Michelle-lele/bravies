@@ -3,14 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Смелчовци в беда — Записване в списъка на чакащите</title>
-  <meta name="description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта на Смелчовци в беда." />
+  <title>Семейна игра за безопасност, 5–9 г. | Смелчовци в беда</title>
+  <meta name="description" content="Семейна игра с карти, която учи децата на 5–9 г. на безопасни действия при среща с непознат. Запиши се за първия тираж." />
 
-  <!-- Google Fonts: playful rounded display face for headlines + a clean
-       grotesk for body/UI text, matching the "bright, colorful, kids-friendly"
-       design system brief. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Canonical. Matters more than usual here: this site is reachable at
+       smelcho.bg, www.smelcho.bg, with and without a trailing slash, AND
+       at its GitHub Pages *.github.io address. That last one is the real
+       risk — it can get indexed independently and split ranking signals
+       between two copies of the same page. Pointing every variant at the
+       apex domain collapses them into one. Uses a trailing slash because
+       that's what GitHub Pages serves for a directory root. -->
+  <link rel="canonical" href="https://smelcho.bg/" />
+
+  <!-- Open Graph / Twitter Card.
+       Disproportionately important for this project specifically: the
+       go-to-market is Bulgarian parent Facebook groups, an Instagram
+       bio link, and parents forwarding the link to each other over
+       Viber. Without these, every one of those shares renders as a bare
+       grey link — Facebook scrapes something arbitrary and usually gets
+       it wrong. These tags are what decide whether a post into a parent
+       group reads as a product or as spam.
+       og:locale is bg_BG, not just "bg" — Facebook wants the full
+       language_TERRITORY form and silently ignores the short one. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Смелчовци в беда" />
+  <meta property="og:locale" content="bg_BG" />
+  <meta property="og:url" content="https://smelcho.bg/" />
+  <meta property="og:title" content="Смелчовци в беда — игра за детска безопасност" />
+  <meta property="og:description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта." />
+  <!-- Real asset, supplied and measured at 1200x630. og:image:alt is read
+       aloud by screen readers on some platforms, so it isn't decorative. -->
+  <meta property="og:image" content="https://smelcho.bg/assets/og/og-image-1200x630.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Смелчовци в беда — карти за детска безопасност" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Смелчовци в беда — игра за детска безопасност" />
+  <meta name="twitter:description" content="Игра за умни действия в ситуации с (не)познати. Запиши се за първите 100 комплекта." />
+  <meta name="twitter:image" content="https://smelcho.bg/assets/og/og-image-1200x630.png" />
+
+  <!-- Browser chrome colour on mobile. Real value, not a placeholder —
+       --color-neda (#FDD43B), the brand yellow the Wait-list Signup
+       section already uses. Kept as a literal because <meta> can't read
+       a CSS custom property; if that token ever changes, this needs
+       changing with it. -->
+  <meta name="theme-color" content="#FDD43B" />
+
+  <!-- Built from the supplied source tile: the „С“ isolated by flood-filling
+       the outer white away, rebuilt on --color-neda (#FDD43B — NOT the
+       source file's #FFD21F), scaled 135%, exported opaque. Opaque is the
+       load-bearing part: iOS composites any alpha onto black. No SVG entry
+       — the source is brush artwork, so a trace would be heavier than the
+       32px PNG and gain nothing. -->
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/icons/favicon-192.png" sizes="192x192" type="image/png" />
+  <link rel="icon" href="assets/icons/favicon-512.png" sizes="512x512" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png" />
+
   <!-- Fonts are self-hosted from /assets/fonts (see @font-face rules at the
        top of style.css) rather than loaded from Google Fonts' CDN.
        Meaningful reason for this one: this is an EU/Bulgaria-facing site
@@ -19,10 +68,148 @@
        anything — this is the exact pattern a 2022 Munich court ruling
        found to violate GDPR (no consent basis for that third-party
        transfer). Self-hosting sidesteps the question entirely, plus
-       drops two DNS/TLS round-trips. The preconnect tags above are now
-       unused leftovers — harmless if left in, but fine to delete. -->
+       drops two DNS/TLS round-trips.
+       The two `preconnect` tags that used to sit here (to
+       fonts.googleapis.com and fonts.gstatic.com) have been REMOVED.
+       They were dead leftovers from before self-hosting — they opened
+       connections to Google for no benefit, which quietly undercut the
+       GDPR reasoning above.
+       Preloads below cover only the two faces that render above the
+       fold, measured rather than guessed: Dela Gothic One 400 (the h1
+       and the CTA button) and Nunito Sans 600 (the hero subtitle and
+       tagline). Deliberately NOT preloading the other four Nunito
+       weights — preloading fonts that aren't needed immediately
+       competes with the ones that are and makes LCP worse, which is
+       the usual way this optimisation backfires. `crossorigin` is
+       required on font preloads even for same-origin files; without it
+       the browser fetches the file twice. -->
+  <link rel="preload" href="assets/fonts/dela-gothic-one-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/nunito-sans-cyrillic-600-normal.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="style.css" />
+
+  <!-- ===================== STRUCTURED DATA (JSON-LD) =====================
+       Added for AEO as much as SEO. The queries that matter for this
+       product aren't brand queries — nobody searches "Смелчовци в беда"
+       yet — they're parent questions like "как да науча детето си да не
+       тръгва с непознати". Those get answered by AI assistants and AI
+       Overviews, and structured data is the mechanism for being the
+       cited source rather than an uncited one.
+
+       FAQPage is generated from the SEVEN Q&A pairs already written in
+       the FAQs section below — the text here is extracted verbatim from
+       that markup, not rewritten. IMPORTANT: that means the two can
+       drift. If a FAQ answer changes in the HTML below, this block must
+       be updated to match; Google treats visible-copy/markup mismatch
+       as a structured-data violation, not a formatting nit.
+
+       Deliberately NOT included, because each needs a decision that
+       isn't mine to make:
+       - Product + Offer: needs a price and a launch/availability date.
+         An Offer without a price won't validate, and guessing a number
+         on a pre-launch product would be worse than omitting it.
+       - Person / author credentials: the strongest available E-E-A-T
+         signal for a child-safety product, and the page currently makes
+         no claim about who built it or why they're credible. That's a
+         content decision (and a privacy one) before it's a markup one.
+       Both are logged in Open Decisions in SDD.md.
+
+       Three separate blocks rather than one @graph: easier to delete or
+       edit one independently, and equally valid to parsers. -->
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Кой може да играе?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "„Смелчовци в беда“ е игра с карти за деца на възраст от 5 до 9 години и техните близки - родители, баби и дядовци и приятели. Подходяща е за 2 до 5 играча. Една игра трае около 10 минути."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "А ако детето ми е на 4 или на 10 години?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "На 4 години играта може да работи в опростен вариант с активното участие на родител. На 10 - детето вероятно ще търси по-голямо предизвикателство. Подготвяме версия за по-големи деца - запиши се в списъка и ще те уведомим първи."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Как учат децата чрез играта?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Играта учи чрез различни ситуации и изиграване на глас. Всяко правилно действие се избира, казва и обсъжда. Ако играете по една игра на седмица в продължение на месец, децата изиграват десетки сценарии. Наградата в края прави победата обща, семейна цел, а не индивидуално постижение."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Могат ли децата да играят сами?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "След като са запознати с играта - да. Силно препоръчваме поне първите игри да са с родител. Разговорът по време на играта е също толкова важен, колкото и самата игра, затова препоръчваме да се играе с поне един възрастен."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ситуациите страшни ли са?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Не. Фокусът е върху това, което детето прави - не върху опасността. Всяка ситуация показва правилната реакция. Илюстрациите са топли и меки и не създават тревожност и страх. Играта не показва какво се случва, ако не отговориш правилно - просто семейството не споделя заедно наградата."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Няма ли да омръзне след няколко пъти?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Всяка игра е различна. Картите се разпределят по различен начин всяка игра - сценариите се появяват в различен ред, различни играчи получават различни карти. Препоръчваме кратки сесии от ~10 минути, редовно, защото рефлексът се изгражда с повторение."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Кога ще е готова играта?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "В момента работим по финалните илюстрации и подготвяме първия тираж. Записалите се в списъка ще бъдат уведомени първи и ще имат възможност да закупят играта на специална цена преди публичното обявяване."
+      }
+    }
+  ]
+}
+  </script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://smelcho.bg/#website",
+  "url": "https://smelcho.bg/",
+  "name": "Смелчовци в беда",
+  "inLanguage": "bg-BG",
+  "description": "Игра с карти, която учи деца на 5–9 години как да разпознават и реагират на опасни ситуации с (не)познати.",
+  "publisher": {
+    "@id": "https://smelcho.bg/#organization"
+  }
+}
+  </script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://smelcho.bg/#organization",
+  "name": "Смелчовци в беда",
+  "url": "https://smelcho.bg/",
+  "sameAs": [
+    "https://www.facebook.com/smelcho",
+    "https://www.instagram.com/smelcho.bg/"
+  ]
+}
+  </script>
 </head>
 <body>
 
@@ -40,7 +227,7 @@
       <h1 class="hero__title">Смелчовци в беда</h1>
 
       <p class="hero__subtitle">
-        Игра за умни действия в ситуации с (не)познати.
+        Игра за безопасни действия в ситуации с (не)познати.
       </p>
 
       <!-- Phase 4.5: new tagline, kept as its own line/paragraph per
@@ -285,7 +472,7 @@
               <p class="how-it-works__step-line">(Не)познат иска помощ. Предлага изкушение. Кара те да пазиш тайна. Какво правиш?</p>
             </div>
             <div class="how-it-works__card-wrap reveal">
-              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/situation.png" alt="" aria-hidden="true" loading="lazy" />
+              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/situation.png" alt="Карта със ситуация — (не)познат моли дете за помощ" loading="lazy" />
             </div>
           </li>
 
@@ -296,7 +483,7 @@
               <p class="how-it-works__step-line">Кажи НЕ. Бягай. Кажи на близък. Правилната реакция, в точния момент.</p>
             </div>
             <div class="how-it-works__card-wrap reveal">
-              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/reaction.png" alt="" aria-hidden="true" loading="lazy" />
+              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/reaction.png" alt="Карта действие „Съпротива“ — детето казва НЕ" loading="lazy" />
             </div>
           </li>
 
@@ -311,7 +498,7 @@
                    earlier text placeholder, same pattern as steps 1–2
                    (how-it-works__card--img, real <img> not a styled
                    <div>). -->
-              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/zaki.png" alt="" aria-hidden="true" loading="lazy" />
+              <img class="how-it-works__card how-it-works__card--img" src="assets/cards/zaki.png" alt="Карта действие „Знание“ — само възрастни помагат на възрастни" loading="lazy" />
             </div>
           </li>
         </ol>

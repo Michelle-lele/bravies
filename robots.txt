@@ -1,0 +1,15 @@
+# Смелчовци в беда — smelcho.bg
+# Single-page site; nothing is intentionally hidden from crawlers.
+
+User-agent: *
+Allow: /
+
+# AI / answer-engine crawlers are deliberately NOT blocked.
+# This is a choice, not an oversight: the goal for this site is to BE
+# the cited source when a Bulgarian parent asks an assistant about
+# teaching children to handle strangers. Blocking GPTBot,
+# ClaudeBot/Claude-User, PerplexityBot, Google-Extended etc. would opt
+# the page out of exactly the surface it's being optimised for.
+# If that trade is ever revisited, this is the file to change.
+
+Sitemap: https://smelcho.bg/sitemap.xml

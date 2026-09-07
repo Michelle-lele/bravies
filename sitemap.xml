@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One URL today. Add the privacy policy page here when it ships, and
+     any future pages (teen edition, blog posts) as they land — a stale
+     sitemap that omits real pages is worse than useful.
+     lastmod should be updated on meaningful content changes; crawlers
+     largely ignore changefreq and priority, so neither is included. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://smelcho.bg/</loc>
+    <lastmod>2026-09-05</lastmod>
+  </url>
+</urlset>

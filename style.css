@@ -72,21 +72,12 @@
   --color-vihren: #F68044;
   --color-neda: #FDD43B;
   /* Lighter yellow for inline text highlights (Phase 4.5) — same hue/
-     saturation as --color-neda above, just raised lightness (61% → 82%),
-     rather than an unrelated pale yellow, so it reads as "a softer
-     version of Neda's yellow" rather than a disconnected new color.
-     Deliberately NOT reusing --color-neda itself: this token is used as
-     TEXT color on the hero's blue background, while --color-neda is
-     used as a solid BUTTON background elsewhere — same value in both
-     roles would make the new highlight read as "another button" at a
-     glance instead of emphasized text. Contrast against the hero
-     background (#5080BF): 3.40:1. Documenting honestly rather than
-     overclaiming: this clears WCAG AA's 3:1 threshold for large/bold
-     text, not the stricter 4.5:1 for small normal text — but note the
-     hero's own existing body text color (--color-hero-text, #F8FAFC)
-     only reaches 3.87:1 against this same background, so 3.40:1 is
-     in the same realistic range the hero already operates in, not a
-     new regression relative to what's already shipping. */
+     saturation as --color-neda above, just raised lightness (61% → 82%).
+     Deliberately NOT reusing --color-neda itself: this is TEXT on the
+     hero blue, --color-neda is a BUTTON fill elsewhere, and one value in
+     both roles would make the highlight read as "another button".
+     4.58:1 against --color-hero-bg — clears AA for normal text as of the
+     Phase 5.7 background change. */
   --color-yellow-light: #FEEBA4;
   --color-vesta: #278C5D;
   --color-misho: #E5E1D6;
@@ -110,7 +101,10 @@
   --color-icon-deep-teal: #0E4749;
 
   /* --- Hero --- */
-  --color-hero-bg: #5080BF;
+  /* Darkened from #5080BF for contrast. Do not lighten without
+     re-measuring: at this value --color-yellow-light reaches 4.58:1 and
+     --color-hero-text 5.21:1; both were below 4.5:1 before. */
+  --color-hero-bg: #436BA0;
   --color-hero-text: #F8FAFC;
 
   /* --- Base surfaces --- */
@@ -815,6 +809,35 @@ input:focus-visible {
      so the shape of the motion is identical, just stretched over twice
      the time. */
   animation: brave-card-pulse-mobile 1.2s ease;
+  /* Grow UPWARD from the character's feet, not outward from the middle.
+     Fixes a real bug: with the default 50% 50% origin, scale(1.08)
+     pushes the image's bottom edge down by 4% of its own height —
+     measured at ~18px on a 375px viewport, against only ~8px of bottom
+     padding to absorb it. The caption panel hides the image's lower
+     portion INSIDE the card, but nothing clips below the card's bottom
+     edge (`.brave-card` and `.brave-card__portrait` are both
+     deliberately `overflow: visible` so the art can pop out of the
+     frame), so the character's shoes appeared ~9px below the card for
+     the duration of the pulse — visible if you scrolled fast enough to
+     catch a card mid-animation.
+     Pinning the origin to the bottom edge fixes this structurally
+     rather than by tuning a number: the bottom edge does not move AT
+     ALL during the pulse, so this holds for any character artwork
+     regardless of its proportions or how much transparent padding it
+     carries — which matters, since the real art isn't what this was
+     measured against. The growth all goes upward instead, into the
+     portrait box's own top padding, which reads as the character
+     rising rather than swelling. Measured at 375px: the image stays
+     8.2px above the card's bottom edge and 10.8px below its top edge
+     at the animation's peak, i.e. fully inside the frame; the gaps
+     between stacked mobile cards (11.7–15.3px) leave room even if
+     taller artwork does pop slightly above the card.
+     Only set on `.is-pulsing`, so it applies solely while the
+     animation is running — at rest the transform is identity and the
+     origin is irrelevant. Desktop is untouched: that breakpoint
+     neutralizes `.is-pulsing` entirely and uses its own hover pulse,
+     which already offsets its growth with a translateY(-14%). */
+  transform-origin: 50% 100%;
 }
 @media (prefers-reduced-motion: reduce) {
   .brave-card__portrait-img.is-pulsing { animation: none; }
@@ -964,9 +987,25 @@ input:focus-visible {
   }
   /* Desktop uses hover only — the scroll-triggered .is-pulsing class
      (mobile/portrait-tablet) is neutralized here so the two mechanisms
-     never layer or conflict on the same element. */
+     never layer or conflict on the same element.
+     BOTH properties must be reset, not just `animation`. The JS still
+     ADDS `.is-pulsing` at this breakpoint (the IntersectionObserver
+     isn't breakpoint-aware — it's CSS that decides what the class
+     does), so anything that rule sets applies on desktop too. Phase
+     5.4 added `transform-origin: 50% 100%` to it to stop the mobile
+     pulse pushing art below the card, and because only `animation` was
+     being reset here, that origin leaked onto desktop — where the
+     portrait's RESTING transform is `translateY(-14%) scale(1.16)`.
+     Scaling 1.16 about the bottom edge sends all of that growth
+     upward, which pushed the character art up over the section
+     heading at desktop and landscape-tablet widths. Resetting the
+     origin to centre restores the intended symmetric growth. Lesson
+     worth keeping: this rule is a full neutralization point, so any
+     property added to the mobile `.is-pulsing` rule needs a matching
+     reset here. */
   .brave-card__portrait-img.is-pulsing {
     animation: none;
+    transform-origin: 50% 50%;
   }
   /* Deliberately NOT also keyed to .brave-card.is-active — Неда's card
      carries that class statically from page load (see index.html), so
@@ -1911,8 +1950,15 @@ input:focus-visible {
      (64px) padding at wider viewports. This extra margin is what the
      bleed actually has room to happen in without reaching the last
      FAQ answer's text — verified against actual bounding-box overlap
-     measurements at 768/900/1200/1440px, not just eyeballed. */
-  padding-bottom: 140px;
+     measurements at 768/900/1200/1440px, not just eyeballed.
+     140px → 148px: a later sweep at finer intervals found the top-left
+     cloud's edge grazing the last question's line box by exactly 1px
+     between 960px and 1280px — a band the original 768/900/1200/1440
+     spot-checks happened to step over. 1px against a line box (not
+     glyph ink) with a transparent-topped PNG is almost certainly
+     invisible in practice, but 8px is a cheap way to stop carrying it
+     as a caveat. Re-verified clear from 320px to 1920px afterwards. */
+  padding-bottom: 148px;
   background: var(--color-surface-white);
   color: var(--color-text-dark);
 }
@@ -2060,7 +2106,7 @@ input:focus-visible {
      appended on top of it — which matters here specifically, because
      the bottom-right cloud pair is anchored to this section's bottom
      edge and a large height change would move it. */
-  padding: var(--space-4) var(--space-2) var(--space-3);
+  padding: var(--space-4) var(--space-2) calc(var(--space-6) + var(--space-4));
   background: var(--color-neda);
   color: var(--color-text-dark);
 }
@@ -2141,15 +2187,9 @@ input:focus-visible {
   gap: 0.35em;
   padding: 0.45rem 1rem;
   border-radius: var(--radius-input);
-  /* Flipped per direct request: white background, purple text — was
-     solid --color-zaki background + white text. Keeps the submit
-     button below as the one saturated-purple element in this section
-     (see .waitlist-form--on-neda .waitlist-form__button) rather than
-     flipping that too — these two pills are informational/decorative,
-     the button is the actual call to action, so keeping it visually
-     distinct (still solid purple) rather than matching these now-white
-     pills preserves a clear "which thing do I click" hierarchy. Flag
-     if the button was meant to flip too. */
+  /* White background, purple text. The submit button below stays solid
+     purple so it reads as the call to action against these lighter
+     informational pills — settled, not a pending question. */
   background: var(--color-surface-white);
   color: var(--color-zaki);
   line-height: 1.3;
@@ -2246,7 +2286,7 @@ input:focus-visible {
    source PNG should be at least ~920px wide natively. If the current
    files were exported around the old, smaller sizes (e.g. ~400–500px
    wide, as a rough guess), it's worth re-exporting them larger before
-   judging final sharpness here — flagging rather than guaranteeing.
+   judging final sharpness here — flagging rather than guaranteeing. */
 
 /* Vertical positioning: `top`/`bottom` are just anchor points (0) —
    actual placement comes from `--cloud-y-offset`, read by the shared
@@ -2330,16 +2370,41 @@ input:focus-visible {
   --cloud-y-offset: 35%; /* front layer shows slightly more (65%) than the back one, for depth */
 }
 
-/* Mobile: top-left pair removed entirely (direct request), not just
-   shrunk. Two reasons this is a `display: none` rather than a smaller
-   size like before: (1) at this width the heading is a nowrap single
-   line spanning nearly the full section, so ANY visible cloud sliver
-   sits close to it regardless of how small; removing it sidesteps
-   that risk entirely rather than continuing to fine-tune around it.
-   (2) this was flagged as wanted independent of the collision
-   question ("remove the top left clouds from this section on mobile
-   anyways") — so it's a deliberate simplification for small screens,
-   not just a defensive fix.
+/* Mobile, top-left pair: RESTORED (was `display: none`), with a
+   shorter visible sliver. History matters here, so it's kept: this pair
+   was removed on mobile for two reasons — (1) the heading at this width
+   is a nowrap single line spanning nearly the full section, so a cloud
+   sliver sat close to it, and (2) it was asked for independently of
+   that collision question. It's back per a later direct request ("I'd
+   prefer to have the clouds back there as long as they don't
+   interfere"), which supersedes (2) and re-opens (1) as a question to
+   actually answer rather than sidestep.
+   Measured, not assumed: with the pair simply switched back on at its
+   inherited sizes, the slivers reached 42px (--wl-1) and 48px (--wl-2)
+   into the section, while the heading's top edge sits ~40px below the
+   section's top — a real 2px and 8px vertical overlap across ~112–167px
+   of the heading's width. So they DID interfere, but only just, and
+   only because of the sliver depth, not the cloud size. But the sliver
+   is a two-sided constraint, which a first pass here got wrong: pulling
+   the clouds UP to clear the heading pushes them further into the FAQ
+   section above, and at 736–767px (where these clouds are at their
+   widest, and so tallest, below the breakpoint) a 20px sliver left only
+   7.5px between the cloud's top edge and the last FAQ question's text.
+   26px/30px is the value that satisfies both ends: the heading's top
+   edge sits a constant 40px below the section's top (that's
+   `.waitlist-signup`'s own padding-top, so it doesn't move with
+   viewport width), leaving 14px/10px of clearance below, while the
+   FAQ-side clearance recovers to ~20px at the tightest width. Verified
+   against the last FAQ question's actual text ink — measured with a
+   Range over the text node, not the `.faq__item` box, since that box
+   carries 17px of padding below the text that a box-only measurement
+   reads as a collision when nothing visible is touching.
+   That leaves 80–103px of each cloud bleeding up into the FAQ section
+   — which is where most of a bled cloud lives at every other
+   breakpoint anyway, and which is exactly what `.faq`'s extra
+   padding-bottom was always reserving room for. Net effect: that
+   padding stops being dead space on mobile (the original complaint)
+   without shrinking it.
    Bottom-right pair: sized up and made MORE visible here, not less —
    direct feedback that they were "barely showing" on an actual device
    (confirmed from a real screenshot, not just a placeholder render).
@@ -2352,9 +2417,13 @@ input:focus-visible {
    gives the corner real presence without needing to touch anything
    above the row-layout breakpoint. */
 @media (max-width: 767px) {
-  .cloud--wl-1,
+  .cloud--wl-1 {
+    /* 42px → 26px of sliver inside the section. The rest bleeds up
+       into the FAQ's reserved bottom padding. */
+    --cloud-y-offset: calc(-100% + 26px);
+  }
   .cloud--wl-2 {
-    display: none;
+    --cloud-y-offset: calc(-100% + 30px);
   }
   .cloud--wl-3 {
     width: clamp(260px, 62vw, 400px);
@@ -2441,11 +2510,14 @@ input:focus-visible {
      column gap (--space-2) so a wrapped state stays compact. */
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
-  /* Cancels the links' own 0.5rem padding (below) so the FIRST icon's
-     visible left edge lines up with the section's padding edge, rather
-     than sitting 8px inside it. The padding exists purely to grow the
-     tap target; it shouldn't push the row visually off its gutter. */
-  margin-inline-start: -0.5rem;
+  /* No negative inline-start margin here. The left-aligned version of
+     this row carried a -0.5rem to cancel the links' own tap-target
+     padding and pull the first icon's visible edge onto the section's
+     gutter; the row is centred at every breakpoint now, so that
+     correction has nothing left to correct and is set to 0 in the
+     alignment rule near the end of this file. Left as an explicit
+     note rather than a silently-overridden declaration, so the two
+     rules don't read as fighting each other. */
 }
 
 .waitlist-signup__footer-link {
@@ -2499,20 +2571,10 @@ input:focus-visible {
   transform: scale(calc(512 / 450));
 }
 
-/* Text link: white per direct request, matching this section's H2
-   treatment (.waitlist-signup__heading is also white on this yellow).
-   ⚠️ Contrast is 1.37:1 against --color-neda — measured, not estimated.
-   That's below every WCAG threshold including the 3:1 one for
-   non-text, and it is materially worse here than on the H2, which at
-   least carries it at up to 40px of heavy Dela Gothic One; this is
-   0.875rem body type. --color-zaki would give 4.23:1 and
-   --color-text-dark 10.81:1, either as a one-line swap. Implemented as
-   asked and flagged in SDD.md rather than silently substituted.
-   The underline is a small addition beyond "plain white text": this is
-   the only bare-text link on the page (the two .cta-buttons are filled
-   pills with their own affordance), so with no colour contrast to
-   distinguish it, the underline is the only cue that it's clickable.
-   Also flagged — one line to remove if unwanted. */
+/* Text link: white, matching this section's H2. Contrast is 1.37:1
+   against --color-neda — an accepted risk, decided, not a warning.
+   Do not "fix" the colour. The underline is the only affordance left
+   at that ratio, so it stays too. */
 .waitlist-signup__footer-link--text {
   font-family: var(--font-body);
   font-size: var(--font-size-small);
@@ -2522,49 +2584,72 @@ input:focus-visible {
   text-underline-offset: 3px;
 }
 
-/* Narrow-viewport clearance over the bottom-right cloud pair.
-   MEASURED, not assumed: swept every viewport width from 320px to
-   767px in 20px steps and compared the links' right edge against each
-   cloud's rendered left edge. The two overlap horizontally from 320px
-   up to ~695px (at 375px the overlap is 164px — most of the privacy
-   link sits over cloud art), and are clear from ~700px up (at 768px
-   the nearest cloud starts 154px to the right of the last link, and
-   that clearance only grows with viewport width). z-index already
-   paints the links above the clouds, but that isn't a fix here: the
-   text link is white, and so are the clouds — white-on-white is worse
-   than the 1.37:1 it already has against the yellow.
-
-   Fix is vertical, not horizontal, and deliberately does NOT touch the
-   clouds' size or position — those are the result of several rounds of
-   direct requests ("barely showing" on mobile, "at least 50% visible")
-   and shrinking or shoving them aside to make room would undo that.
-   Instead this raises the section's padding-bottom at these widths, so
-   the footer row sits above the clouds' top edge rather than across
-   them. The clouds are anchored to the section's bottom edge, so they
-   don't move — only the row lifts.
-
-   The value is the LINKS' BOTTOM edge clearance, which is what
-   padding-bottom directly controls — an earlier pass here measured the
-   links' TOP edge instead and landed on 96px, which still left a
-   7–18px vertical overlap between 540px and 699px; caught by
-   re-running the sweep, not by eye. Worst case across the swept range
-   is the bottom-right pair's top edge sitting 113.6px above the
-   section's bottom (620–699px, where those clouds' vw-driven width
-   hits its 320px clamp and so their height plateaus at its maximum).
-   calc(--space-6 + --space-4) = 136px clears that by 22.4px at the
-   tightest point, and by more at phone widths — composed from two
-   existing spacing tokens rather than a new 136px value, and applied
-   as one uniform rule across the whole range rather than adding a
-   third breakpoint for the 540–699px band alone. Cost, stated plainly:
-   this makes the section ~105px taller on a phone than before the
-   footer existed. That extra strip isn't empty — it's the band the
-   clouds occupy. The margin-top drops one step (--space-4 →
-   --space-3) to claw back a little of it. */
-@media (max-width: 767px) {
-  .waitlist-signup {
-    padding-bottom: calc(var(--space-6) + var(--space-4));
-  }
+/* Clearance over the bottom-right cloud pair — now UNIFORM at every
+   width, set on `.waitlist-signup`'s own padding-bottom above rather
+   than as a breakpoint override here.
+   Why uniform: this started as a mobile-only rule (≤767px), then had
+   to be widened to ≤1023px when the footer row was centred on tablet,
+   then would have needed widening again for desktop centring. Each
+   time the row moved horizontally it landed in the clouds at a new
+   band, and each time the fix was to re-tune a breakpoint — a pattern
+   worth stopping rather than repeating a third time.
+   It also turns out uniform isn't a compromise here, it's just the
+   right answer: the required clearance is nearly identical at both
+   ends of the range. Mobile's worst case is 113.6px (620–699px, where
+   the bottom pair's vw-driven width hits its 320px clamp so their
+   height plateaus), and desktop's is ~112px (the 560px-wide clamp at
+   a 40% y-offset leaves ~60% of a 186px-tall cloud above the section's
+   bottom edge). calc(--space-6 + --space-4) = 136px clears both with
+   ~22px to spare, composed from two existing spacing tokens rather
+   than a new 136px literal. One value, no breakpoint, nothing to
+   re-tune when the row moves again.
+   Cost, stated plainly: this makes the section ~105px taller on a
+   phone and ~112px taller on desktop than before the footer row
+   existed. That extra strip isn't empty — it's the band the clouds
+   occupy. The margin-top still drops one step below 1024px
+   (--space-4 → --space-3) to claw back a little of it where vertical
+   space is tightest. */
+@media (max-width: 1023px) {
   .waitlist-signup__footer {
     margin-top: var(--space-3);
+  }
+}
+
+/* Footer row alignment — centred at EVERY breakpoint.
+   History, since this moved twice: Phase 5.3 placed the row at the
+   section's bottom-left corner; Phase 5.4 centred it on tablet and
+   mobile only; this centres desktop too, per direct request, so there
+   is now no breakpoint where the row is left-aligned. That also
+   retires the "does a 1024px landscape tablet count as tablet or
+   desktop?" ambiguity that the tablet/desktop split created — with one
+   alignment everywhere, the question no longer has anything riding on
+   it.
+   `margin-inline-start` is 0 rather than the -0.5rem the left-aligned
+   version used: that negative margin existed only to pull the first
+   icon's VISIBLE edge onto the section's left gutter (cancelling the
+   link's own tap-target padding), which is meaningless once the group
+   is centred and would otherwise shift the whole row 8px off-centre.
+   Padding is symmetric across the row's two end links, so centring
+   needs no other correction — verified, left and right gaps match to
+   within 0.1px from 320px to 1920px. */
+.waitlist-signup__footer-list {
+  justify-content: center;
+  margin-inline-start: 0;
+}
+
+/* Mobile: the two social icons share the first row, the policy link
+   gets its own row beneath them — direct request. Implemented by
+   giving the last item a full-width flex-basis so it's forced onto its
+   own line, rather than by adding a hard `flex-direction: column`
+   (which would have stacked all three) or by hand-placing a line
+   break. The list already has `flex-wrap: wrap`, so this needs no
+   other change; the row gap (--space-1) is what separates the two
+   lines. The item itself becomes a flex box so the anchor centres
+   within its now-full-width line. */
+@media (max-width: 767px) {
+  .waitlist-signup__footer-list > li:last-child {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: center;
   }
 }
