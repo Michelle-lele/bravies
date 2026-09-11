@@ -36,6 +36,14 @@
 const POSTHOG_TOKEN = 'phc_uw5w2ScPwhi2aW4KAitQUhQUJEwdWZvK2JkZtmfeNdYx';
 const POSTHOG_HOST = 'https://eu.i.posthog.com';
 
+/* Self-exclusion. posthog.opt_out_capturing() is the normal route and is
+   useless here: it records the opt-out in persistence, which is 'memory',
+   so it's forgotten on every reload. A URL flag is the only thing that
+   survives the cookieless config without reintroducing device storage.
+   Bookmark https://smelcho.bg/?notrack=1 and use it for every own visit.
+   Checked once at load, so it cannot be toggled mid-session. */
+const TRACKING_DISABLED = new URLSearchParams(window.location.search).has('notrack');
+
 // Events captured before the bundle finishes loading are held here and
 // flushed on load. Without this, a fast scroller's first scroll_depth
 // events would be silently dropped.
@@ -43,6 +51,8 @@ let phQueue = [];
 let phReady = false;
 
 function initPostHog() {
+  if (TRACKING_DISABLED) return; // no bundle fetched, no $pageview, no network call at all
+
   const script = document.createElement('script');
   script.src = `${POSTHOG_HOST}/static/array.js`;
   script.async = true;
@@ -77,6 +87,7 @@ function initPostHog() {
 }
 
 function track(name, props = {}) {
+  if (TRACKING_DISABLED) return;
   try {
     if (phReady && window.posthog) {
       window.posthog.capture(name, props);
