@@ -1,6 +1,6 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-*Status: Phases 1–5.9 complete; Phase 5 (integration pass) next. Phase 5.9
+*Status: Phases 1–5.10 complete; Phase 5 (integration pass) next. Phase 5.9
 compressed this document: constraints and current state kept, history and
 rationale cut. It reflects current, as-built behaviour — not a change history.
 Tech stack: vanilla JS, no framework.*
@@ -15,6 +15,7 @@ emails for a kids' board game.
 - HTML5 (semantic layout)
 - CSS3 (responsive, Flexbox/Grid, pure CSS)
 - Vanilla JavaScript (form handling, UI interactions, scroll-driven animation)
+- PostHog Cloud EU (analytics); MailerLite (email); GitHub Pages (hosting)
 
 ## 3. UI/UX Requirements
 
@@ -563,12 +564,72 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
 - **The unconditional `.../takel` tracking beacon** in MailerLite's own embed
   is deliberately not replicated — see Open Decisions.
 - **Double opt-in** is enabled on MailerLite's side; nothing in this
-  HTML/JS touches it.
+  HTML/JS touches it. Consequence: `form_submitted` counts submissions, not
+  confirmations — **the MailerLite subscriber count is the real number**.
+- Analytics hooks live inside `initWaitlistForm()` (`form_started`,
+  `form_submitted`, `form_error`); see §5.
 
-## 5. Constraints
+## 5. Analytics & Privacy
 
-- All CSS in `style.css`; all JS in `script.js`.
-- No third-party network requests on page load.
+- **PostHog Cloud EU** (Frankfurt), project token `phc_uw5w2Sc…`, host
+  `https://eu.i.posthog.com`. Region is fixed at account creation and cannot be
+  migrated.
+- **Cookieless, no consent banner.** `persistence: 'memory'` + `person_profiles:
+  'never'` means nothing is written to cookies, localStorage or sessionStorage,
+  so ePrivacy Art. 5(3) does not apply and no banner is required. **These two
+  options are load-bearing** — changing either makes the page non-compliant as
+  written.
+- Also off: `autocapture`, session replay, surveys, `capture_pageleave`.
+  Autocapture would additionally undermine the data-minimisation claim in
+  `privacy.html`.
+- **Loader is a hand-written `<script>` + local queue, not PostHog's minified
+  snippet** — that snippet exists to stub every SDK method; only `capture()` is
+  used here. `onerror` drops the queue so analytics can never break the page.
+- **`track()` in `script.js` is the single egress point** for every event. The
+  future consent gate goes inside it, not at the call sites.
+- **Event taxonomy (frozen — renaming makes old and new data
+  incomparable):** `$pageview` (auto) · `form_viewed` · `form_started` ·
+  `form_submitted` · `form_error` · `scroll_depth` · `section_viewed`.
+- **Properties:** `location` (`hero`/`footer`, from `data-form-location` on each
+  form) · `percent` (25/50/75/100) · `section` (`desired_state`/`waitlist_signup`,
+  mapped from element IDs in `TRACKED_SECTIONS`) · `reason` (`invalid_email` /
+  `rejected` / `timeout` / `network` / `unknown`).
+- **`form_submitted` fires on confirmed success only**, never on button click —
+  counting clicks would let failures inflate the one number the print-run
+  decision rests on.
+- **`form_error` with `reason: 'rejected'` is the free-tier cap alarm.** At 250
+  MailerLite subscribers every new signup takes this path; nothing else on the
+  page will warn.
+- **Client IP is discarded at ingestion** (org-level default, inherited).
+  **GeoIP enrichment is left on**, so city-level location derived from the
+  discarded IP is stored — disclosed in `privacy.html` §9.
+- **`ml_guid` in localStorage is the one storage exception**, written only on
+  submit, not on load. Strictly necessary to deliver a user-requested service,
+  so it needs no consent — but it does need the §9 disclosure it now has.
+- **`privacy.html` loads no `script.js`**: `$pageview` events from it would
+  dilute the landing page's conversion denominator.
+- **Retention is 12 months**, fixed by PostHog's free plan; there is no
+  project-level control. Free tier is also 1 project and 1M events/month —
+  ~100k visitors, so not a binding constraint.
+- **UTM tags are mandatory on every shared link** — Facebook and Instagram
+  in-app browsers strip the referrer, and tags cannot be added retroactively.
+  Lowercase only. Canonical set: `?utm_source=facebook&utm_medium=group` ·
+  `facebook&utm_medium=page` · `instagram&utm_medium=bio` ·
+  `instagram&utm_medium=story`.
+- **Google Search Console + Bing Webmaster Tools** verified via DNS TXT (domain
+  property, covers all host variants). Neither adds page code. Do not delete the
+  TXT record — Google re-checks it.
+- **Baseline discipline:** do not edit the page or reorder sections during the
+  first measurement window (~2 weeks or a few hundred pageviews).
+
+## 6. Constraints
+
+- All CSS in `style.css`; all JS in `script.js`. `privacy.html` reuses
+  `style.css` (`.legal` block) and deliberately loads no JS.
+- **No third-party network requests on page load *before* the PostHog bundle.**
+  The original zero-third-party property was given up knowingly in Phase 5.10;
+  fonts stay self-hosted and the `.../takel` beacon stays omitted, so PostHog is
+  the only third-party call on load.
 
 ## SEO / AEO
 
@@ -593,7 +654,8 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
   itself as a choice: the point of the AEO work is to be the cited source when
   a Bulgarian parent asks an assistant about teaching children to handle
   strangers.
-- **`sitemap.xml`** — one URL. Add the privacy policy page when it ships.
+- **`sitemap.xml`** — two URLs: `/` and `/privacy.html`. No `changefreq` or
+  `priority` by deliberate choice; crawlers ignore both.
 - **Favicons** at `assets/icons/`: `favicon-32.png`, `favicon-192.png`,
   `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source
   tile — the „С“ isolated by flood-filling the outer white away, rebuilt on
@@ -617,9 +679,8 @@ deleted independently.
 
 ## Open Decisions
 
-- **Must not ship as-is**: the privacy-policy link points at
-  `PLACEHOLDER-privacy-policy` and will 404. Also carries
-  `data-placeholder-href="true"` for grepping.
+- **Closed (Phase 5.10)**: the privacy-policy link now points at
+  `privacy.html`; `data-placeholder-href` removed.
 - **Accepted risk, recorded rather than fixed**: both
   `.waitlist-signup__heading` and the footer's policy link are white on
   `--color-neda` at **1.37:1** — below every WCAG threshold, including the 3:1
@@ -631,10 +692,13 @@ deleted independently.
   (`text-decoration: underline; text-underline-offset: 3px`). At 1.37:1 there
   is no colour cue left that it's clickable, but this is the site's only
   bare-text link, so it introduces a second link treatment. One line to remove.
-- **Blocks measurement**: no analytics are installed. PostHog is the recorded
-  choice but isn't implemented, so neither this work nor the waitlist
-  conversion rate the page exists to measure can be observed. Needs an
-  account/key and a cookie consent banner alongside it.
+- **Closed (Phase 5.10)**: PostHog is installed and measuring; see §5. No
+  consent banner was needed after all — the cookieless configuration removes
+  the requirement.
+- **Deferred — upgrade to a consent banner + persistent cookies.** Trigger is
+  A/B testing or experiments (on-page surveys a maybe), *not* "more analytics".
+  Costs ~7–10h and breaks the trend baseline on the day it ships; annotate the
+  switch date in PostHog. No backfill — data before the switch stays shallow.
 - **Decided, not implemented — waiting on a price**: `Product` + `Offer`
   schema. An `Offer` without a price won't validate. Add `availability:
   PreOrder` alongside it.
@@ -642,6 +706,18 @@ deleted independently.
   schema plus a visible "who made this" block. The strongest available E-E-A-T
   lever for a child-safety product. **The schema alone is not valid without the
   visible on-page content** — they ship together or not at all.
+- **Unverified**: the bundle URL `https://eu.i.posthog.com/static/array.js`.
+  `onerror` fails silently, so a wrong path looks like "no traffic". Check the
+  Network tab for a 404 on first live load.
+- **Test events from `file://` are in the dataset** with local-path
+  `$current_url` and real geo. Filter them out, or just ignore everything before
+  the go-live date.
+- **Set a trigger at 200 MailerLite subscribers** — decide then whether to
+  upgrade the plan or close the waitlist deliberately. Open question: whether
+  unconfirmed subscribers occupy slots against the 250 cap.
+- **Define what "first 100" means before there are 100.** Confirmation
+  timestamp is the defensible answer; deciding after the fact, with real people
+  affected, is worse.
 - **Image weight** is 2.4 MB across 8 images against a <500 KB target. Into the
   illustrator brief: WebP, uniform dimensions per set.
 - **Card colours are not tokenised** — three blues in play (`#436BA0`,
@@ -653,8 +729,10 @@ deleted independently.
 - **Desired State's position in the page order — deferred.** The underlying
   concern is that most visitors won't scroll far enough to reach it. A reorder
   was tried and reverted; teaser options were drafted and none was an
-  improvement. Do not move it again on argument — measure scroll depth in
-  PostHog first.
+  improvement. Do not move it again on argument — the `section_viewed`
+  (`desired_state`) and `scroll_depth` events now exist to settle it. Read: high
+  reach + low conversion = not a placement problem; low reach + good conversion
+  among those who reach it = strongest case to move it up.
 - **Check the cloud source PNGs' native resolution.** Above ~1100px wide is
   fine at the current render size; below ~500px, re-export.
 - **Wait-list Signup section height is accepted as-is.** If it ever needs to
@@ -692,5 +770,4 @@ deleted independently.
   line and the FAQ Q4/Q7 answers, all of which got measurably longer — have
   still not had a line-wrap check under the real fonts.
 - **The `.../takel` tracking beacon is permanently omitted, not deferred.**
-  PostHog covers form impressions; the beacon would add an always-on
-  third-party call on load for a metric the project will already have.
+  `form_viewed` now covers form impressions, so the premise holds as-built.

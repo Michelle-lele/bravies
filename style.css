@@ -1703,3 +1703,81 @@ input:focus-visible {
     justify-content: center;
   }
 }
+
+/* --- LEGAL PAGE (poveritelnost.html) ---
+   Scoped entirely under .legal so none of it can leak into the landing
+   page. The base reset zeroes `p` margins and strips `ul` bullets —
+   both are wanted on the landing page and wrong for running legal
+   prose, so they're restored here rather than weakened globally.
+   Measure is capped at 68ch: this is the one page on the site someone
+   actually reads top to bottom, and full-width text at 1920px is
+   unreadable. */
+.legal {
+  max-width: 68ch;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-2) var(--space-5);
+}
+
+.legal__title {
+  font-size: var(--font-size-h2);
+  margin-top: var(--space-3);
+  line-height: 1.2;
+}
+
+.legal__updated {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  margin-top: var(--space-1);
+}
+
+.legal__section { margin-top: var(--space-4); }
+
+.legal__heading {
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  line-height: 1.3;
+  margin-bottom: var(--space-2);
+}
+
+.legal p {
+  font-size: var(--font-size-body);
+  line-height: 1.65;
+  margin-bottom: var(--space-2);
+}
+
+.legal p:last-child { margin-bottom: 0; }
+
+.legal__list {
+  list-style: disc;
+  padding-left: 1.35em;
+  margin-bottom: var(--space-2);
+}
+
+.legal__list li {
+  font-size: var(--font-size-body);
+  line-height: 1.65;
+  margin-bottom: 0.35em;
+}
+
+/* Underlined, not colour-only: --color-zaki on white is 6.4:1 for text
+   but the site has no other link convention to lean on, so the
+   underline carries the affordance. */
+.legal a {
+  color: var(--color-zaki);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.legal a:hover,
+.legal a:focus-visible { text-decoration-thickness: 2px; }
+
+.legal__back {
+  display: inline-block;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.legal__back:hover,
+.legal__back:focus-visible { text-decoration: underline; }
+
+.legal__back--bottom { margin-top: var(--space-4); }

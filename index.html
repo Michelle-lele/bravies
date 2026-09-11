@@ -186,7 +186,7 @@
         <span class="hero__tagline-highlight">Увереност</span> за детето.
       </p>
 
-      <form class="waitlist-form" id="hero-form" data-waitlist-form novalidate>
+      <form class="waitlist-form" id="hero-form" data-waitlist-form data-form-location="hero" novalidate>
         <div class="waitlist-form__row">
           <label for="hero-email" class="sr-only">Твоят имейл адрес</label>
           <input
@@ -671,7 +671,7 @@
           <span class="waitlist-signup__badge-line"><strong>Специална цена</strong> за първите 100</span>
         </p>
 
-        <form class="waitlist-form waitlist-form--on-neda reveal" id="bottom-form" data-waitlist-form novalidate>
+        <form class="waitlist-form waitlist-form--on-neda reveal" id="bottom-form" data-waitlist-form data-form-location="footer" novalidate>
           <div class="waitlist-form__row">
             <label for="bottom-email" class="sr-only">Твоят имейл адрес</label>
             <input
@@ -750,14 +750,12 @@
             </a>
           </li>
           <li>
-            <!-- PLACEHOLDER URL — the privacy policy page does not exist yet.
-                 Deliberately a path that 404s loudly rather than a
-                 real-looking one that could ship unnoticed. Replace the
-                 href and remove data-placeholder-href when it's live. -->
+            <!-- target="_blank" on purpose: this link sits below the bottom
+                 signup form, and navigating away in-tab would discard a
+                 half-typed email. -->
             <a
               class="waitlist-signup__footer-link waitlist-signup__footer-link--text"
-              href="PLACEHOLDER-privacy-policy"
-              data-placeholder-href="true"
+              href="privacy.html"
               target="_blank"
               rel="noopener"
             >Политика за поверителност</a>

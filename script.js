@@ -2,6 +2,198 @@
    СМЕЛЧОВЦИ В БЕДА — Landing Page Script
    ===================================================================== */
 
+/* ---------------------------------------------------------------------
+   PHASE 5.10 — Analytics (PostHog, cookieless)
+
+   Deliberately NOT PostHog's own minified bootstrap snippet. That
+   snippet exists to stub every SDK method so calls made before the
+   bundle loads are queued; we need exactly one method (`capture`), so
+   a readable loader plus a small local queue does the same job in a
+   fraction of the code and stays consistent with the "all JS in
+   script.js, hand-written, no build step" constraint.
+
+   Configuration is what makes the no-consent-banner position hold, so
+   none of these options are cosmetic:
+     persistence: 'memory'   — nothing written to cookies, localStorage
+                               or sessionStorage. The visitor ID lives
+                               in a JS variable and dies on unload.
+                               This is the single option that keeps the
+                               page outside ePrivacy Art. 5(3).
+     person_profiles: 'never' — identify() becomes a no-op, so no
+                               persistent person record can be created
+                               server-side.
+     autocapture: false      — no automatic click/pageleave harvesting;
+                               only the seven events defined below.
+     disable_session_recording / disable_surveys — neither is used, and
+                               both would add network activity and, in
+                               replay's case, capture form input.
+
+   `track()` is the ONLY place events leave the page. When the banner
+   upgrade happens (see SDD "Open Decisions"), the consent gate goes
+   inside this one function — not scattered across fifteen call sites.
+--------------------------------------------------------------------- */
+
+const POSTHOG_TOKEN = 'phc_uw5w2ScPwhi2aW4KAitQUhQUJEwdWZvK2JkZtmfeNdYx';
+const POSTHOG_HOST = 'https://eu.i.posthog.com';
+
+// Events captured before the bundle finishes loading are held here and
+// flushed on load. Without this, a fast scroller's first scroll_depth
+// events would be silently dropped.
+let phQueue = [];
+let phReady = false;
+
+function initPostHog() {
+  const script = document.createElement('script');
+  script.src = `${POSTHOG_HOST}/static/array.js`;
+  script.async = true;
+
+  script.onload = () => {
+    if (!window.posthog || typeof window.posthog.init !== 'function') return;
+
+    window.posthog.init(POSTHOG_TOKEN, {
+      api_host: POSTHOG_HOST,
+      persistence: 'memory',
+      person_profiles: 'never',
+      autocapture: false,
+      capture_pageview: true,
+      capture_pageleave: false,
+      disable_session_recording: true,
+      disable_surveys: true,
+    });
+
+    phReady = true;
+    phQueue.forEach(({ name, props }) => window.posthog.capture(name, props));
+    phQueue = [];
+  };
+
+  // Analytics must never be able to break the page. An ad blocker, an
+  // offline visitor or a PostHog outage all land here; the queue is
+  // dropped and everything else on the page carries on.
+  script.onerror = () => {
+    phQueue = [];
+  };
+
+  document.head.appendChild(script);
+}
+
+function track(name, props = {}) {
+  try {
+    if (phReady && window.posthog) {
+      window.posthog.capture(name, props);
+    } else {
+      // Cap the queue: if the bundle never loads, this must not grow
+      // unbounded while someone scrolls a long page.
+      if (phQueue.length < 50) phQueue.push({ name, props });
+    }
+  } catch (e) {
+    // Swallow. A failed analytics call is never worth a broken page.
+  }
+}
+
+/* Scroll depth: one event the first time each threshold is passed.
+   The listener is throttled to 200ms because scroll fires continuously
+   — unthrottled this burns battery and can drop frames on low-end
+   Android, which is most of the expected traffic. */
+function initScrollDepth() {
+  const thresholds = [25, 50, 75, 100];
+  const fired = new Set();
+  let ticking = false;
+
+  const check = () => {
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    // A page shorter than the viewport has nothing to scroll; treating
+    // that as "100% reached" would inflate the metric with visitors who
+    // never moved.
+    if (scrollable <= 0) return;
+
+    const percent = (window.scrollY / scrollable) * 100;
+
+    thresholds.forEach((t) => {
+      if (percent >= t && !fired.has(t)) {
+        fired.add(t);
+        track('scroll_depth', { percent: t });
+      }
+    });
+
+    if (fired.size === thresholds.length) {
+      window.removeEventListener('scroll', onScroll);
+    }
+  };
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    window.setTimeout(() => {
+      ticking = false;
+      check();
+    }, 200);
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  check(); // covers a page loaded already scrolled (e.g. #anchor, restored position)
+}
+
+/* Section visibility: percentage thresholds shift every time copy is
+   edited above a section, so they can't answer "did anyone reach the
+   Desired State block?" on their own. These events survive edits
+   because they're tied to the element, not to a page offset.
+
+   Desired State is the one that matters — the deferred reorder
+   decision in SDD "Open Decisions" is waiting on exactly this number. */
+const TRACKED_SECTIONS = {
+  'desired-state': 'desired_state',
+  'waitlist-signup': 'waitlist_signup',
+};
+
+function initSectionTracking() {
+  const ids = Object.keys(TRACKED_SECTIONS);
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const name = TRACKED_SECTIONS[entry.target.id];
+        if (name) track('section_viewed', { section: name });
+        obs.unobserve(entry.target); // once per page load, not per scroll pass
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+}
+
+/* Form impressions. Without these, hero and footer conversion aren't
+   comparable: the footer form looks worse purely because fewer people
+   scroll to it. This supplies each form its own denominator. */
+function initFormImpressions() {
+  const forms = document.querySelectorAll('[data-waitlist-form]');
+  if (!forms.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        track('form_viewed', { location: formLocation(entry.target) });
+        obs.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.5 }
+  );
+
+  forms.forEach((form) => observer.observe(form));
+}
+
+// Reads data-form-location, falling back to the form's id so a missing
+// attribute degrades to a usable label instead of "unknown".
+function formLocation(form) {
+  return form.dataset.formLocation || form.id || 'unknown';
+}
+
+initPostHog(); // top-level, not DOMContentLoaded: $pageview should fire as early as possible
+
 document.addEventListener('DOMContentLoaded', () => {
   initHeroClouds();
   initRevealOnScroll();
@@ -10,6 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initBraveCardScrollPulse(); // mobile/tablet scroll-triggered card pulse
   initFaqAccordion(); // Phase 4
   initWaitlistClouds(); // Phase 4 (later addition — clouds reused on the Wait-list Signup section)
+  initScrollDepth(); // Phase 5.10
+  initSectionTracking(); // Phase 5.10
+  initFormImpressions(); // Phase 5.10
 });
 
 /* ---------------------------------------------------------------------
@@ -296,6 +491,8 @@ function initWaitlistForm(form) {
     ? form.parentElement.querySelector('.success-message')
     : null;
   const submitBtn = form.querySelector('.waitlist-form__button');
+  const formLoc = formLocation(form); // Phase 5.10 — 'hero' | 'footer'
+  let hasStarted = false; // Phase 5.10 — form_started fires once per form per load
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -315,6 +512,7 @@ function initWaitlistForm(form) {
 
     if (!email || !emailPattern.test(email)) {
       showError('Моля, въведете валиден имейл адрес.');
+      track('form_error', { location: formLoc, reason: 'invalid_email' }); // Phase 5.10
       input.focus();
       return;
     }
@@ -333,22 +531,44 @@ function initWaitlistForm(form) {
         // check rather than assuming "the callback fired" means "it
         // worked".
         if (response && response.success) {
+          // Phase 5.10 — fires on confirmed success only, never on
+          // button click: counting clicks would let failed submissions
+          // inflate the one number the print-run decision rests on.
+          track('form_submitted', { location: formLoc });
           form.hidden = true;
           if (successEl) {
             successEl.hidden = false;
             successEl.classList.add('is-visible');
           }
         } else {
+          // Phase 5.10 — MailerLite accepted the request but refused the
+          // subscriber. Once the free plan's 250-subscriber cap is hit,
+          // this is the path every new signup takes, and this event is
+          // the only warning the page will give.
+          track('form_error', { location: formLoc, reason: 'rejected' });
           showError('Нещо се обърка. Моля, опитайте отново.');
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (submitBtn) submitBtn.classList.remove('is-loading');
+        // Phase 5.10 — mailerliteSubscribe() rejects with Error('timeout')
+        // or Error('network'); anything else is unexpected.
+        const reason =
+          error && (error.message === 'timeout' || error.message === 'network')
+            ? error.message
+            : 'unknown';
+        track('form_error', { location: formLoc, reason });
         showError('Нещо се обърка. Моля, проверете връзката си и опитайте отново.');
       });
   });
 
   input.addEventListener('input', () => {
+    // Phase 5.10 — separates "wasn't interested" from "tried and something
+    // stopped them". The second is fixable; the first isn't a bug.
+    if (!hasStarted) {
+      hasStarted = true;
+      track('form_started', { location: formLoc });
+    }
     if (input.classList.contains('is-invalid')) clearError();
   });
 }
