@@ -605,15 +605,18 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  height: 110px; 
+  min-height: 110px; /* was fixed `height` + overflow:hidden — clipped the bio
+                        in Messenger's WebView, which inflates rem by the
+                        Android system font scale. The panel is anchored
+                        bottom:0 so it grows upward over the portrait; losing a
+                        little artwork beats losing a line of text. */
   padding: 0.5rem 0.75rem 0.6rem;
-  overflow: hidden;
   background: var(--card-color, var(--color-zaki));
   border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
 
 @media (max-width: 767px) {
-  .brave-card__caption { height: 90px; }
+  .brave-card__caption { min-height: 90px; }
 }
 
 .brave-card__name {
@@ -1464,13 +1467,19 @@ input:focus-visible {
   text-align: center;
 }
 
-/* clamp() so it can shrink and keep one line — may need another step
-   below 340px. */
+/* One line is a preference, not a requirement. `nowrap` held only while
+   rem stayed 16px; Messenger's WebView inflates it, the clamp floor wins
+   over 6vw, and the heading runs off both edges with no way to recover.
+   Wrapping below 768px is the only version that cannot overflow. */
 .waitlist-signup__heading {
-  font-size: clamp(1.35rem, 6vw, 2.5rem);
+  font-size: clamp(1.15rem, 6vw, 2.5rem);
   font-weight: 400; 
   color: var(--color-surface-white);
-  white-space: nowrap;
+  text-wrap: balance; /* progressive: ignored where unsupported */
+}
+
+@media (min-width: 768px) {
+  .waitlist-signup__heading { white-space: nowrap; }
 }
 
 .waitlist-signup__badge-wrap {
