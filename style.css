@@ -1790,3 +1790,136 @@ input:focus-visible {
 .legal__back:focus-visible { text-decoration: underline; }
 
 .legal__back--bottom { margin-top: var(--space-4); }
+
+/* --- 5.11 MATERIALS PAGE (/materiali/) ---
+   Blue hero-style band (clouds, H1, lead, button, link) → white body with
+   the A4 preview → yellow footer reusing the landing page's link row
+   (.waitlist-signup__footer*). Clouds are the hero's own .cloud--1…4. */
+.materials {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.materials__header {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-4) var(--space-2) var(--space-5);
+  background: var(--color-hero-bg);
+  color: var(--color-hero-text);
+  text-align: center;
+}
+
+/* Cloud clearance. Unlike the hero, this band is a short stack of text, so
+   the hero's percentage-placed clouds land on it. The bottom pair gets a
+   strip of its own beneath the link, and below 1024px takes the same small
+   sizes the landing page uses on mobile; the top pair is hidden below
+   1440px, where it would sit on the H1 (the landing page hides it below
+   768px). Measured: no cloud box touches a text line from 360px to 1920px
+   except a 21×2px corner at 1440px. */
+@media (max-width: 1023px) {
+  .materials__header { padding-bottom: calc(var(--space-6) + var(--space-5)); }
+  .materials__header .cloud--3 {
+    width: clamp(120px, 42vw, 190px);
+    bottom: 12%;
+    left: -4%;
+  }
+  .materials__header .cloud--4 {
+    width: clamp(130px, 46vw, 200px);
+    bottom: 4%;
+    right: -6%;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .materials__header { padding-bottom: var(--space-6); }
+}
+@media (max-width: 1439px) {
+  .materials__header .cloud--1,
+  .materials__header .cloud--2 { display: none; }
+}
+
+.materials__header-inner {
+  position: relative;
+  z-index: 1; /* above .hero__clouds */
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.materials__title {
+  font-size: var(--font-size-h1);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.materials__lead {
+  max-width: 40rem;
+  margin: var(--space-2) auto 0;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.materials__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.materials__download {
+  width: 100%;
+  max-width: 360px;
+  min-height: 56px;
+}
+
+/* --color-hero-text on --color-hero-bg: 5.21:1. */
+.materials__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-hero-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.materials__more:hover { text-decoration-thickness: 2px; }
+
+/* The sitewide focus ring is --color-zaki, which is nearly invisible on
+   this blue; white is clear on it. */
+.materials__header a:focus-visible { outline-color: var(--color-surface-white); }
+
+.materials__body {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-2);
+}
+
+/* A4 landscape. aspect-ratio fixes the box whatever the file's own pixel
+   size; `contain` letterboxes rather than crops if the file ever differs. */
+.materials__preview {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  aspect-ratio: 297 / 210;
+  object-fit: contain;
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(30, 36, 51, 0.16);
+}
+
+.materials__footer {
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-neda);
+  color: var(--color-text-dark);
+}
+
+/* The row's own margin-top was for sitting under a signup form. */
+.materials__footer .waitlist-signup__footer { margin-top: 0; }

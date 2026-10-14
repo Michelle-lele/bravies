@@ -1,6 +1,6 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-*Status: Phases 1–5.10 complete; Phase 5 (integration pass) next. Phase 5.9
+*Status: Phases 1–5.11 complete; Phase 5 (integration pass) next. Phase 5.9
 compressed this document: constraints and current state kept, history and
 rationale cut. It reflects current, as-built behaviour — not a change history.
 Tech stack: vanilla JS, no framework.*
@@ -484,6 +484,49 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
 - Text link colour is white — 1.37:1 against `--color-neda`. An accepted risk,
   decided; see Open Decisions.
 
+### Materials Page (`/materiali/`) — Phase 5.11
+
+Free printable maze download. **Not linked from the landing page yet.**
+
+- **URL** `https://smelcho.bg/materiali/`, file `materiali/index.html` — not
+  `materiali/labirint-1.html`, which GitHub Pages would serve at
+  `/materiali/labirint-1`, not `/materiali`. Canonical keeps the trailing slash.
+- **Copy** (bg, fixed): H1 "Лабиринт: намери изход от ситуацията"; lead
+  "Безплатен лист за печат. …"; button "Свали за печат (PDF)"; text link
+  "Научи повече за Смелчовци в беда→" → `../`.
+- **Assets** (supplied, never generated here): `assets/materiali/labirint-1.pdf`,
+  `assets/materiali/labirint-preview.webp`. Page references them as
+  `../assets/…`; all other paths are `../` too.
+- **Layout**, top to bottom: (1) blue `--color-hero-bg` band holding the
+  hero's own cloud markup (`.hero__clouds` + `.cloud--1…4`, driven by
+  `initHeroClouds()` via `id="hero"`), H1, lead, **button and link** — so the
+  CTA is above the fold at every width; (2) white body with the preview;
+  (3) yellow footer reusing the landing page's link row
+  (`.waitlist-signup__footer*` classes, not copied): Facebook, Instagram,
+  "Политика за поверителност". CSS is the `.materials__*` block at the end of
+  `style.css`.
+- **Clouds**: the band is a short text stack, so the hero's placements land
+  on it. Below 1024px the bottom pair uses the landing page's small mobile
+  sizes with 160px of padding beneath the link; the top pair is hidden below
+  1440px (it sits on the H1). Measured: no cloud box touches a text line from
+  360px to 1920px, except a 21×2px corner at 1440px. Link and focus ring on
+  the blue are white (`--color-hero-text`, 5.21:1); the sitewide `--color-zaki`
+  ring is near-invisible there.
+- **Preview** is A4 landscape: CSS `aspect-ratio: 297 / 210` + `object-fit:
+  contain`, max-width 640px, attributes `1123×794` (A4 at 96dpi), `loading="eager"`. The box is
+  A4 whatever the file's own pixel size; a non-A4 file letterboxes.
+- **Button** is a plain `<a href download data-track-download>`; works with JS
+  off. 57px tall; the text link is 44px.
+- **Analytics**: page loads `script.js` for `$pageview` and `file_downloaded`
+  (`file_name` = href basename, e.g. `labirint-1.pdf`) via
+  `initDownloadTracking()` → `track()`. `<body data-no-scroll-depth>` skips
+  `initScrollDepth()` so `scroll_depth` stays a landing-page metric. No form,
+  no cookies; `?notrack=1` works as elsewhere.
+- **Sharing**: OG/Twitter reuse the sitewide 1200×630 `og-image`, not the
+  preview (WebP support in link previews is uneven, and A4 landscape at
+  1.41:1 would still be cropped in a 1.91:1 card).
+- Added to `sitemap.xml`.
+
 ### Design System
 
 - **Typography — Dela Gothic One (display/headings) + Nunito Sans (body/UI).**
@@ -589,11 +632,13 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
   future consent gate goes inside it, not at the call sites.
 - **Event taxonomy (frozen — renaming makes old and new data
   incomparable):** `$pageview` (auto) · `form_viewed` · `form_started` ·
-  `form_submitted` · `form_error` · `scroll_depth` · `section_viewed`.
+  `form_submitted` · `form_error` · `scroll_depth` · `section_viewed` · `file_downloaded`
+  (Phase 5.11, materials page only).
 - **Properties:** `location` (`hero`/`footer`, from `data-form-location` on each
   form) · `percent` (25/50/75/100) · `section` (`desired_state`/`waitlist_signup`,
   mapped from element IDs in `TRACKED_SECTIONS`) · `reason` (`invalid_email` /
-  `rejected` / `timeout` / `network` / `unknown`).
+  `rejected` / `timeout` / `network` / `unknown`) · `file_name` (download
+  href basename).
 - **`form_submitted` fires on confirmed success only**, never on button click —
   counting clicks would let failures inflate the one number the print-run
   decision rests on.
@@ -654,7 +699,7 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
   itself as a choice: the point of the AEO work is to be the cited source when
   a Bulgarian parent asks an assistant about teaching children to handle
   strangers.
-- **`sitemap.xml`** — two URLs: `/` and `/privacy.html`. No `changefreq` or
+- **`sitemap.xml`** — three URLs: `/`, `/privacy.html` and `/materiali/`. No `changefreq` or
   `priority` by deliberate choice; crawlers ignore both.
 - **Favicons** at `assets/icons/`: `favicon-32.png`, `favicon-192.png`,
   `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source
@@ -679,6 +724,17 @@ deleted independently.
 
 ## Open Decisions
 
+- **Materials page — `$pageview` shares an event name with the landing
+  page.** Landing-page conversion and funnels must filter on
+  `$pathname = /`, or the denominator inflates.
+- **Materials page — footer privacy link is white on `--color-neda`
+  (1.37:1)**, carried over from the landing page on purpose (same accepted
+  risk, same one-line swaps — see the Accepted-risk item above).
+- **Materials page — Latin glyphs**: the self-hosted fonts are Cyrillic-only
+  subsets, so "(PDF)", ":" and "→" render in the system font. Same on the
+  landing page; the fix is a Latin woff2 with its own `unicode-range`.
+- **Materials page — `privacy.html`** not re-checked for `file_downloaded`
+  (no personal data, but the page may list the events).
 - **Closed (Phase 5.10)**: the privacy-policy link now points at
   `privacy.html`; `data-placeholder-href` removed.
 - **Accepted risk, recorded rather than fixed**: both

@@ -203,6 +203,19 @@ function formLocation(form) {
   return form.dataset.formLocation || form.id || 'unknown';
 }
 
+/* Downloads (materials page). Any `[data-track-download]` link sends
+   `file_downloaded` with the file name taken from its href, so adding a
+   second printable needs no JS change. The link is a plain
+   <a download>; this only listens, it never intercepts the click. */
+function initDownloadTracking() {
+  document.querySelectorAll('[data-track-download]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const path = new URL(link.href, window.location.href).pathname;
+      track('file_downloaded', { file_name: decodeURIComponent(path.split('/').pop()) });
+    });
+  });
+}
+
 initPostHog(); // top-level, not DOMContentLoaded: $pageview should fire as early as possible
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -213,9 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initBraveCardScrollPulse(); // mobile/tablet scroll-triggered card pulse
   initFaqAccordion(); // Phase 4
   initWaitlistClouds(); // Phase 4 (later addition — clouds reused on the Wait-list Signup section)
-  initScrollDepth(); // Phase 5.10
+  // Landing-page metric; the materials page opts out so its scrolling
+  // doesn't land in the same scroll_depth numbers.
+  if (!document.body.hasAttribute('data-no-scroll-depth')) initScrollDepth(); // Phase 5.10
   initSectionTracking(); // Phase 5.10
   initFormImpressions(); // Phase 5.10
+  initDownloadTracking(); // Phase 5.11
 });
 
 /* ---------------------------------------------------------------------
