@@ -1791,10 +1791,12 @@ input:focus-visible {
 
 .legal__back--bottom { margin-top: var(--space-4); }
 
-/* --- 5.11 MATERIALS PAGE (/materiali/) ---
-   Blue hero-style band (clouds, H1, lead, button, link) → white body with
-   the A4 preview → yellow footer reusing the landing page's link row
-   (.waitlist-signup__footer*). Clouds are the hero's own .cloud--1…4. */
+/* --- 5.11 MATERIALS PAGES (/materiali/<slug>/) ---
+   Compact blue band (clouds, H1, lead, button, link) → white body with the
+   A4 landscape preview → yellow footer reusing the landing page's link row
+   (.waitlist-signup__footer*). The band is kept short on purpose so the
+   preview sits above the fold on a phone (measured at 334×618). Clouds are
+   the hero's own .cloud--1…4, shown from 768px up and hidden on mobile. */
 .materials {
   display: flex;
   flex-direction: column;
@@ -1804,38 +1806,10 @@ input:focus-visible {
 .materials__header {
   position: relative;
   overflow: hidden;
-  padding: var(--space-4) var(--space-2) var(--space-5);
+  padding: var(--space-3) var(--space-2);
   background: var(--color-hero-bg);
   color: var(--color-hero-text);
   text-align: center;
-}
-
-/* Cloud clearance. Unlike the hero, this band is a short stack of text, so
-   the hero's percentage-placed clouds land on it. The bottom pair gets a
-   strip of its own beneath the link, and below 1024px takes the same small
-   sizes the landing page uses on mobile; the top pair is hidden below
-   1440px, where it would sit on the H1 (the landing page hides it below
-   768px). Measured: no cloud box touches a text line from 360px to 1920px
-   except a 21×2px corner at 1440px. */
-@media (max-width: 1023px) {
-  .materials__header { padding-bottom: calc(var(--space-6) + var(--space-5)); }
-  .materials__header .cloud--3 {
-    width: clamp(120px, 42vw, 190px);
-    bottom: 12%;
-    left: -4%;
-  }
-  .materials__header .cloud--4 {
-    width: clamp(130px, 46vw, 200px);
-    bottom: 4%;
-    right: -6%;
-  }
-}
-@media (min-width: 1024px) and (max-width: 1439px) {
-  .materials__header { padding-bottom: var(--space-6); }
-}
-@media (max-width: 1439px) {
-  .materials__header .cloud--1,
-  .materials__header .cloud--2 { display: none; }
 }
 
 .materials__header-inner {
@@ -1846,14 +1820,14 @@ input:focus-visible {
 }
 
 .materials__title {
-  font-size: var(--font-size-h1);
+  font-size: clamp(1.5rem, 7vw, 2.75rem);
   line-height: 1.15;
   text-wrap: balance;
 }
 
 .materials__lead {
-  max-width: 40rem;
-  margin: var(--space-2) auto 0;
+  max-width: 44rem;
+  margin: var(--space-1) auto 0;
   font-size: var(--font-size-body);
   font-weight: 600;
   line-height: 1.55;
@@ -1863,25 +1837,76 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  margin-top: var(--space-3);
+  gap: 0;
+  margin-top: var(--space-2);
 }
 
 .materials__download {
   width: 100%;
   max-width: 360px;
-  min-height: 56px;
+  min-height: 48px;
+  padding-block: 0.7rem;
+}
+
+/* Phones: no clouds, tighter band so the whole preview clears the fold
+   (measured at 334×618 with the current, longer lead copy). */
+@media (max-width: 767px) {
+  .materials__header { padding-block: var(--space-2); }
+  .materials__header .hero__clouds { display: none; }
+  .materials__lead { font-size: 0.95rem; line-height: 1.45; }
+}
+
+/* Clouds, tablet and up. The band is a short centred text stack, so the
+   hero's percentage placements land on the text. Here every cloud is placed
+   in px instead, and cloud 2 is made to drift OUTWARD on scroll (the hero's
+   mirrored cloud drifts inward, onto the text). Text is ≤ ~740px wide and
+   centred, so on desktop the clouds live in the side gutters, sized to the
+   gutter (`(100vw - 780px) / 2`) and partly bleeding off the edge. */
+@media (min-width: 768px) {
+  .materials__header .cloud--2 { --cloud-dir: -1; }
+
+  .materials__header .cloud--1 {
+    top: 8%;
+    left: -90px;
+    width: clamp(120px, calc((100vw - 780px) / 2 + 90px), 380px);
+  }
+  .materials__header .cloud--2 {
+    top: 14%;
+    right: -60px;
+    width: clamp(100px, calc((100vw - 780px) / 2 + 60px), 250px);
+  }
+  .materials__header .cloud--3 {
+    bottom: 6%;
+    left: -70px;
+    width: clamp(120px, calc((100vw - 780px) / 2 + 70px), 300px);
+  }
+  .materials__header .cloud--4 {
+    bottom: 6%;
+    right: -90px;
+    width: clamp(140px, calc((100vw - 780px) / 2 + 110px), 480px);
+  }
+}
+
+/* Tablet portrait: the gutters are too narrow for any cloud, but the screen
+   is tall, so the band gets a strip above and below the text and the clouds
+   peek in from the top and bottom edges. */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .materials__header { padding-block: calc(var(--space-3) + 52px); }
+  .materials__header .cloud--1 { top: -22px;  left: 5%;   width: clamp(150px, 24vw, 230px); }
+  .materials__header .cloud--2 { top: -12px;  right: 7%;  width: clamp(120px, 18vw, 180px); }
+  .materials__header .cloud--3 { bottom: -18px; left: 9%;   width: clamp(140px, 22vw, 210px); }
+  .materials__header .cloud--4 { bottom: -26px; right: 4%;  width: clamp(170px, 26vw, 250px); }
 }
 
 /* --color-hero-text on --color-hero-bg: 5.21:1. */
 .materials__more {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
+  display: inline-block;
   min-height: 44px;
-  padding: 0 var(--space-1);
+  padding: 10px var(--space-1);
   font-size: var(--font-size-body);
   font-weight: 600;
+  line-height: 1.5;
+  text-wrap: balance;
   color: var(--color-hero-text);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1898,7 +1923,7 @@ input:focus-visible {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-4);
 }
 
 /* A4 landscape. aspect-ratio fixes the box whatever the file's own pixel
@@ -1913,6 +1938,15 @@ input:focus-visible {
   border-radius: var(--radius-card);
   background: #fff;
   box-shadow: 0 6px 24px rgba(30, 36, 51, 0.16);
+}
+
+/* Laptops, desktops, tablets in landscape: size the sheet to the viewport
+   height so the whole of it clears the fold. 380px = the band (≤354px) plus
+   the body's top padding; floor 360px so it never becomes a thumbnail. */
+@media (min-width: 768px) and (orientation: landscape) {
+  .materials__preview {
+    max-width: clamp(360px, calc((100svh - 380px) * 1.4143), 640px);
+  }
 }
 
 .materials__footer {

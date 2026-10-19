@@ -484,39 +484,65 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
 - Text link colour is white — 1.37:1 against `--color-neda`. An accepted risk,
   decided; see Open Decisions.
 
-### Materials Page (`/materiali/`) — Phase 5.11
+### Materials Pages (`/materiali/<slug>/`) — Phase 5.11
 
-Free printable maze download. **Not linked from the landing page yet.**
+Free printable downloads, **one page per activity**, so a new activity never
+invalidates an existing URL. Currently one: the maze at
+`/materiali/labirint-1/`. **Not linked from the landing page yet.**
 
-- **URL** `https://smelcho.bg/materiali/`, file `materiali/index.html` — not
-  `materiali/labirint-1.html`, which GitHub Pages would serve at
-  `/materiali/labirint-1`, not `/materiali`. Canonical keeps the trailing slash.
-- **Copy** (bg, fixed): H1 "Лабиринт: намери изход от ситуацията"; lead
-  "Безплатен лист за печат. …"; button "Свали за печат (PDF)"; text link
-  "Научи повече за Смелчовци в беда→" → `../`.
+- **URL** `https://smelcho.bg/materiali/labirint-1/`, file
+  `materiali/labirint-1/index.html` (a folder + `index.html`, so the public URL
+  has no `.html` and keeps the trailing slash; canonical matches). `/materiali/`
+  is reserved for a future activity list and 404s until it exists (the earlier
+  `/materiali/` maze URL was never shared, so there is no redirect stub).
+- **Copy** (bg, owner-edited, keep as is): H1 "Лабиринт: намери изход от
+  ситуацията"; lead „„Изгубеното кученце“ - Безплатен лабиринт за печат с
+  героите от „Смелчовци в беда“. Решете го заедно …"; button "Свали за печат
+  (PDF)"; text link "Научи повече за Смелчовци в беда →" (arrow is plain text,
+  no span) → `../../`. The `<title>`/meta description carry the same
+  "Изгубеното кученце" wording.
 - **Assets** (supplied, never generated here): `assets/materiali/labirint-1.pdf`,
   `assets/materiali/labirint-preview.webp`. Page references them as
-  `../assets/…`; all other paths are `../` too.
-- **Layout**, top to bottom: (1) blue `--color-hero-bg` band holding the
-  hero's own cloud markup (`.hero__clouds` + `.cloud--1…4`, driven by
-  `initHeroClouds()` via `id="hero"`), H1, lead, **button and link** — so the
-  CTA is above the fold at every width; (2) white body with the preview;
-  (3) yellow footer reusing the landing page's link row
-  (`.waitlist-signup__footer*` classes, not copied): Facebook, Instagram,
-  "Политика за поверителност". CSS is the `.materials__*` block at the end of
-  `style.css`.
-- **Clouds**: the band is a short text stack, so the hero's placements land
-  on it. Below 1024px the bottom pair uses the landing page's small mobile
-  sizes with 160px of padding beneath the link; the top pair is hidden below
-  1440px (it sits on the H1). Measured: no cloud box touches a text line from
-  360px to 1920px, except a 21×2px corner at 1440px. Link and focus ring on
-  the blue are white (`--color-hero-text`, 5.21:1); the sitewide `--color-zaki`
-  ring is near-invisible there.
+  `../../assets/…`; all other paths are `../../` too (two levels down).
+- **Layout**, top to bottom: (1) compact blue `--color-hero-bg` band holding
+  the hero's own cloud markup (`.hero__clouds` + `.cloud--1…4`, driven by
+  `initHeroClouds()` via `id="hero"`), H1, lead, **button and link**;
+  (2) white body with the preview; (3) yellow footer reusing the landing
+  page's link row (`.waitlist-signup__footer*` classes, not copied):
+  Facebook, Instagram, "Политика за поверителност". CSS is the `.materials__*`
+  block at the end of `style.css`.
+- **Clouds**: hidden on phones (<768px) only; shown on tablet and desktop.
+  The band is a short centred text stack, so the hero's percentage
+  placements land on the text; here every cloud is placed in px instead.
+  Desktop/landscape: clouds sit in the side gutters, sized to the gutter
+  (`(100vw − 780px) / 2`) and bleeding off the edge. Tablet portrait
+  (768–1023px): the band gets a 52px strip above and below the text and the
+  clouds peek in from the top and bottom edges. **Cloud 2 drifts outward on
+  scroll** (`--cloud-dir: -1`); the hero's own mirrored cloud 2 drifts inward
+  onto the text. Measured at 30+ viewport sizes, at rest, at max scroll and
+  at full scroll progress: no cloud box touches any text line, the button or
+  the link.
+- **Above the fold**: the whole preview is visible without scrolling at
+  334×618 (the phone viewport seen in PostHog), 360×640, 375×667, on tablets
+  and on laptops down to a 1366×625 browser viewport. Phones: tighter band
+  padding and a 0.95rem lead (the lead copy is long). Landscape ≥768px: the
+  sheet is sized to the viewport height,
+  `max-width: clamp(360px, (100svh − 380px) × 1.4143, 640px)`. Link text wraps
+  to two balanced lines at ≤334px. Link and focus ring on the blue are white
+  (`--color-hero-text`, 5.21:1); the sitewide `--color-zaki` ring is
+  near-invisible there.
 - **Preview** is A4 landscape: CSS `aspect-ratio: 297 / 210` + `object-fit:
-  contain`, max-width 640px, attributes `1123×794` (A4 at 96dpi), `loading="eager"`. The box is
+  contain`, max-width 640px (see Above the fold), attributes `1123×794` (A4 at 96dpi), `loading="eager"`. The box is
   A4 whatever the file's own pixel size; a non-A4 file letterboxes.
 - **Button** is a plain `<a href download data-track-download>`; works with JS
-  off. 57px tall; the text link is 44px.
+  off. 48px tall; the text link is 44px.
+- **Adding an activity** (no JS change; `file_name` comes from the href):
+  copy `materiali/labirint-1/` to `materiali/<new-slug>/`; in the copy change
+  `<title>`, description, canonical, `og:url`, OG/Twitter title+description,
+  H1, lead, image `alt`, and the two asset hrefs (`assets/materiali/<slug>.pdf`,
+  `<slug>-preview.webp`); add the URL to `sitemap.xml`. Slugs are Latin,
+  lowercase, hyphenated and never renamed once public. Keep the new preview's
+  aspect ratio in step with the CSS (`aspect-ratio` on `.materials__preview`).
 - **Analytics**: page loads `script.js` for `$pageview` and `file_downloaded`
   (`file_name` = href basename, e.g. `labirint-1.pdf`) via
   `initDownloadTracking()` → `track()`. `<body data-no-scroll-depth>` skips
@@ -699,7 +725,7 @@ Free printable maze download. **Not linked from the landing page yet.**
   itself as a choice: the point of the AEO work is to be the cited source when
   a Bulgarian parent asks an assistant about teaching children to handle
   strangers.
-- **`sitemap.xml`** — three URLs: `/`, `/privacy.html` and `/materiali/`. No `changefreq` or
+- **`sitemap.xml`** — three URLs: `/`, `/privacy.html` and `/materiali/labirint-1/`. No `changefreq` or
   `priority` by deliberate choice; crawlers ignore both.
 - **Favicons** at `assets/icons/`: `favicon-32.png`, `favicon-192.png`,
   `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source
