@@ -1,6 +1,6 @@
 # Specification: "Смелчовци в беда" Landing Page
 
-*Status: Phases 1–5.11 complete; Phase 5 (integration pass) next. Phase 5.9
+*Status: Phases 1–5.12 complete; Phase 5 (integration pass) next. Phase 5.9
 compressed this document: constraints and current state kept, history and
 rationale cut. It reflects current, as-built behaviour — not a change history.
 Tech stack: vanilla JS, no framework.*
@@ -484,11 +484,14 @@ Markup is `<nav class="waitlist-signup__footer" aria-label="Социални м�
 - Text link colour is white — 1.37:1 against `--color-neda`. An accepted risk,
   decided; see Open Decisions.
 
-### Materials Pages (`/materiali/<slug>/`) — Phase 5.11
+### Materials Pages (`/materiali/<slug>/`) — Phases 5.11–5.12
 
 Free printable downloads, **one page per activity**, so a new activity never
-invalidates an existing URL. Currently one: the maze at
-`/materiali/labirint-1/`. **Not linked from the landing page yet.**
+invalidates an existing URL. Currently two: the maze at
+`/materiali/labirint-1/` and the trusted-people hand sheet at
+`/materiali/dovereni-hora/` (H1 "Моите доверени хора"; assets
+`assets/materiali/dovereni-hora.pdf` and `dovereni-hora-preview.webp`, A4
+landscape). **Neither is linked from the landing page yet.**
 
 - **URL** `https://smelcho.bg/materiali/labirint-1/`, file
   `materiali/labirint-1/index.html` (a folder + `index.html`, so the public URL
@@ -534,13 +537,38 @@ invalidates an existing URL. Currently one: the maze at
 - **Preview** is A4 landscape: CSS `aspect-ratio: 297 / 210` + `object-fit:
   contain`, max-width 640px (see Above the fold), attributes `1123×794` (A4 at 96dpi), `loading="eager"`. The box is
   A4 whatever the file's own pixel size; a non-A4 file letterboxes.
+- **Preview zoom** (all materials pages, automatic). `initPreviewZoom()` in
+  `script.js` finds every `img.materials__preview` and, with no markup change
+  on the page: wraps it in `.materials__preview-wrap`, adds a real
+  `<button type="button">` (`aria-label` "Увеличи прегледа") in the top-right
+  corner of the sheet, and appends a native `<dialog class="preview-zoom">`.
+  Click/tap on the image or the button, Enter and Space all open it.
+  - **Sizing**: the wrap carries the width rules (640px cap and the 100svh
+    `clamp(...)` above); the `<img>` then fills it (`max-width: none`). The icon is
+    absolutely positioned, so it never changes the sheet's size and the
+    above-the-fold fit is unchanged. Without JS the img keeps its own rules.
+  - **Icon**: inline SVG (white glyph on a dark disc, so it holds contrast on
+    light and dark parts of either sheet), 28px + 8px padding = 44px hit area,
+    4px in from the corner. Focus ring is the sitewide `button:focus-visible`.
+  - **Dialog**: `showModal()` gives focus trap, Esc and inert background. Also
+    closes on backdrop click and on a visible "Затвори" button (autofocused).
+    Focus returns to the icon on close; the page does not scroll while open
+    (`html.is-preview-zoomed`). The zoom `<img>` reuses the preview's `src` — no
+    second file.
+  - **Layout**: ≥768px the sheet fits `min(95vw, 95vh × 1.4143)`, centred on a
+    dimmed `--color-text-dark` backdrop. ≤767px it is shown 1000px wide in a
+    scrollable container (`touch-action: pinch-zoom pan-x pan-y`) so the text
+    is readable; pan with a finger, pinch to zoom further.
+  - `prefers-reduced-motion`: no open animation. No PostHog event (see Open
+    Decisions). If `<dialog>` is unsupported, the preview stays a plain image.
 - **Button** is a plain `<a href download data-track-download>`; works with JS
   off. 48px tall; the text link is 44px.
 - **Adding an activity** (no JS change; `file_name` comes from the href):
   copy `materiali/labirint-1/` to `materiali/<new-slug>/`; in the copy change
   `<title>`, description, canonical, `og:url`, OG/Twitter title+description,
   H1, lead, image `alt`, and the two asset hrefs (`assets/materiali/<slug>.pdf`,
-  `<slug>-preview.webp`); add the URL to `sitemap.xml`. Slugs are Latin,
+  `<slug>-preview.webp`); add the URL to `sitemap.xml`. Preview zoom comes for free (see above); no
+  markup or JS to add. Slugs are Latin,
   lowercase, hyphenated and never renamed once public. Keep the new preview's
   aspect ratio in step with the CSS (`aspect-ratio` on `.materials__preview`).
 - **Analytics**: page loads `script.js` for `$pageview` and `file_downloaded`
@@ -725,7 +753,7 @@ invalidates an existing URL. Currently one: the maze at
   itself as a choice: the point of the AEO work is to be the cited source when
   a Bulgarian parent asks an assistant about teaching children to handle
   strangers.
-- **`sitemap.xml`** — three URLs: `/`, `/privacy.html` and `/materiali/labirint-1/`. No `changefreq` or
+- **`sitemap.xml`** — four URLs: `/`, `/privacy.html`, `/materiali/labirint-1/` and `/materiali/dovereni-hora/`. No `changefreq` or
   `priority` by deliberate choice; crawlers ignore both.
 - **Favicons** at `assets/icons/`: `favicon-32.png`, `favicon-192.png`,
   `favicon-512.png`, `apple-touch-icon-180.png`. Built from the supplied source
@@ -750,6 +778,17 @@ deleted independently.
 
 ## Open Decisions
 
+- **Materials page — preview resolution for zoom.** The zoom shows the
+  preview file itself, so each `<slug>-preview.webp` needs enough pixels to
+  read the sheet's small text. `dovereni-hora-preview.webp` is 2000×1414.
+  `labirint-preview.webp` is believed to be 1123px wide (not re-measured in
+  Phase 5.12) — at the 1000px phone zoom that is fine at 1×, soft on a 2×
+  screen and on a large desktop zoom. Decide whether to re-export it at ≥2000px.
+- **Materials page — `preview_zoomed` event.** Not added (taxonomy is frozen).
+  Worth it only if zoom usage should be compared with downloads.
+- **Materials page — `dovereni-hora` copy is draft**: `<title>`, meta
+  description, canonical-adjacent OG/Twitter title+description, H1, lead and
+  image `alt` await owner approval.
 - **Materials page — `$pageview` shares an event name with the landing
   page.** Landing-page conversion and funnels must filter on
   `$pathname = /`, or the denominator inflates.

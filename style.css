@@ -1949,6 +1949,121 @@ input:focus-visible {
   }
 }
 
+/* Preview zoom (initPreviewZoom() in script.js). The script wraps each
+   .materials__preview <img> in .materials__preview-wrap and adds the icon
+   button and the <dialog>; without JS none of this exists and the image
+   keeps the rules above. The wrap takes over the img's width rules, SAME
+   values (incl. the 100svh clamp), so the icon follows the sheet's size and
+   the above-the-fold fit is unchanged; the img then just fills the wrap. */
+.materials__preview-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+}
+
+@media (min-width: 768px) and (orientation: landscape) {
+  .materials__preview-wrap {
+    max-width: clamp(360px, calc((100svh - 380px) * 1.4143), 640px);
+  }
+}
+
+.materials__preview-wrap > .materials__preview {
+  max-width: none;
+  cursor: zoom-in;
+}
+
+/* 28px icon + 8px padding per side = 44px hit area. The dark disc is drawn
+   in the SVG so the white glyph holds contrast on light and dark parts of
+   the sheet. Focus ring: sitewide button:focus-visible (3px --color-zaki). */
+.materials__zoom-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
+.materials__zoom-btn svg { width: 28px; height: 28px; }
+
+.preview-zoom {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.preview-zoom[open] { animation: preview-zoom-in 0.18s ease-out; }
+.preview-zoom::backdrop { background: rgba(30, 36, 51, 0.9); } /* --color-text-dark */
+
+@keyframes preview-zoom-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Scroll container: pan/pinch on touch, centred with margin:auto on the
+   child (justify/align-items:center would clip the start edge on overflow). */
+.preview-zoom__scroller {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pinch-zoom pan-x pan-y;
+}
+
+.preview-zoom__img {
+  display: block;
+  flex: none;
+  margin: auto;
+  width: min(95vw, calc(95vh * 1.4143));
+  aspect-ratio: 297 / 210;
+  object-fit: contain;
+  background: #fff;
+  border-radius: var(--radius-card);
+}
+
+/* Phones: fitting 375px makes the sheet's text unreadable, so show it at
+   reading size (1000px wide) and let the person pan. */
+@media (max-width: 767px) {
+  .preview-zoom__img {
+    width: 1000px;
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+.preview-zoom__close {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  z-index: 1;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: 22px;
+  background: var(--color-surface-white);
+  color: var(--color-text-dark);
+  font: 700 var(--font-size-small) var(--font-body);
+  cursor: pointer;
+}
+
+.preview-zoom__close:focus-visible { outline-color: var(--color-surface-white); outline-offset: 3px; }
+
+html.is-preview-zoomed { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-zoom[open] { animation: none; }
+}
+
 .materials__footer {
   padding: var(--space-3) var(--space-2);
   background: var(--color-neda);

@@ -216,6 +216,71 @@ function initDownloadTracking() {
   });
 }
 
+/* Preview zoom (materials pages). Finds every `.materials__preview` <img>,
+   wraps it, and adds the icon button and a native <dialog> — so a new
+   material needs no markup or JS change. <dialog>.showModal() supplies the
+   focus trap, Esc, and inert background. The zoom <img> uses the same src
+   (already loaded; no extra file). Without JS or <dialog>, the preview is
+   left as the plain image. No analytics event (taxonomy is frozen). */
+function initPreviewZoom() {
+  if (typeof HTMLDialogElement === 'undefined') return;
+  document.querySelectorAll('img.materials__preview').forEach((preview) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'materials__preview-wrap';
+    preview.parentNode.insertBefore(wrap, preview);
+    wrap.appendChild(preview);
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'materials__zoom-btn';
+    trigger.setAttribute('aria-label', 'Увеличи прегледа');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.innerHTML =
+      '<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">' +
+      '<circle cx="14" cy="14" r="13.25" fill="#1E2433" fill-opacity="0.82" stroke="#fff" stroke-width="1.5"/>' +
+      '<circle cx="12.5" cy="12.5" r="5" fill="none" stroke="#fff" stroke-width="2"/>' +
+      '<path d="M16.3 16.3L20.5 20.5M12.5 10.2v4.6M10.2 12.5h4.6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>' +
+      '</svg>';
+    wrap.appendChild(trigger);
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'preview-zoom';
+    dialog.setAttribute('aria-label', 'Увеличен преглед');
+    const scroller = document.createElement('div');
+    scroller.className = 'preview-zoom__scroller';
+    const big = document.createElement('img');
+    big.className = 'preview-zoom__img';
+    big.alt = preview.alt;
+    scroller.appendChild(big);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'preview-zoom__close';
+    close.setAttribute('aria-label', 'Затвори');
+    close.textContent = 'Затвори';
+    close.autofocus = true;
+    dialog.append(scroller, close);
+    document.body.appendChild(dialog);
+
+    const open = () => {
+      big.src = preview.currentSrc || preview.src; // same URL: cached, no new request
+      document.documentElement.classList.add('is-preview-zoomed');
+      dialog.showModal();
+      dialog.querySelector('.preview-zoom__scroller').scrollTo(0, 0);
+    };
+    trigger.addEventListener('click', open);
+    preview.addEventListener('click', open);
+    close.addEventListener('click', () => dialog.close());
+    // Click on the dark background (the dialog or the empty scroller), not the sheet.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog || e.target === scroller) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      document.documentElement.classList.remove('is-preview-zoomed');
+      trigger.focus();
+    });
+  });
+}
+
 initPostHog(); // top-level, not DOMContentLoaded: $pageview should fire as early as possible
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -232,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSectionTracking(); // Phase 5.10
   initFormImpressions(); // Phase 5.10
   initDownloadTracking(); // Phase 5.11
+  initPreviewZoom(); // Phase 5.12
 });
 
 /* ---------------------------------------------------------------------
